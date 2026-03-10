@@ -80,54 +80,33 @@ spotless {
 // The 'dokka {}' top-level block is v2 (2.x) only — do not use it here.
 //
 tasks.named('dokkaHtml') {
-    outputDirectory = layout.buildDirectory.dir('dokka/html')
-    moduleName      = 'jeth'
-
-    dokkaSourceSets {
-        named('main') {
-            // "View source" links in each class point to the correct line on GitHub
-            sourceLink {
-                localDirectory.set(file('src/main/java'))
-                remoteUrl.set(new URL('https://github.com/jeth-io/jeth/blob/main/src/main/java'))
-                remoteLineSuffix.set('#L')
-            }
-
-            // Cross-link CompletableFuture, BigInteger etc. to the JDK 17 Javadoc
-            jdkVersion.set(17)
-            externalDocumentationLink {
-                url.set(new URL('https://docs.oracle.com/en/java/releases/jdk/17/api/'))
-                packageListUrl.set(new URL('https://docs.oracle.com/en/java/releases/jdk/17/api/element-list'))
-            }
-
-            // Hide internal packages: raw deserialisers and the CLI codegen tool
-            perPackageOption {
-                matchingRegex.set('.*\\.model\\.deserializer.*')
-                suppress.set(true)
-            }
-            perPackageOption {
-                matchingRegex.set('.*\\.codegen.*')
-                suppress.set(true)
-            }
-
-            // Warn in CI logs when public members have no Javadoc
-            reportUndocumented.set(true)
-
-            // Module description shown on the index page (optional — create the file if wanted)
-            if (file('docs/module.md').exists()) {
-                includes.from('docs/module.md')
-            }
+    outputDirectory.set(layout.buildDirectory.dir('dokka/html'))
+    moduleName.set('jeth')
+    
+    dokkaSourceSets.configureEach {
+        // Cross-link CompletableFuture, BigInteger etc. to the JDK 21 Javadoc
+        jdkVersion.set(21)
+        
+        // "View source" links in each class point to the correct line on GitHub
+        sourceLink {
+            localDirectory.set(file('src/main/java'))
+            remoteUrl.set(java.net.URI.create('https://github.com/jeth-io/jeth/blob/main/src/main/java').toURL())
+            remoteLineSuffix.set('#L')
         }
+        
+        // Hide internal packages: raw deserialisers and the CLI codegen tool
+        perPackageOption {
+            matchingRegex.set('.*\\.model\\.deserializer.*')
+            suppress.set(true)
+        }
+        perPackageOption {
+            matchingRegex.set('.*\\.codegen.*')
+            suppress.set(true)
+        }
+        
+        // Warn when public members have no Javadoc
+        reportUndocumented.set(true)
     }
-
-    // Branding: inject custom CSS + logo into the generated HTML.
-    // In Dokka 1.9.x, HTML plugin config is passed as a JSON string via pluginsMapConfiguration.
-    pluginsMapConfiguration.put(
-        'org.jetbrains.dokka.base.DokkaBase',
-        '{"customStyleSheets":["' + file('config/dokka/custom.css').absolutePath.replace('\\', '/') + '"],' +
-        '"customAssets":["' + file('config/dokka/logo.svg').absolutePath.replace('\\', '/') + '"],' +
-        '"footerMessage":"\\u00a9 jeth contributors \\u2014 MIT License",' +
-        '"homepageLink":"https://github.com/jeth-io/jeth"}'
-    )
 }
 
 // Make dokkaHtml depend on the dokka-base plugin at runtime
