@@ -1,0 +1,58 @@
+/* jeth — Dokka custom styles */
+
+:root {
+    --color-key:     #6366f1;   /* indigo — jeth accent */
+    --color-key-mid: #818cf8;
+}
+
+/* Top navigation bar */
+.navigation-wrapper {
+    background: #0f172a;        /* slate-900 */
+}
+
+/* Logo area */
+.library-name--link {
+    color: #e2e8f0 !important;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+}
+
+/* Clickable source links in method signatures */
+.symbol .source-link {
+    color: var(--color-key-mid);
+}
+
+/* Package / class list highlight */
+.sideMenu a.selected {
+    color: var(--color-key) !important;
+    border-left: 2px solid var(--color-key);
+}
+
+/* Inline code */
+code {
+    background: #1e293b;
+    color: #94a3b8;
+    border-radius: 3px;
+    padding: 1px 4px;
+    font-size: 0.875em;
+}
+
+/* Code blocks */
+pre > code {
+    background: transparent;
+    padding: 0;
+}
+
+/* Method / field signature strip */
+.main-content div.symbol {
+    background: #0f172a08;
+    border-left: 3px solid var(--color-key);
+    border-radius: 0 4px 4px 0;
+    padding: 8px 12px;
+}
+
+/* Footer */
+.footer {
+    font-size: 0.8rem;
+    color: #94a3b8;
+}

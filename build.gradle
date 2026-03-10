@@ -1,0 +1,281 @@
+plugins {
+    id 'java-library'
+    id 'maven-publish'
+    id 'signing'
+    id 'org.jetbrains.dokka'   version '1.9.20'
+    id 'com.diffplug.spotless' version '6.25.0'
+}
+
+group   = 'io.jeth'
+version = System.getenv('RELEASE_VERSION') ?: System.getenv('CI_COMMIT_TAG')?.replaceFirst('^v', '') ?: '1.3.0-SNAPSHOT'
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_21
+    targetCompatibility = JavaVersion.VERSION_21
+    withSourcesJar()
+    withJavadocJar()
+}
+
+repositories { mavenCentral() }
+
+dependencies {
+    api    'com.fasterxml.jackson.core:jackson-databind:2.17.2'
+    api    'com.fasterxml.jackson.core:jackson-core:2.17.2'
+    implementation 'org.bouncycastle:bcprov-jdk18on:1.78.1'
+
+    // ─── Test ─────────────────────────────────────────────────────────────────
+    testImplementation platform('org.junit:junit-bom:5.10.3')
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+    testRuntimeOnly    'org.junit.jupiter:junit-jupiter-engine'
+
+    testImplementation 'com.squareup.okhttp3:mockwebserver:4.12.0'
+    testImplementation 'com.squareup.okhttp3:okhttp:4.12.0'
+
+    testImplementation platform('org.testcontainers:testcontainers-bom:1.19.8')
+    testImplementation 'org.testcontainers:testcontainers'
+    testImplementation 'org.testcontainers:junit-jupiter'
+}
+
+// ─── Spotless — code style enforcement ───────────────────────────────────────
+//
+//   ./gradlew spotlessApply   — auto-fix violations in-place
+//   ./gradlew spotlessCheck   — fail if violations exist (runs in CI before tests)
+//
+// Rules match the existing codebase style: 4-space indent (AOSP), Unix line endings,
+// MIT license header on every .java file.
+//
+spotless {
+    java {
+        // Google Java Format — AOSP variant uses 4-space indent (default GJF uses 2).
+        // Handles import ordering, brace style, blank lines between members.
+        googleJavaFormat('1.22.0').aosp().reflowLongStrings(false)
+
+        trimTrailingWhitespace()
+        endWithNewline()
+
+        // Every .java file must start with the MIT license header.
+        // Spotless uses 'package ' as the delimiter — anything before it is the header.
+        licenseHeaderFile rootProject.file('config/spotless/license-header.java')
+
+        // Leave generated code alone
+        targetExclude '**/generated/**'
+    }
+
+    groovyGradle {
+        greclipse('4.30.0')
+        trimTrailingWhitespace()
+        endWithNewline()
+    }
+}
+
+// ─── Dokka — API reference docs ───────────────────────────────────────────────
+//
+// Generates a full HTML API reference from Javadoc comments.
+// Output: build/dokka/html/
+//
+// Local preview:
+//   ./gradlew dokkaHtml && open build/dokka/html/index.html
+//
+// IMPORTANT: This uses the Dokka 1.9.x task-based DSL.
+// The 'dokka {}' top-level block is v2 (2.x) only — do not use it here.
+//
+tasks.named('dokkaHtml') {
+    outputDirectory = layout.buildDirectory.dir('dokka/html')
+    moduleName      = 'jeth'
+
+    dokkaSourceSets {
+        named('main') {
+            // "View source" links in each class point to the correct line on GitHub
+            sourceLink {
+                localDirectory.set(file('src/main/java'))
+                remoteUrl.set(new URL('https://github.com/jeth-io/jeth/blob/main/src/main/java'))
+                remoteLineSuffix.set('#L')
+            }
+
+            // Cross-link CompletableFuture, BigInteger etc. to the JDK 17 Javadoc
+            jdkVersion.set(17)
+            externalDocumentationLink {
+                url.set(new URL('https://docs.oracle.com/en/java/releases/jdk/17/api/'))
+                packageListUrl.set(new URL('https://docs.oracle.com/en/java/releases/jdk/17/api/element-list'))
+            }
+
+            // Hide internal packages: raw deserialisers and the CLI codegen tool
+            perPackageOption {
+                matchingRegex.set('.*\\.model\\.deserializer.*')
+                suppress.set(true)
+            }
+            perPackageOption {
+                matchingRegex.set('.*\\.codegen.*')
+                suppress.set(true)
+            }
+
+            // Warn in CI logs when public members have no Javadoc
+            reportUndocumented.set(true)
+
+            // Module description shown on the index page (optional — create the file if wanted)
+            if (file('docs/module.md').exists()) {
+                includes.from('docs/module.md')
+            }
+        }
+    }
+
+    // Branding: inject custom CSS + logo into the generated HTML.
+    // In Dokka 1.9.x, HTML plugin config is passed as a JSON string via pluginsMapConfiguration.
+    pluginsMapConfiguration.put(
+        'org.jetbrains.dokka.base.DokkaBase',
+        '{"customStyleSheets":["' + file('config/dokka/custom.css').absolutePath.replace('\\', '/') + '"],' +
+        '"customAssets":["' + file('config/dokka/logo.svg').absolutePath.replace('\\', '/') + '"],' +
+        '"footerMessage":"\\u00a9 jeth contributors \\u2014 MIT License",' +
+        '"homepageLink":"https://github.com/jeth-io/jeth"}'
+    )
+}
+
+// Make dokkaHtml depend on the dokka-base plugin at runtime
+dependencies {
+    dokkaHtmlPlugin 'org.jetbrains.dokka:dokka-base:1.9.20'
+}
+
+// ─── Tests ────────────────────────────────────────────────────────────────────
+
+test {
+    useJUnitPlatform { excludeTags 'integration' }
+    testLogging { events 'passed', 'skipped', 'failed'; exceptionFormat 'full' }
+}
+
+tasks.register('integrationTest', Test) {
+    useJUnitPlatform { includeTags 'integration' }
+    testLogging { events 'passed', 'skipped', 'failed'; exceptionFormat 'full' }
+    group       = 'verification'
+    description = 'Run E2E tests against local Besu node (requires Docker)'
+}
+
+// ─── Publishing ───────────────────────────────────────────────────────────────
+
+publishing {
+    publications {
+        maven(MavenPublication) {
+            from components.java
+            pom {
+                name        = 'jeth'
+                description = 'Java Ethereum library. Two dependencies.'
+                url         = 'https://github.com/jeth-io/jeth'
+                licenses {
+                    license {
+                        name = 'MIT License'
+                        url  = 'https://opensource.org/licenses/MIT'
+                    }
+                }
+                developers {
+                    developer {
+                        id   = 'jeth'
+                        name = 'jeth contributors'
+                        url  = 'https://github.com/jeth-io/jeth'
+                    }
+                }
+                scm {
+                    url                 = 'https://github.com/jeth-io/jeth'
+                    connection          = 'scm:git:git://github.com/jeth-io/jeth.git'
+                    developerConnection = 'scm:git:ssh://git@github.com/jeth-io/jeth.git'
+                }
+            }
+        }
+    }
+
+    repositories {
+        maven {
+            name = 'OSSRH'
+            url  = version.toString().endsWith('SNAPSHOT')
+                    ? 'https://s01.oss.sonatype.org/content/repositories/snapshots/'
+                    : 'https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/'
+            credentials {
+                username = System.getenv('OSSRH_USERNAME')
+                password = System.getenv('OSSRH_PASSWORD')
+            }
+        }
+        maven {
+            name = 'GitHubPackages'
+            url  = uri('https://maven.pkg.github.com/jeth-io/jeth')
+            credentials {
+                username = System.getenv('GITHUB_ACTOR') ?: 'token'
+                password = System.getenv('GITHUB_TOKEN')
+            }
+        }
+    }
+}
+
+if (System.getenv('SIGNING_KEY')) {
+    signing {
+        useInMemoryPgpKeys(
+            System.getenv('SIGNING_KEY'),
+            System.getenv('SIGNING_PASSWORD') ?: ''
+        )
+        sign publishing.publications.maven
+    }
+}
+
+// ─── Utilities ────────────────────────────────────────────────────────────────
+
+tasks.register('generateContract', JavaExec) {
+    classpath  = sourceSets.main.runtimeClasspath
+    mainClass  = 'io.jeth.codegen.ContractGeneratorCli'
+    args       = ['--abi',     project.findProperty('abi')     ?: 'abi.json',
+                  '--name',    project.findProperty('name')    ?: 'Contract',
+                  '--package', project.findProperty('package') ?: 'generated',
+                  '--out',     project.findProperty('out')     ?: 'src/main/java/generated']
+}
+
+// ─── BIP-39 wordlist ──────────────────────────────────────────────────────────
+
+// ─── KZG trusted setup ────────────────────────────────────────────────────────
+// Run once to bundle the Ethereum KZG ceremony trusted setup into the jar.
+// The generated kzg-setup.bin should be committed to the repository.
+// ./gradlew bundleKzgSetup
+tasks.register('bundleKzgSetup', JavaExec) {
+    group       = 'setup'
+    description = 'Download and bundle the Ethereum KZG trusted setup (run once, then commit)'
+    classpath   = sourceSets.main.runtimeClasspath
+    mainClass   = 'io.jeth.eip4844.BundleKzgSetup'
+    args        = ['src/main/resources/io/jeth/eip4844/kzg-setup.bin']
+    dependsOn   'compileJava'
+}
+
+tasks.named('processResources') {
+    doLast {
+        def setup = file('src/main/resources/io/jeth/eip4844/kzg-setup.bin')
+        if (!setup.exists()) {
+            logger.warn('\n\u26a0\ufe0f  KZG trusted setup not found. Blob transactions will fail at runtime.')
+            logger.warn('   Run: ./gradlew bundleKzgSetup')
+            logger.warn('   Then commit src/main/resources/io/jeth/eip4844/kzg-setup.bin\n')
+        }
+    }
+}
+
+// Run once after cloning: ./gradlew fetchBip39Wordlist
+// File is committed so CI doesn't need network at test time.
+
+tasks.register('fetchBip39Wordlist', Exec) {
+    group       = 'setup'
+    description = 'Download official BIP-39 English wordlist (run once after clone)'
+    def target  = file('src/main/resources/io/jeth/wallet/bip39-english.txt')
+    outputs.file(target)
+    commandLine 'sh', '-c',
+        "curl -fsSL https://raw.githubusercontent.com/bitcoin/bips/master/bip-0039/english.txt " +
+        "-o ${target.absolutePath} && " +
+        "echo \"Downloaded \$(wc -l < ${target.absolutePath}) words to ${target.absolutePath}\""
+}
+
+tasks.named('processResources') {
+    doLast {
+        def wordlist = file('src/main/resources/io/jeth/wallet/bip39-english.txt')
+        if (wordlist.exists()) {
+            def count = wordlist.readLines().size()
+            if (count != 2048) {
+                logger.warn('\n\u26a0\ufe0f  BIP-39 wordlist has ' + count + ' words (expected 2048).')
+                logger.warn('   Run: ./gradlew fetchBip39Wordlist')
+                logger.warn('   HdWallet.generate() may produce mnemonics incompatible with MetaMask.\n')
+            }
+        } else {
+            logger.warn('\n\u26a0\ufe0f  BIP-39 wordlist not found. Run: ./gradlew fetchBip39Wordlist\n')
+        }
+    }
+}

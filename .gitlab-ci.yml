@@ -1,0 +1,58 @@
+image: eclipse-temurin:21-jdk
+
+# Cache Gradle deps between pipeline runs — massive speed boost
+cache:
+  key:
+    files:
+      - build.gradle
+      - settings.gradle
+  paths:
+    - .gradle/
+    - build/
+
+variables:
+  GRADLE_OPTS: "-Dorg.gradle.daemon=false -Dorg.gradle.caching=true"
+
+stages:
+  - build
+  - test
+  - publish
+
+# ─── Build ────────────────────────────────────────────────────────────────────
+
+compile:
+  stage: build
+  script:
+    - ./gradlew classes --no-daemon
+  artifacts:
+    paths:
+      - build/classes/
+    expire_in: 1 hour
+
+# ─── Test ─────────────────────────────────────────────────────────────────────
+
+test:
+  stage: test
+  script:
+    - ./gradlew test --no-daemon
+  artifacts:
+    when: always
+    reports:
+      junit: build/test-results/test/TEST-*.xml
+    paths:
+      - build/reports/tests/
+    expire_in: 7 days
+
+# ─── Publish to GitHub Packages (on tag) ──────────────────────────────────────
+# Set these in GitLab → Settings → CI/CD → Variables:
+#   GITHUB_ACTOR  — your GitHub username
+#   GITHUB_TOKEN  — GitHub personal access token with write:packages scope
+
+publish:
+  stage: publish
+  script:
+    - ./gradlew publish --no-daemon
+  rules:
+    - if: $CI_COMMIT_TAG =~ /^v\d+\.\d+\.\d+$/   # only on version tags: v1.0.0
+  environment:
+    name: github-packages

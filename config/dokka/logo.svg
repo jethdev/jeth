@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 32" width="80" height="32">
+  <rect width="80" height="32" rx="6" fill="#6366f1"/>
+  <text x="12" y="22" font-family="'SF Mono', 'Fira Code', monospace"
+        font-size="16" font-weight="700" fill="#ffffff" letter-spacing="-0.5">
+    jeth
+  </text>
+</svg>
