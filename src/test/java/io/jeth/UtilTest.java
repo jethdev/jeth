@@ -4,15 +4,14 @@
  */
 package io.jeth;
 
+import static org.junit.jupiter.api.Assertions.*;
+
 import io.jeth.util.Address;
 import io.jeth.util.Hex;
 import io.jeth.util.Keccak;
 import io.jeth.util.Units;
-import org.junit.jupiter.api.Test;
-
 import java.math.BigInteger;
-
-import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.Test;
 
 class UtilTest {
 
@@ -42,7 +41,8 @@ class UtilTest {
     void testKeccak256KnownValues() {
         // keccak256("") = c5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470
         byte[] emptyHash = Keccak.hash(new byte[0]);
-        assertEquals("0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470",
+        assertEquals(
+                "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470",
                 Hex.encode(emptyHash));
     }
 

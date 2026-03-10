@@ -4,19 +4,18 @@
  */
 package io.jeth;
 
+import static org.junit.jupiter.api.Assertions.*;
+
 import io.jeth.ens.CcipRead;
 import io.jeth.util.Hex;
-import org.junit.jupiter.api.Test;
-
 import java.nio.charset.StandardCharsets;
-
-import static org.junit.jupiter.api.Assertions.*;
 import java.util.ArrayList;
 import java.util.List;
+import org.junit.jupiter.api.Test;
 
 /**
- * Unit tests for EIP-3668 CCIP-Read parsing and calldata construction.
- * Does NOT require network access.
+ * Unit tests for EIP-3668 CCIP-Read parsing and calldata construction. Does NOT require network
+ * access.
  */
 class CcipReadTest {
 
@@ -28,8 +27,8 @@ class CcipReadTest {
     //   callbackFunction: 0x12345678,
     //   extraData:        0xcafebabe
     // )
-    private static final String SENDER   = "0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266";
-    private static final String URL      = "https://ccip.example.com/{sender}/{data}.json";
+    private static final String SENDER = "0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266";
+    private static final String URL = "https://ccip.example.com/{sender}/{data}.json";
     private static final String CALLBACK = "0x12345678";
 
     @Test
@@ -40,14 +39,22 @@ class CcipReadTest {
 
     @Test
     void parseOffchainLookup_extractsSender() {
-        String revertData = buildOffchainLookupRevert(SENDER, new String[]{URL}, "0xdeadbeef", CALLBACK, "0xcafebabe");
+        String revertData =
+                buildOffchainLookupRevert(
+                        SENDER, new String[] {URL}, "0xdeadbeef", CALLBACK, "0xcafebabe");
         CcipRead.OffchainLookup lookup = CcipRead.parseOffchainLookup(revertData);
         assertEquals(SENDER.toLowerCase(), lookup.sender().toLowerCase());
     }
 
     @Test
     void parseOffchainLookup_extractsUrls() {
-        String revertData = buildOffchainLookupRevert(SENDER, new String[]{URL, "https://fallback.example.com/"}, "0xdead", CALLBACK, "0xcafe");
+        String revertData =
+                buildOffchainLookupRevert(
+                        SENDER,
+                        new String[] {URL, "https://fallback.example.com/"},
+                        "0xdead",
+                        CALLBACK,
+                        "0xcafe");
         CcipRead.OffchainLookup lookup = CcipRead.parseOffchainLookup(revertData);
         assertEquals(2, lookup.urls().length);
         assertEquals(URL, lookup.urls()[0]);
@@ -56,7 +63,8 @@ class CcipReadTest {
 
     @Test
     void parseOffchainLookup_extractsCallbackFunction() {
-        String revertData = buildOffchainLookupRevert(SENDER, new String[]{URL}, "0xdead", CALLBACK, "0xcafe");
+        String revertData =
+                buildOffchainLookupRevert(SENDER, new String[] {URL}, "0xdead", CALLBACK, "0xcafe");
         CcipRead.OffchainLookup lookup = CcipRead.parseOffchainLookup(revertData);
         assertEquals(CALLBACK, lookup.callbackFunction());
     }
@@ -65,8 +73,9 @@ class CcipReadTest {
     void buildCallbackCalldata_hasCorrectSelector() {
         String calldata = CcipRead.buildCallbackCalldata(CALLBACK, "0xaabbccdd", "0x11223344");
         // First 4 bytes should be the callback selector
-        assertTrue(calldata.startsWith(CALLBACK.toLowerCase()),
-            "Callback calldata must start with callback selector");
+        assertTrue(
+                calldata.startsWith(CALLBACK.toLowerCase()),
+                "Callback calldata must start with callback selector");
     }
 
     @Test
@@ -82,30 +91,35 @@ class CcipReadTest {
 
     @Test
     void roundtrip_parseAndRebuild() {
-        String callData  = "0xdeadbeefcafebabe";
+        String callData = "0xdeadbeefcafebabe";
         String extraData = "0x0102030405060708";
-        String revertData = buildOffchainLookupRevert(SENDER, new String[]{URL}, callData, CALLBACK, extraData);
+        String revertData =
+                buildOffchainLookupRevert(
+                        SENDER, new String[] {URL}, callData, CALLBACK, extraData);
 
         CcipRead.OffchainLookup lookup = CcipRead.parseOffchainLookup(revertData);
 
-        assertEquals(callData,  lookup.callData());
+        assertEquals(callData, lookup.callData());
         assertEquals(extraData, lookup.extraData());
-        assertEquals(1,         lookup.urls().length);
-        assertEquals(URL,       lookup.urls()[0]);
+        assertEquals(1, lookup.urls().length);
+        assertEquals(URL, lookup.urls()[0]);
     }
 
     // ─── Helper: manually build OffchainLookup revert ABI encoding ─────────────
 
     static String buildOffchainLookupRevert(
-            String sender, String[] urls, String callData,
-            String callbackFunction, String extraData) {
+            String sender,
+            String[] urls,
+            String callData,
+            String callbackFunction,
+            String extraData) {
 
         byte[] senderBytes = Hex.decode(sender);
-        byte[][] urlBytes  = new byte[urls.length][];
+        byte[][] urlBytes = new byte[urls.length][];
         for (int i = 0; i < urls.length; i++)
             urlBytes[i] = urls[i].getBytes(StandardCharsets.UTF_8);
-        byte[] cdBytes    = Hex.decode(callData);
-        byte[] cbBytes    = Hex.decode(callbackFunction);
+        byte[] cdBytes = Hex.decode(callData);
+        byte[] cbBytes = Hex.decode(callbackFunction);
         byte[] extraBytes = Hex.decode(extraData);
 
         // ABI encode: (address, string[], bytes, bytes4, bytes)
@@ -133,13 +147,13 @@ class CcipReadTest {
             urlsDataLen += ((url.length + 31) / 32) * 32; // data
         }
 
-        int cdPadded    = ((cdBytes.length + 31) / 32) * 32;
+        int cdPadded = ((cdBytes.length + 31) / 32) * 32;
         int extraPadded = ((extraBytes.length + 31) / 32) * 32;
 
         // Offsets (from start of the full 5-slot header = 160 bytes)
-        int urlsOffset     = 160;
-        int cdOffset       = urlsOffset + urlsDataLen;
-        int extraOffset    = cdOffset + 32 + cdPadded;
+        int urlsOffset = 160;
+        int cdOffset = urlsOffset + urlsDataLen;
+        int extraOffset = cdOffset + 32 + cdPadded;
 
         // Slot 1: offset to urls
         parts.add(toSlot32(urlsOffset));
@@ -199,7 +213,7 @@ class CcipReadTest {
     private static byte[] toSlot32(long value) {
         byte[] slot = new byte[32];
         for (int i = 31; i >= 0; i--) {
-            slot[i] = (byte)(value & 0xFF);
+            slot[i] = (byte) (value & 0xFF);
             value >>= 8;
         }
         return slot;

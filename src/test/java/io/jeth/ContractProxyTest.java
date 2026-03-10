@@ -4,19 +4,19 @@
  */
 package io.jeth;
 
+import static org.junit.jupiter.api.Assertions.*;
+
+import io.jeth.contract.ContractFunction;
 import io.jeth.contract.ContractProxy;
 import io.jeth.crypto.Wallet;
-import org.junit.jupiter.api.Test;
-
 import java.math.BigInteger;
 import java.util.concurrent.CompletableFuture;
-
-import static org.junit.jupiter.api.Assertions.*;
-import io.jeth.contract.ContractFunction;
+import org.junit.jupiter.api.Test;
 
 class ContractProxyTest {
 
-    static final String GREETER_ABI = """
+    static final String GREETER_ABI =
+            """
         [
           {"type":"function","name":"getGreeting","inputs":[],"outputs":[{"name":"","type":"string"}],"stateMutability":"view"},
           {"type":"function","name":"setGreeting","inputs":[{"name":"greeting","type":"string"}],"outputs":[],"stateMutability":"nonpayable"},
@@ -26,7 +26,8 @@ class ContractProxyTest {
         """;
 
     // Multi-return ABI: getInfo() returns (string name, string symbol, uint8 decimals)
-    static final String TOKEN_ABI = """
+    static final String TOKEN_ABI =
+            """
         [
           {"type":"function","name":"getInfo","inputs":[],
            "outputs":[
@@ -44,63 +45,87 @@ class ContractProxyTest {
     // ─── Interfaces — no DTOs needed ─────────────────────────────────────────
 
     interface Greeter {
-        CompletableFuture<String>     getGreeting();
-        CompletableFuture<String>     setGreeting(Wallet wallet, String greeting);
+        CompletableFuture<String> getGreeting();
+
+        CompletableFuture<String> setGreeting(Wallet wallet, String greeting);
+
         CompletableFuture<BigInteger> greetCount();
-        CompletableFuture<String>     owner();
+
+        CompletableFuture<String> owner();
     }
 
     // Multi-return: just an interface — proxy maps ABI outputs to methods by position
     interface TokenInfo {
-        String  name();
-        String  symbol();
+        String name();
+
+        String symbol();
+
         Integer decimals();
     }
 
     interface Token {
-        CompletableFuture<TokenInfo>   getInfo();
-        CompletableFuture<BigInteger>  balanceOf(String account);
-        CompletableFuture<String>      transfer(Wallet wallet, String to_, BigInteger amount);
+        CompletableFuture<TokenInfo> getInfo();
+
+        CompletableFuture<BigInteger> balanceOf(String account);
+
+        CompletableFuture<String> transfer(Wallet wallet, String to_, BigInteger amount);
     }
 
     // ─── Tests ───────────────────────────────────────────────────────────────
 
     @Test
     void testProxyCreatesWithoutError() {
-        Greeter g = ContractProxy.load(Greeter.class,
-            "0x0000000000000000000000000000000000000001", GREETER_ABI, null);
+        Greeter g =
+                ContractProxy.load(
+                        Greeter.class,
+                        "0x0000000000000000000000000000000000000001",
+                        GREETER_ABI,
+                        null);
         assertNotNull(g);
         assertInstanceOf(Greeter.class, g);
     }
 
     @Test
     void testProxyToString() {
-        Greeter g = ContractProxy.load(Greeter.class,
-            "0x0000000000000000000000000000000000000001", GREETER_ABI, null);
+        Greeter g =
+                ContractProxy.load(
+                        Greeter.class,
+                        "0x0000000000000000000000000000000000000001",
+                        GREETER_ABI,
+                        null);
         assertTrue(g.toString().contains("Greeter"));
     }
 
     @Test
     void testTokenProxyCreates() {
-        Token t = ContractProxy.load(Token.class,
-            "0x0000000000000000000000000000000000000001", TOKEN_ABI, null);
+        Token t =
+                ContractProxy.load(
+                        Token.class, "0x0000000000000000000000000000000000000001", TOKEN_ABI, null);
         assertNotNull(t);
         assertInstanceOf(Token.class, t);
     }
 
     @Test
     void testUnknownMethodThrows() {
-        interface Bad { CompletableFuture<String> doesNotExist(); }
-        Bad bad = ContractProxy.load(Bad.class,
-            "0x0000000000000000000000000000000000000001", GREETER_ABI, null);
+        interface Bad {
+            CompletableFuture<String> doesNotExist();
+        }
+        Bad bad =
+                ContractProxy.load(
+                        Bad.class, "0x0000000000000000000000000000000000000001", GREETER_ABI, null);
         assertThrows(Exception.class, () -> bad.doesNotExist());
     }
 
     @Test
     void testNonInterfaceThrows() {
-        assertThrows(Exception.class, () ->
-            ContractProxy.load(String.class,
-                "0x0000000000000000000000000000000000000001", GREETER_ABI, null));
+        assertThrows(
+                Exception.class,
+                () ->
+                        ContractProxy.load(
+                                String.class,
+                                "0x0000000000000000000000000000000000000001",
+                                GREETER_ABI,
+                                null));
     }
 
     @Test

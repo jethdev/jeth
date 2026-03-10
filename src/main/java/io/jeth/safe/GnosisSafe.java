@@ -9,13 +9,12 @@ import io.jeth.contract.ContractFunction;
 import io.jeth.core.EthClient;
 import io.jeth.crypto.Signature;
 import io.jeth.crypto.Wallet;
-import java.util.Comparator;
-import java.util.ArrayList;
 import io.jeth.eip712.TypedData;
 import io.jeth.util.Hex;
-
 import java.math.BigInteger;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -24,8 +23,8 @@ import java.util.concurrent.CompletableFuture;
 /**
  * Gnosis Safe (v1.3.0+) multisig wallet integration.
  *
- * The most widely used multisig on Ethereum. Used by Uniswap DAO, Aave,
- * Compound, and virtually every major DeFi protocol treasury.
+ * <p>The most widely used multisig on Ethereum. Used by Uniswap DAO, Aave, Compound, and virtually
+ * every major DeFi protocol treasury.
  *
  * <pre>
  * var safe = new GnosisSafe("0xSafeAddress", client);
@@ -57,7 +56,7 @@ public class GnosisSafe {
 
     // Safe domain type hash (EIP-712)
     private static final String SAFE_TX_TYPEHASH_STR =
-        "SafeTx(address to,uint256 value,bytes data,uint8 operation,uint256 safeTxGas,uint256 baseGas,uint256 gasPrice,address gasToken,address refundReceiver,uint256 nonce)";
+            "SafeTx(address to,uint256 value,bytes data,uint8 operation,uint256 safeTxGas,uint256 baseGas,uint256 gasPrice,address gasToken,address refundReceiver,uint256 nonce)";
 
     private final Contract safe;
     private final ContractFunction fnNonce;
@@ -69,36 +68,50 @@ public class GnosisSafe {
 
     public GnosisSafe(String safeAddress, EthClient client) {
         this.safe = new Contract(safeAddress, client);
-        this.fnNonce           = safe.fn("nonce()").returns("uint256");
-        this.fnThreshold       = safe.fn("getThreshold()").returns("uint256");
-        this.fnGetOwners       = safe.fn("getOwners()").returns("address[]");
+        this.fnNonce = safe.fn("nonce()").returns("uint256");
+        this.fnThreshold = safe.fn("getThreshold()").returns("uint256");
+        this.fnGetOwners = safe.fn("getOwners()").returns("address[]");
         this.fnDomainSeparator = safe.fn("domainSeparator()").returns("bytes32");
-        this.fnIsOwner         = safe.fn("isOwner(address)").returns("bool");
-        this.fnExecTransaction = safe.fn(
-            "execTransaction(address,uint256,bytes,uint8,uint256,uint256,uint256,address,address,bytes)"
-        );
+        this.fnIsOwner = safe.fn("isOwner(address)").returns("bool");
+        this.fnExecTransaction =
+                safe.fn(
+                        "execTransaction(address,uint256,bytes,uint8,uint256,uint256,uint256,address,address,bytes)");
     }
 
     // ─── Read ─────────────────────────────────────────────────────────────────
 
-    public CompletableFuture<BigInteger>    getNonce()     { return fnNonce.call().as(BigInteger.class); }
-    public CompletableFuture<Integer>       getThreshold() { return fnThreshold.call().as(BigInteger.class).thenApply(BigInteger::intValue); }
-    public CompletableFuture<Boolean>       isOwner(String addr) { return fnIsOwner.call(addr).as(Boolean.class); }
+    public CompletableFuture<BigInteger> getNonce() {
+        return fnNonce.call().as(BigInteger.class);
+    }
+
+    public CompletableFuture<Integer> getThreshold() {
+        return fnThreshold.call().as(BigInteger.class).thenApply(BigInteger::intValue);
+    }
+
+    public CompletableFuture<Boolean> isOwner(String addr) {
+        return fnIsOwner.call(addr).as(Boolean.class);
+    }
 
     @SuppressWarnings("unchecked")
     public CompletableFuture<List<String>> getOwners() {
-        return fnGetOwners.call().raw().thenApply(arr -> {
-            Object raw = arr[0];
-            if (raw instanceof Object[] oa) return Arrays.asList((String[]) Arrays.copyOf(oa, oa.length, String[].class));
-            return List.of();
-        });
+        return fnGetOwners
+                .call()
+                .raw()
+                .thenApply(
+                        arr -> {
+                            Object raw = arr[0];
+                            if (raw instanceof Object[] oa)
+                                return Arrays.asList(
+                                        (String[]) Arrays.copyOf(oa, oa.length, String[].class));
+                            return List.of();
+                        });
     }
 
     // ─── Signing ─────────────────────────────────────────────────────────────
 
     /**
-     * Sign a Safe transaction (EIP-712). Collect signatures from threshold owners,
-     * then call executeTransaction().
+     * Sign a Safe transaction (EIP-712). Collect signatures from threshold owners, then call
+     * executeTransaction().
      */
     public Signature signTransaction(SafeTx tx, long chainId, Wallet wallet) {
         byte[] txHash = getTransactionHash(tx, chainId);
@@ -108,40 +121,41 @@ public class GnosisSafe {
         return new Signature(sig.r, sig.s, sig.v + 31);
     }
 
-    /**
-     * Compute the EIP-712 transaction hash for a SafeTx.
-     */
+    /** Compute the EIP-712 transaction hash for a SafeTx. */
     public byte[] getTransactionHash(SafeTx tx, long chainId) {
         // Build domain separator
-        var domain = TypedData.Domain.builder()
-                .chainId(chainId)
-                .verifyingContract(safe.getAddress())
-                .build();
+        var domain =
+                TypedData.Domain.builder()
+                        .chainId(chainId)
+                        .verifyingContract(safe.getAddress())
+                        .build();
 
-        var types = Map.of("SafeTx", List.of(
-                new TypedData.Field("to",             "address"),
-                new TypedData.Field("value",          "uint256"),
-                new TypedData.Field("data",           "bytes"),
-                new TypedData.Field("operation",      "uint8"),
-                new TypedData.Field("safeTxGas",      "uint256"),
-                new TypedData.Field("baseGas",        "uint256"),
-                new TypedData.Field("gasPrice",       "uint256"),
-                new TypedData.Field("gasToken",       "address"),
-                new TypedData.Field("refundReceiver", "address"),
-                new TypedData.Field("nonce",          "uint256")
-        ));
+        var types =
+                Map.of(
+                        "SafeTx",
+                        List.of(
+                                new TypedData.Field("to", "address"),
+                                new TypedData.Field("value", "uint256"),
+                                new TypedData.Field("data", "bytes"),
+                                new TypedData.Field("operation", "uint8"),
+                                new TypedData.Field("safeTxGas", "uint256"),
+                                new TypedData.Field("baseGas", "uint256"),
+                                new TypedData.Field("gasPrice", "uint256"),
+                                new TypedData.Field("gasToken", "address"),
+                                new TypedData.Field("refundReceiver", "address"),
+                                new TypedData.Field("nonce", "uint256")));
 
         var message = new LinkedHashMap<String, Object>();
-        message.put("to",             tx.to);
-        message.put("value",          tx.value);
-        message.put("data",           Hex.decode(tx.data));
-        message.put("operation",      BigInteger.valueOf(tx.operation));
-        message.put("safeTxGas",      tx.safeTxGas);
-        message.put("baseGas",        tx.baseGas);
-        message.put("gasPrice",       tx.gasPrice);
-        message.put("gasToken",       tx.gasToken);
+        message.put("to", tx.to);
+        message.put("value", tx.value);
+        message.put("data", Hex.decode(tx.data));
+        message.put("operation", BigInteger.valueOf(tx.operation));
+        message.put("safeTxGas", tx.safeTxGas);
+        message.put("baseGas", tx.baseGas);
+        message.put("gasPrice", tx.gasPrice);
+        message.put("gasToken", tx.gasToken);
         message.put("refundReceiver", tx.refundReceiver);
-        message.put("nonce",          tx.nonce);
+        message.put("nonce", tx.nonce);
 
         return TypedData.hashTypedData(domain, "SafeTx", types, message);
     }
@@ -151,26 +165,33 @@ public class GnosisSafe {
     /**
      * Execute a Safe transaction with collected owner signatures.
      *
-     * <p><strong>IMPORTANT:</strong> {@code signatures} MUST be sorted by signer address
-     * in ascending order. The Safe contract will revert if signatures are not sorted.
-     * Use {@link #packSignaturesFor(List)} to sort automatically when you have
-     * (address, signature) pairs, or sort manually before calling this method.
+     * <p><strong>IMPORTANT:</strong> {@code signatures} MUST be sorted by signer address in
+     * ascending order. The Safe contract will revert if signatures are not sorted. Use {@link
+     * #packSignaturesFor(List)} to sort automatically when you have (address, signature) pairs, or
+     * sort manually before calling this method.
      */
     public CompletableFuture<String> executeTransaction(
             SafeTx tx, List<Signature> signatures, Wallet executor) {
         byte[] packedSigs = packSignatures(signatures);
-        return fnExecTransaction.send(executor,
-                tx.to, tx.value, Hex.decode(tx.data), BigInteger.valueOf(tx.operation),
-                tx.safeTxGas, tx.baseGas, tx.gasPrice, tx.gasToken, tx.refundReceiver,
+        return fnExecTransaction.send(
+                executor,
+                tx.to,
+                tx.value,
+                Hex.decode(tx.data),
+                BigInteger.valueOf(tx.operation),
+                tx.safeTxGas,
+                tx.baseGas,
+                tx.gasPrice,
+                tx.gasToken,
+                tx.refundReceiver,
                 packedSigs);
     }
 
-
     /**
-     * Sort and pack (address, signature) pairs into Safe's packed signature format.
-     * The Safe contract requires signatures sorted by signer address ascending.
-     * Pass the result to {@link #executeTransaction} as pre-packed bytes via the
-     * low-level exec, or use {@link #executeTransactionSorted} for convenience.
+     * Sort and pack (address, signature) pairs into Safe's packed signature format. The Safe
+     * contract requires signatures sorted by signer address ascending. Pass the result to {@link
+     * #executeTransaction} as pre-packed bytes via the low-level exec, or use {@link
+     * #executeTransactionSorted} for convenience.
      */
     public static byte[] packSorted(Map<String, Signature> sigsByAddress) {
         List<Map.Entry<String, Signature>> sorted = new ArrayList<>(sigsByAddress.entrySet());
@@ -194,56 +215,96 @@ public class GnosisSafe {
 
     private static byte[] toFixed32(BigInteger n) {
         byte[] raw = n.toByteArray(), out = new byte[32];
-        System.arraycopy(raw, Math.max(0, raw.length - 32), out, Math.max(0, 32 - raw.length), Math.min(32, raw.length));
+        System.arraycopy(
+                raw,
+                Math.max(0, raw.length - 32),
+                out,
+                Math.max(0, 32 - raw.length),
+                Math.min(32, raw.length));
         return out;
     }
 
-    public String getAddress() { return safe.getAddress(); }
+    public String getAddress() {
+        return safe.getAddress();
+    }
 
     // ─── SafeTx ───────────────────────────────────────────────────────────────
 
     public static final class SafeTx {
-        public final String     to;
+        public final String to;
         public final BigInteger value;
-        public final String     data;
-        public final int        operation;      // 0=CALL, 1=DELEGATECALL
+        public final String data;
+        public final int operation; // 0=CALL, 1=DELEGATECALL
         public final BigInteger safeTxGas;
         public final BigInteger baseGas;
         public final BigInteger gasPrice;
-        public final String     gasToken;
-        public final String     refundReceiver;
+        public final String gasToken;
+        public final String refundReceiver;
         public final BigInteger nonce;
 
         private static final String ZERO_ADDR = "0x0000000000000000000000000000000000000000";
 
         private SafeTx(Builder b) {
-            this.to             = b.to;
-            this.value          = b.value;
-            this.data           = b.data != null ? b.data : "0x";
-            this.operation      = b.operation;
-            this.safeTxGas      = b.safeTxGas;
-            this.baseGas        = b.baseGas;
-            this.gasPrice       = b.gasPrice;
-            this.gasToken       = b.gasToken != null ? b.gasToken : ZERO_ADDR;
+            this.to = b.to;
+            this.value = b.value;
+            this.data = b.data != null ? b.data : "0x";
+            this.operation = b.operation;
+            this.safeTxGas = b.safeTxGas;
+            this.baseGas = b.baseGas;
+            this.gasPrice = b.gasPrice;
+            this.gasToken = b.gasToken != null ? b.gasToken : ZERO_ADDR;
             this.refundReceiver = b.refundReceiver != null ? b.refundReceiver : ZERO_ADDR;
-            this.nonce          = b.nonce;
+            this.nonce = b.nonce;
         }
 
-        public static Builder builder() { return new Builder(); }
+        public static Builder builder() {
+            return new Builder();
+        }
 
         public static class Builder {
-            String to; BigInteger value = BigInteger.ZERO; String data;
+            String to;
+            BigInteger value = BigInteger.ZERO;
+            String data;
             int operation = 0;
-            BigInteger safeTxGas = BigInteger.ZERO, baseGas = BigInteger.ZERO, gasPrice = BigInteger.ZERO;
-            String gasToken, refundReceiver; BigInteger nonce = BigInteger.ZERO;
+            BigInteger safeTxGas = BigInteger.ZERO,
+                    baseGas = BigInteger.ZERO,
+                    gasPrice = BigInteger.ZERO;
+            String gasToken, refundReceiver;
+            BigInteger nonce = BigInteger.ZERO;
 
-            public Builder to(String v)                  { this.to = v; return this; }
-            public Builder value(BigInteger v)           { this.value = v; return this; }
-            public Builder data(String v)                { this.data = v; return this; }
-            public Builder operation(int v)              { this.operation = v; return this; }
-            public Builder nonce(BigInteger v)           { this.nonce = v; return this; }
-            public Builder safeTxGas(BigInteger v)       { this.safeTxGas = v; return this; }
-            public SafeTx build()                        { return new SafeTx(this); }
+            public Builder to(String v) {
+                this.to = v;
+                return this;
+            }
+
+            public Builder value(BigInteger v) {
+                this.value = v;
+                return this;
+            }
+
+            public Builder data(String v) {
+                this.data = v;
+                return this;
+            }
+
+            public Builder operation(int v) {
+                this.operation = v;
+                return this;
+            }
+
+            public Builder nonce(BigInteger v) {
+                this.nonce = v;
+                return this;
+            }
+
+            public Builder safeTxGas(BigInteger v) {
+                this.safeTxGas = v;
+                return this;
+            }
+
+            public SafeTx build() {
+                return new SafeTx(this);
+            }
         }
     }
 }

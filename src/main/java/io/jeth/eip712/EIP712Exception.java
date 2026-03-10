@@ -5,6 +5,11 @@
 package io.jeth.eip712;
 
 public class EIP712Exception extends RuntimeException {
-    public EIP712Exception(String message) { super(message); }
-    public EIP712Exception(String message, Throwable cause) { super(message, cause); }
+    public EIP712Exception(String message) {
+        super(message);
+    }
+
+    public EIP712Exception(String message, Throwable cause) {
+        super(message, cause);
+    }
 }

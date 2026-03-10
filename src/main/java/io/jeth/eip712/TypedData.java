@@ -10,7 +10,6 @@ import io.jeth.crypto.Signature;
 import io.jeth.crypto.Wallet;
 import io.jeth.util.Hex;
 import io.jeth.util.Keccak;
-
 import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -24,8 +23,8 @@ import java.util.Set;
 /**
  * EIP-712: Typed structured data hashing and signing.
  *
- * Used by every major DApp: Uniswap, OpenSea, ERC-2612 Permit, Compound,
- * MetaMask, Gnosis Safe, 1inch, Aave, and more.
+ * <p>Used by every major DApp: Uniswap, OpenSea, ERC-2612 Permit, Compound, MetaMask, Gnosis Safe,
+ * 1inch, Aave, and more.
  *
  * <pre>
  * // Define domain + types
@@ -57,25 +56,25 @@ public class TypedData {
 
     // ─── Core signing ─────────────────────────────────────────────────────────
 
-    /**
-     * Sign EIP-712 typed data. Returns Signature where v is 27 or 28.
-     */
-    public static Signature sign(Domain domain, String primaryType,
-                                  Map<String, List<Field>> types,
-                                  Map<String, Object> message,
-                                  Wallet wallet) {
+    /** Sign EIP-712 typed data. Returns Signature where v is 27 or 28. */
+    public static Signature sign(
+            Domain domain,
+            String primaryType,
+            Map<String, List<Field>> types,
+            Map<String, Object> message,
+            Wallet wallet) {
         byte[] hash = hashTypedData(domain, primaryType, types, message);
         Signature raw = wallet.sign(hash);
         return new Signature(raw.r, raw.s, raw.v + 27);
     }
 
-    /**
-     * Sign and return as 65-byte hex (r+s+v, 0x-prefixed).
-     */
-    public static String signHex(Domain domain, String primaryType,
-                                  Map<String, List<Field>> types,
-                                  Map<String, Object> message,
-                                  Wallet wallet) {
+    /** Sign and return as 65-byte hex (r+s+v, 0x-prefixed). */
+    public static String signHex(
+            Domain domain,
+            String primaryType,
+            Map<String, List<Field>> types,
+            Map<String, Object> message,
+            Wallet wallet) {
         Signature sig = sign(domain, primaryType, types, message, wallet);
         byte[] out = new byte[65];
         byte[] r = toBe32(sig.r), s = toBe32(sig.s);
@@ -85,27 +84,26 @@ public class TypedData {
         return Hex.encode(out);
     }
 
-    /**
-     * Compute the EIP-712 signing hash: keccak256("\x19\x01" || domainSep || structHash)
-     */
-    public static byte[] hashTypedData(Domain domain, String primaryType,
-                                        Map<String, List<Field>> types,
-                                        Map<String, Object> message) {
-        byte[] domainSep  = domain.separator();
+    /** Compute the EIP-712 signing hash: keccak256("\x19\x01" || domainSep || structHash) */
+    public static byte[] hashTypedData(
+            Domain domain,
+            String primaryType,
+            Map<String, List<Field>> types,
+            Map<String, Object> message) {
+        byte[] domainSep = domain.separator();
         byte[] structHash = hashStruct(primaryType, types, message);
         byte[] payload = new byte[2 + 32 + 32];
         payload[0] = 0x19;
         payload[1] = 0x01;
-        System.arraycopy(domainSep,  0, payload, 2,  32);
+        System.arraycopy(domainSep, 0, payload, 2, 32);
         System.arraycopy(structHash, 0, payload, 34, 32);
         return Keccak.hash(payload);
     }
 
     /** keccak256(typeHash || encodeData(typeName, message)) */
-    public static byte[] hashStruct(String typeName,
-                                     Map<String, List<Field>> types,
-                                     Map<String, Object> message) {
-        byte[] th   = typeHash(typeName, types);
+    public static byte[] hashStruct(
+            String typeName, Map<String, List<Field>> types, Map<String, Object> message) {
+        byte[] th = typeHash(typeName, types);
         byte[] data = encodeData(typeName, types, message);
         return Keccak.hash(concat(th, data));
     }
@@ -116,8 +114,8 @@ public class TypedData {
     }
 
     /**
-     * EIP-712 encodeType: primary type string + referenced types (sorted alphabetically).
-     * e.g. "Mail(address from,address to,string contents)"
+     * EIP-712 encodeType: primary type string + referenced types (sorted alphabetically). e.g.
+     * "Mail(address from,address to,string contents)"
      */
     public static String encodeType(String typeName, Map<String, List<Field>> types) {
         List<Field> fields = types.get(typeName);
@@ -153,7 +151,8 @@ public class TypedData {
         return sb.toString();
     }
 
-    private static void collectTypes(String typeName, Map<String, List<Field>> types, Set<String> visited) {
+    private static void collectTypes(
+            String typeName, Map<String, List<Field>> types, Set<String> visited) {
         if (visited.contains(typeName)) return;
         visited.add(typeName);
         List<Field> fields = types.get(typeName);
@@ -164,10 +163,9 @@ public class TypedData {
         }
     }
 
-    /**
-     * Encode struct fields as 32-byte slots (EIP-712 encodeData).
-     */
-    public static byte[] encodeData(String typeName, Map<String, List<Field>> types, Map<String, Object> message) {
+    /** Encode struct fields as 32-byte slots (EIP-712 encodeData). */
+    public static byte[] encodeData(
+            String typeName, Map<String, List<Field>> types, Map<String, Object> message) {
         List<Field> fields = types.get(typeName);
         if (fields == null) throw new EIP712Exception("Type not found: " + typeName);
         byte[] result = new byte[0];
@@ -189,8 +187,16 @@ public class TypedData {
                 Object[] elements = toArray(value);
                 byte[] encoded = new byte[0];
                 for (Object elem : elements)
-                    encoded = concat(encoded, Keccak.hash(concat(typeHash(baseType, types),
-                        encodeData(baseType, types, (Map<String, Object>) elem))));
+                    encoded =
+                            concat(
+                                    encoded,
+                                    Keccak.hash(
+                                            concat(
+                                                    typeHash(baseType, types),
+                                                    encodeData(
+                                                            baseType,
+                                                            types,
+                                                            (Map<String, Object>) elem))));
                 return Keccak.hash(encoded);
             }
             Map<String, Object> struct = (Map<String, Object>) value;
@@ -199,9 +205,10 @@ public class TypedData {
 
         // Dynamic types — hash the content
         if (type.equals("bytes") || type.equals("string")) {
-            byte[] data = type.equals("string")
-                ? value.toString().getBytes(StandardCharsets.UTF_8)
-                : toBytes(value);
+            byte[] data =
+                    type.equals("string")
+                            ? value.toString().getBytes(StandardCharsets.UTF_8)
+                            : toBytes(value);
             return Keccak.hash(data);
         }
 
@@ -216,7 +223,7 @@ public class TypedData {
         }
 
         // Primitive types — 32-byte encoding
-        if (type.equals("bool"))    return AbiCodec.encodeBool(toBoolean(value));
+        if (type.equals("bool")) return AbiCodec.encodeBool(toBoolean(value));
         if (type.equals("address")) return AbiCodec.encodeAddress(value.toString());
         if (type.startsWith("uint") || type.startsWith("int"))
             return AbiCodec.encodeUint256(AbiCodec.toBigInteger(value));
@@ -231,8 +238,8 @@ public class TypedData {
     // ─── ERC-2612 Permit helper ───────────────────────────────────────────────
 
     /**
-     * Sign an ERC-2612 Permit (gasless ERC-20 approval).
-     * Compatible with USDC, DAI, Uniswap LP tokens, and any ERC-2612 token.
+     * Sign an ERC-2612 Permit (gasless ERC-20 approval). Compatible with USDC, DAI, Uniswap LP
+     * tokens, and any ERC-2612 token.
      *
      * <pre>
      * Signature sig = TypedData.signPermit(
@@ -244,30 +251,40 @@ public class TypedData {
      * </pre>
      */
     public static Signature signPermit(
-            String tokenAddress, String tokenName, String version, long chainId,
-            String owner, String spender, BigInteger value, BigInteger nonce, BigInteger deadline,
+            String tokenAddress,
+            String tokenName,
+            String version,
+            long chainId,
+            String owner,
+            String spender,
+            BigInteger value,
+            BigInteger nonce,
+            BigInteger deadline,
             Wallet wallet) {
 
-        Domain domain = Domain.builder()
-            .name(tokenName).version(version)
-            .chainId(chainId).verifyingContract(tokenAddress)
-            .build();
+        Domain domain =
+                Domain.builder()
+                        .name(tokenName)
+                        .version(version)
+                        .chainId(chainId)
+                        .verifyingContract(tokenAddress)
+                        .build();
 
-        Map<String, List<Field>> types = Map.of(
-            "Permit", List.of(
-                new Field("owner",    "address"),
-                new Field("spender",  "address"),
-                new Field("value",    "uint256"),
-                new Field("nonce",    "uint256"),
-                new Field("deadline", "uint256")
-            )
-        );
+        Map<String, List<Field>> types =
+                Map.of(
+                        "Permit",
+                        List.of(
+                                new Field("owner", "address"),
+                                new Field("spender", "address"),
+                                new Field("value", "uint256"),
+                                new Field("nonce", "uint256"),
+                                new Field("deadline", "uint256")));
 
         Map<String, Object> message = new LinkedHashMap<>();
-        message.put("owner",    owner);
-        message.put("spender",  spender);
-        message.put("value",    value);
-        message.put("nonce",    nonce);
+        message.put("owner", owner);
+        message.put("spender", spender);
+        message.put("value", value);
+        message.put("nonce", nonce);
         message.put("deadline", deadline);
 
         return sign(domain, "Permit", types, message, wallet);
@@ -278,55 +295,57 @@ public class TypedData {
     /** A named field in a struct type definition. */
     public record Field(String name, String type) {}
 
-    /**
-     * EIP-712 domain separator definition.
-     */
+    /** EIP-712 domain separator definition. */
     public static final class Domain {
         public final String name;
         public final String version;
-        public final Long   chainId;
+        public final Long chainId;
         public final String verifyingContract;
         public final byte[] salt;
 
         private Domain(Builder b) {
-            this.name               = b.name;
-            this.version            = b.version;
-            this.chainId            = b.chainId;
-            this.verifyingContract  = b.verifyingContract;
-            this.salt               = b.salt;
+            this.name = b.name;
+            this.version = b.version;
+            this.chainId = b.chainId;
+            this.verifyingContract = b.verifyingContract;
+            this.salt = b.salt;
         }
 
         /**
-         * Compute the EIP-712 domain separator for this domain.
-         * Result is deterministic and can be cached.
+         * Compute the EIP-712 domain separator for this domain. Result is deterministic and can be
+         * cached.
          */
         public byte[] separator() {
             // Build type string from non-null fields
             StringBuilder typeStr = new StringBuilder("EIP712Domain(");
             List<AbiType> abiTypes = new ArrayList<>();
-            List<Object>  vals     = new ArrayList<>();
+            List<Object> vals = new ArrayList<>();
             boolean first = true;
 
             if (name != null) {
-                if (!first) typeStr.append(','); first = false;
+                if (!first) typeStr.append(',');
+                first = false;
                 typeStr.append("string name");
                 abiTypes.add(AbiType.BYTES32);
                 vals.add(Keccak.hash(name.getBytes(StandardCharsets.UTF_8)));
             }
             if (version != null) {
-                if (!first) typeStr.append(','); first = false;
+                if (!first) typeStr.append(',');
+                first = false;
                 typeStr.append("string version");
                 abiTypes.add(AbiType.BYTES32);
                 vals.add(Keccak.hash(version.getBytes(StandardCharsets.UTF_8)));
             }
             if (chainId != null) {
-                if (!first) typeStr.append(','); first = false;
+                if (!first) typeStr.append(',');
+                first = false;
                 typeStr.append("uint256 chainId");
                 abiTypes.add(AbiType.UINT256);
                 vals.add(BigInteger.valueOf(chainId));
             }
             if (verifyingContract != null) {
-                if (!first) typeStr.append(','); first = false;
+                if (!first) typeStr.append(',');
+                first = false;
                 typeStr.append("address verifyingContract");
                 abiTypes.add(AbiType.ADDRESS);
                 vals.add(verifyingContract);
@@ -339,24 +358,51 @@ public class TypedData {
             }
             typeStr.append(')');
 
-            byte[] domainTypeHash = Keccak.hash(typeStr.toString().getBytes(StandardCharsets.UTF_8));
-            byte[] encodedVals    = AbiCodec.encode(
-                abiTypes.toArray(AbiType[]::new),
-                vals.toArray()
-            );
+            byte[] domainTypeHash =
+                    Keccak.hash(typeStr.toString().getBytes(StandardCharsets.UTF_8));
+            byte[] encodedVals = AbiCodec.encode(abiTypes.toArray(AbiType[]::new), vals.toArray());
             return Keccak.hash(concat(domainTypeHash, encodedVals));
         }
 
-        public static Builder builder() { return new Builder(); }
+        public static Builder builder() {
+            return new Builder();
+        }
 
         public static final class Builder {
-            String name; String version; Long chainId; String verifyingContract; byte[] salt;
-            public Builder name(String v)              { this.name = v; return this; }
-            public Builder version(String v)           { this.version = v; return this; }
-            public Builder chainId(long v)             { this.chainId = v; return this; }
-            public Builder verifyingContract(String v) { this.verifyingContract = v; return this; }
-            public Builder salt(byte[] v)              { this.salt = v; return this; }
-            public Domain build()                      { return new Domain(this); }
+            String name;
+            String version;
+            Long chainId;
+            String verifyingContract;
+            byte[] salt;
+
+            public Builder name(String v) {
+                this.name = v;
+                return this;
+            }
+
+            public Builder version(String v) {
+                this.version = v;
+                return this;
+            }
+
+            public Builder chainId(long v) {
+                this.chainId = v;
+                return this;
+            }
+
+            public Builder verifyingContract(String v) {
+                this.verifyingContract = v;
+                return this;
+            }
+
+            public Builder salt(byte[] v) {
+                this.salt = v;
+                return this;
+            }
+
+            public Domain build() {
+                return new Domain(this);
+            }
         }
     }
 

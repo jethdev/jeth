@@ -8,23 +8,27 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.JsonNode;
-
 import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
 
-/**
- * JSON-RPC 2.0 request/response models.
- */
+/** JSON-RPC 2.0 request/response models. */
 public class RpcModels {
 
     private static final AtomicLong ID_GEN = new AtomicLong(1);
 
     @JsonInclude(JsonInclude.Include.NON_NULL)
     public static class RpcRequest {
-        @JsonProperty("jsonrpc") public final String      jsonrpc = "2.0";
-        @JsonProperty("id")      public final long        id      = ID_GEN.getAndIncrement();
-        @JsonProperty("method")  public final String      method;
-        @JsonProperty("params")  public final List<?>     params;
+        @JsonProperty("jsonrpc")
+        public final String jsonrpc = "2.0";
+
+        @JsonProperty("id")
+        public final long id = ID_GEN.getAndIncrement();
+
+        @JsonProperty("method")
+        public final String method;
+
+        @JsonProperty("params")
+        public final List<?> params;
 
         public RpcRequest(String method, List<?> params) {
             this.method = method;
@@ -34,9 +38,14 @@ public class RpcModels {
 
     @JsonIgnoreProperties(ignoreUnknown = true)
     public static class RpcResponse {
-        @JsonProperty("id")      public long     id;
-        @JsonProperty("result")  public JsonNode result;
-        @JsonProperty("error")   public JsonNode error;
+        @JsonProperty("id")
+        public long id;
+
+        @JsonProperty("result")
+        public JsonNode result;
+
+        @JsonProperty("error")
+        public JsonNode error;
 
         public boolean hasError() {
             return error != null && !error.isNull();

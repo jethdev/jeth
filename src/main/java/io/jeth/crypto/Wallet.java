@@ -4,13 +4,16 @@
  */
 package io.jeth.crypto;
 
-import java.util.concurrent.CompletableFuture;
-import io.jeth.core.EthException;
 import io.jeth.core.EthClient;
 import io.jeth.model.EthModels;
 import io.jeth.util.Address;
 import io.jeth.util.Hex;
 import io.jeth.util.Keccak;
+import java.math.BigInteger;
+import java.nio.charset.StandardCharsets;
+import java.security.SecureRandom;
+import java.util.Arrays;
+import java.util.concurrent.CompletableFuture;
 import org.bouncycastle.asn1.sec.SECNamedCurves;
 import org.bouncycastle.asn1.x9.X9ECParameters;
 import org.bouncycastle.crypto.digests.SHA256Digest;
@@ -20,16 +23,11 @@ import org.bouncycastle.crypto.signers.ECDSASigner;
 import org.bouncycastle.crypto.signers.HMacDSAKCalculator;
 import org.bouncycastle.math.ec.ECPoint;
 
-import java.math.BigInteger;
-import java.nio.charset.StandardCharsets;
-import java.security.SecureRandom;
-import java.util.Arrays;
-
 /**
  * Ethereum wallet: secp256k1 key generation, ECDSA signing, and EIP-55 address derivation.
  *
- * <p>Signing uses RFC 6979 deterministic k (via BouncyCastle {@code HMacDSAKCalculator})
- * and normalises {@code s} to low-s form per EIP-2, so signatures are valid on all EVM chains.
+ * <p>Signing uses RFC 6979 deterministic k (via BouncyCastle {@code HMacDSAKCalculator}) and
+ * normalises {@code s} to low-s form per EIP-2, so signatures are valid on all EVM chains.
  *
  * <pre>
  * // Generate
@@ -47,8 +45,8 @@ import java.util.Arrays;
  * Signature sig = w.signMessage("hello".getBytes());
  * </pre>
  *
- * <p>For HD wallets (BIP-39 mnemonic / BIP-44 derivation paths), see
- * {@link io.jeth.wallet.HdWallet}.
+ * <p>For HD wallets (BIP-39 mnemonic / BIP-44 derivation paths), see {@link
+ * io.jeth.wallet.HdWallet}.
  *
  * @see io.jeth.wallet.HdWallet
  * @see io.jeth.wallet.Keystore
@@ -57,22 +55,26 @@ import java.util.Arrays;
 public class Wallet {
 
     public static final X9ECParameters CURVE_PARAMS = SECNamedCurves.getByName("secp256k1");
-    public static final ECDomainParameters CURVE = new ECDomainParameters(
-            CURVE_PARAMS.getCurve(), CURVE_PARAMS.getG(), CURVE_PARAMS.getN(), CURVE_PARAMS.getH());
+    public static final ECDomainParameters CURVE =
+            new ECDomainParameters(
+                    CURVE_PARAMS.getCurve(),
+                    CURVE_PARAMS.getG(),
+                    CURVE_PARAMS.getN(),
+                    CURVE_PARAMS.getH());
 
     private final BigInteger privateKey;
-    private final byte[]     publicKey;   // 65-byte uncompressed
-    private final String     address;     // EIP-55 checksum address
+    private final byte[] publicKey; // 65-byte uncompressed
+    private final String address; // EIP-55 checksum address
 
     private Wallet(BigInteger privateKey) {
         this.privateKey = privateKey;
-        this.publicKey  = derivePublicKey(privateKey);
-        this.address    = deriveAddress(publicKey);
+        this.publicKey = derivePublicKey(privateKey);
+        this.address = deriveAddress(publicKey);
     }
 
     /**
-     * Generates a cryptographically random wallet using {@link java.security.SecureRandom}.
-     * Rejects keys outside the secp256k1 curve order (vanishingly rare; retries automatically).
+     * Generates a cryptographically random wallet using {@link java.security.SecureRandom}. Rejects
+     * keys outside the secp256k1 curve order (vanishingly rare; retries automatically).
      */
     public static Wallet create() {
         SecureRandom rng = new SecureRandom();
@@ -103,8 +105,8 @@ public class Wallet {
     /**
      * Signs a pre-hashed 32-byte digest with this wallet's private key.
      *
-     * <p>The input must already be Keccak-256 hashed. To sign an arbitrary
-     * message with the Ethereum personal-sign prefix, use {@link #signMessage(byte[])}.
+     * <p>The input must already be Keccak-256 hashed. To sign an arbitrary message with the
+     * Ethereum personal-sign prefix, use {@link #signMessage(byte[])}.
      *
      * @param messageHash exactly 32 bytes
      * @return {@link Signature} with {@code r}, {@code s}, and recovery {@code v} (0 or 1)
@@ -126,9 +128,9 @@ public class Wallet {
     /**
      * Signs {@code message} using EIP-191 personal sign.
      *
-     * <p>Prepends {@code "\x19Ethereum Signed Message:\n" + message.length} before
-     * hashing with Keccak-256, matching the behaviour of MetaMask {@code personal_sign}
-     * and ethers.js {@code wallet.signMessage()}.
+     * <p>Prepends {@code "\x19Ethereum Signed Message:\n" + message.length} before hashing with
+     * Keccak-256, matching the behaviour of MetaMask {@code personal_sign} and ethers.js {@code
+     * wallet.signMessage()}.
      *
      * @param message arbitrary bytes — the prefix and hashing are applied automatically
      */
@@ -142,8 +144,9 @@ public class Wallet {
 
     /** EIP-191 personal message hash. */
     public static byte[] hashPersonalMessage(byte[] message) {
-        byte[] prefix = ("\u0019Ethereum Signed Message:\n" + message.length)
-                .getBytes(StandardCharsets.UTF_8);
+        byte[] prefix =
+                ("\u0019Ethereum Signed Message:\n" + message.length)
+                        .getBytes(StandardCharsets.UTF_8);
         byte[] combined = new byte[prefix.length + message.length];
         System.arraycopy(prefix, 0, combined, 0, prefix.length);
         System.arraycopy(message, 0, combined, prefix.length, message.length);
@@ -153,8 +156,8 @@ public class Wallet {
     // ─── Recovery ────────────────────────────────────────────────────────────
 
     /**
-     * Recover the signer address from a message hash + signature.
-     * Signature v should be 0/1 (raw) or 27/28 (eth_sign).
+     * Recover the signer address from a message hash + signature. Signature v should be 0/1 (raw)
+     * or 27/28 (eth_sign).
      */
     public static String recoverAddress(byte[] messageHash, Signature sig) {
         // Normalise v to raw recovery ID (0 or 1)
@@ -170,12 +173,11 @@ public class Wallet {
     }
 
     /**
-     * Recover signer from an EIP-191 personal message (string).
-     * Matches eth_sign / MetaMask signatures.
+     * Recover signer from an EIP-191 personal message (string). Matches eth_sign / MetaMask
+     * signatures.
      */
     public static String recoverPersonalMessage(String message, Signature sig) {
-        byte[] hash = hashPersonalMessage(
-                message.getBytes(StandardCharsets.UTF_8));
+        byte[] hash = hashPersonalMessage(message.getBytes(StandardCharsets.UTF_8));
         return recoverAddress(hash, sig);
     }
 
@@ -186,11 +188,11 @@ public class Wallet {
     /** Parse a 65-byte 0x-prefixed signature hex into a Signature. */
     public static Signature parseSignature(String hexSig) {
         byte[] bytes = Hex.decode(hexSig);
-        if (bytes.length != 65) throw new IllegalArgumentException(
-                "Signature must be 65 bytes, got: " + bytes.length);
+        if (bytes.length != 65)
+            throw new IllegalArgumentException("Signature must be 65 bytes, got: " + bytes.length);
         BigInteger r = new BigInteger(1, Arrays.copyOfRange(bytes, 0, 32));
         BigInteger s = new BigInteger(1, Arrays.copyOfRange(bytes, 32, 64));
-        int v        = bytes[64] & 0xFF;
+        int v = bytes[64] & 0xFF;
         return new Signature(r, s, v);
     }
 
@@ -205,24 +207,27 @@ public class Wallet {
     }
 
     private static ECPoint recoverPublicKey(int recId, BigInteger r, BigInteger s, byte[] hash) {
-        BigInteger n     = CURVE.getN();
+        BigInteger n = CURVE.getN();
         BigInteger prime = CURVE_PARAMS.getCurve().getField().getCharacteristic();
-        BigInteger x     = r.add(BigInteger.valueOf((long)(recId / 2)).multiply(n));
+        BigInteger x = r.add(BigInteger.valueOf((long) (recId / 2)).multiply(n));
         if (x.compareTo(prime) >= 0) return null;
 
         byte[] xBytes = to32Bytes(x);
-        byte[] comp   = new byte[33];
-        comp[0] = (byte)(0x02 + (recId & 1));
+        byte[] comp = new byte[33];
+        comp[0] = (byte) (0x02 + (recId & 1));
         System.arraycopy(xBytes, 0, comp, 1, 32);
 
         ECPoint R;
-        try { R = CURVE_PARAMS.getCurve().decodePoint(comp); }
-        catch (Exception e) { return null; }
+        try {
+            R = CURVE_PARAMS.getCurve().decodePoint(comp);
+        } catch (Exception e) {
+            return null;
+        }
 
-        BigInteger hi  = new BigInteger(1, hash);
+        BigInteger hi = new BigInteger(1, hash);
         BigInteger rInv = r.modInverse(n);
-        BigInteger u1  = rInv.multiply(n.subtract(hi)).mod(n);
-        BigInteger u2  = rInv.multiply(s).mod(n);
+        BigInteger u1 = rInv.multiply(n.subtract(hi)).mod(n);
+        BigInteger u2 = rInv.multiply(s).mod(n);
         return CURVE.getG().multiply(u1).add(R.multiply(u2)).normalize();
     }
 
@@ -260,13 +265,30 @@ public class Wallet {
 
     // ─── Accessors ────────────────────────────────────────────────────────────
 
-    public String     getAddress()        { return address; }
-    public BigInteger getPrivateKey()     { return privateKey; }
-    public String     getPrivateKeyHex()  { return Hex.fromBigInteger(privateKey); }
-    public byte[]     getPublicKeyBytes() { return Arrays.copyOf(publicKey, publicKey.length); }
-    public String     getPublicKeyHex()   { return Hex.encode(publicKey); }
+    public String getAddress() {
+        return address;
+    }
 
-    @Override public String toString() { return "Wallet{" + address + "}"; }
+    public BigInteger getPrivateKey() {
+        return privateKey;
+    }
+
+    public String getPrivateKeyHex() {
+        return Hex.fromBigInteger(privateKey);
+    }
+
+    public byte[] getPublicKeyBytes() {
+        return Arrays.copyOf(publicKey, publicKey.length);
+    }
+
+    public String getPublicKeyHex() {
+        return Hex.encode(publicKey);
+    }
+
+    @Override
+    public String toString() {
+        return "Wallet{" + address + "}";
+    }
 
     // ─── Connected signer ─────────────────────────────────────────────────────
 
@@ -284,11 +306,11 @@ public class Wallet {
     }
 
     /**
-     * A wallet bound to an EthClient for one-line sign-and-send.
-     * Handles nonce, gas estimation, chain ID, and EIP-1559 fees automatically.
+     * A wallet bound to an EthClient for one-line sign-and-send. Handles nonce, gas estimation,
+     * chain ID, and EIP-1559 fees automatically.
      */
     public static class ConnectedWallet {
-        private final Wallet               wallet;
+        private final Wallet wallet;
         private final EthClient client;
 
         public ConnectedWallet(Wallet wallet, EthClient client) {
@@ -297,14 +319,12 @@ public class Wallet {
         }
 
         /** Send ETH to {@code to}. Returns tx hash. */
-        public CompletableFuture<String> sendEth(
-                String to, BigInteger valueWei) {
+        public CompletableFuture<String> sendEth(String to, BigInteger valueWei) {
             return buildAndSend(to, valueWei, null);
         }
 
         /** Send a contract call (with calldata). Gas estimated automatically. Returns tx hash. */
-        public CompletableFuture<String> sendTransaction(
-                String to, String calldata) {
+        public CompletableFuture<String> sendTransaction(String to, String calldata) {
             return buildAndSend(to, BigInteger.ZERO, calldata);
         }
 
@@ -317,38 +337,101 @@ public class Wallet {
         private CompletableFuture<String> buildAndSend(
                 String to, BigInteger value, String calldata) {
             return client.getChainId()
-                .thenCompose(chainId -> client.getTransactionCount(wallet.getAddress())
-                .thenCompose(nonce -> {
-                    EthModels.CallRequest req =
-                            EthModels.CallRequest.builder()
-                            .from(wallet.getAddress()).to(to).value(value).data(calldata).build();
-                    return client.estimateGas(req)
-                        .thenCompose(gas -> client.getBlock("latest")
-                        .thenCompose(block -> client.getMaxPriorityFeePerGas()
-                        .thenApply(tip -> {
-                            BigInteger base = block.baseFeePerGas != null
-                                    ? block.baseFeePerGas : BigInteger.ZERO;
-                            BigInteger maxFee = base.multiply(BigInteger.TWO).add(tip);
-                            // Add 20% gas buffer
-                            BigInteger gasWithBuffer = gas
-                                    .multiply(BigInteger.valueOf(12))
-                                    .divide(BigInteger.TEN);
-                            EthModels.TransactionRequest tx =
-                                    EthModels.TransactionRequest.builder()
-                                    .from(wallet.getAddress()).to(to).value(value).data(calldata)
-                                    .gas(gasWithBuffer).maxFeePerGas(maxFee)
-                                    .maxPriorityFeePerGas(tip).nonce(nonce).chainId(chainId).build();
-                            return TransactionSigner.signEip1559(tx, wallet);
-                        })));
-                }))
-                .thenCompose(client::sendRawTransaction);
+                    .thenCompose(
+                            chainId ->
+                                    client.getTransactionCount(wallet.getAddress())
+                                            .thenCompose(
+                                                    nonce -> {
+                                                        EthModels.CallRequest req =
+                                                                EthModels.CallRequest.builder()
+                                                                        .from(wallet.getAddress())
+                                                                        .to(to)
+                                                                        .value(value)
+                                                                        .data(calldata)
+                                                                        .build();
+                                                        return client.estimateGas(req)
+                                                                .thenCompose(
+                                                                        gas ->
+                                                                                client.getBlock(
+                                                                                                "latest")
+                                                                                        .thenCompose(
+                                                                                                block ->
+                                                                                                        client.getMaxPriorityFeePerGas()
+                                                                                                                .thenApply(
+                                                                                                                        tip -> {
+                                                                                                                            BigInteger
+                                                                                                                                    base =
+                                                                                                                                            block.baseFeePerGas
+                                                                                                                                                            != null
+                                                                                                                                                    ? block.baseFeePerGas
+                                                                                                                                                    : BigInteger
+                                                                                                                                                            .ZERO;
+                                                                                                                            BigInteger
+                                                                                                                                    maxFee =
+                                                                                                                                            base.multiply(
+                                                                                                                                                            BigInteger
+                                                                                                                                                                    .TWO)
+                                                                                                                                                    .add(
+                                                                                                                                                            tip);
+                                                                                                                            // Add 20% gas buffer
+                                                                                                                            BigInteger
+                                                                                                                                    gasWithBuffer =
+                                                                                                                                            gas.multiply(
+                                                                                                                                                            BigInteger
+                                                                                                                                                                    .valueOf(
+                                                                                                                                                                            12))
+                                                                                                                                                    .divide(
+                                                                                                                                                            BigInteger
+                                                                                                                                                                    .TEN);
+                                                                                                                            EthModels
+                                                                                                                                            .TransactionRequest
+                                                                                                                                    tx =
+                                                                                                                                            EthModels
+                                                                                                                                                    .TransactionRequest
+                                                                                                                                                    .builder()
+                                                                                                                                                    .from(
+                                                                                                                                                            wallet
+                                                                                                                                                                    .getAddress())
+                                                                                                                                                    .to(
+                                                                                                                                                            to)
+                                                                                                                                                    .value(
+                                                                                                                                                            value)
+                                                                                                                                                    .data(
+                                                                                                                                                            calldata)
+                                                                                                                                                    .gas(
+                                                                                                                                                            gasWithBuffer)
+                                                                                                                                                    .maxFeePerGas(
+                                                                                                                                                            maxFee)
+                                                                                                                                                    .maxPriorityFeePerGas(
+                                                                                                                                                            tip)
+                                                                                                                                                    .nonce(
+                                                                                                                                                            nonce)
+                                                                                                                                                    .chainId(
+                                                                                                                                                            chainId)
+                                                                                                                                                    .build();
+                                                                                                                            return TransactionSigner
+                                                                                                                                    .signEip1559(
+                                                                                                                                            tx,
+                                                                                                                                            wallet);
+                                                                                                                        })));
+                                                    }))
+                    .thenCompose(client::sendRawTransaction);
         }
 
-        public Wallet                  getWallet()   { return wallet; }
-        public EthClient  getClient()   { return client; }
-        public String                  getAddress()  { return wallet.getAddress(); }
+        public Wallet getWallet() {
+            return wallet;
+        }
 
-        @Override public String toString() {
+        public EthClient getClient() {
+            return client;
+        }
+
+        public String getAddress() {
+            return wallet.getAddress();
+        }
+
+        @Override
+        public String toString() {
             return "ConnectedWallet{address=" + wallet.getAddress() + "}";
         }
     }

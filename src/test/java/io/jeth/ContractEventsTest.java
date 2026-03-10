@@ -4,33 +4,33 @@
  */
 package io.jeth;
 
-import io.jeth.contract.ContractEvents;
+import static org.junit.jupiter.api.Assertions.*;
+
 import io.jeth.event.EventDef;
 import io.jeth.model.EthModels;
 import io.jeth.util.Hex;
 import io.jeth.util.Keccak;
+import java.math.BigInteger;
+import java.util.ArrayList;
+import java.util.List;
 import org.junit.jupiter.api.Test;
 
-import java.math.BigInteger;
-import java.util.List;
-
-import static org.junit.jupiter.api.Assertions.*;
-import java.util.ArrayList;
-
 /**
- * Unit tests for ContractEvents.
- * Tests the EventDef decode path (the part that doesn't require a live WebSocket).
+ * Unit tests for ContractEvents. Tests the EventDef decode path (the part that doesn't require a
+ * live WebSocket).
  */
 class ContractEventsTest {
 
-    static final EventDef Transfer = EventDef.of("Transfer",
-        EventDef.indexed("from",  "address"),
-        EventDef.indexed("to",    "address"),
-        EventDef.data(   "value", "uint256"));
+    static final EventDef Transfer =
+            EventDef.of(
+                    "Transfer",
+                    EventDef.indexed("from", "address"),
+                    EventDef.indexed("to", "address"),
+                    EventDef.data("value", "uint256"));
 
     static final String USDC = "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48";
     static final String ADDR_FROM = "0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266";
-    static final String ADDR_TO   = "0x70997970c51812dc3a010c7d01b50e0d17dc79c8";
+    static final String ADDR_TO = "0x70997970c51812dc3a010c7d01b50e0d17dc79c8";
 
     @Test
     void eventDefTopic0MatchesKeccakOfSignature() {
@@ -54,23 +54,23 @@ class ContractEventsTest {
         assertNotNull(decoded, "Should decode matching log");
 
         assertEquals(ADDR_FROM.toLowerCase(), decoded.address("from").toLowerCase());
-        assertEquals(ADDR_TO.toLowerCase(),   decoded.address("to").toLowerCase());
+        assertEquals(ADDR_TO.toLowerCase(), decoded.address("to").toLowerCase());
         assertEquals(BigInteger.valueOf(1_000_000L), decoded.uint("value"));
     }
 
     @Test
     void decodeReturnsNullForWrongTopic0() {
         EthModels.Log log = buildTransferLog(ADDR_FROM, ADDR_TO, BigInteger.ONE);
-        log.topics.set(0, "0xdeadbeef");  // wrong topic0
+        log.topics.set(0, "0xdeadbeef"); // wrong topic0
 
         assertNull(Transfer.decode(log), "Wrong topic0 should return null");
     }
 
     @Test
     void decodeAllFiltersMatching() {
-        EthModels.Log matching    = buildTransferLog(ADDR_FROM, ADDR_TO, BigInteger.valueOf(100L));
+        EthModels.Log matching = buildTransferLog(ADDR_FROM, ADDR_TO, BigInteger.valueOf(100L));
         EthModels.Log nonMatching = buildTransferLog(ADDR_FROM, ADDR_TO, BigInteger.valueOf(200L));
-        nonMatching.topics.set(0, "0x0000");  // wrong topic
+        nonMatching.topics.set(0, "0x0000"); // wrong topic
 
         List<EventDef.DecodedEvent> results = Transfer.decodeAll(List.of(matching, nonMatching));
         assertEquals(1, results.size());
@@ -102,17 +102,14 @@ class ContractEventsTest {
 
     private static EthModels.Log buildTransferLog(String from, String to, BigInteger value) {
         EthModels.Log log = new EthModels.Log();
-        log.address         = USDC;
+        log.address = USDC;
         log.transactionHash = "0xabc123";
-        log.data            = encodeUint256(value);
-        log.removed         = false;
+        log.data = encodeUint256(value);
+        log.removed = false;
 
         // topics[0] = Transfer sig, [1] = from (padded), [2] = to (padded)
-        log.topics = new ArrayList<>(List.of(
-            Transfer.topic0Hex(),
-            padAddress(from),
-            padAddress(to)
-        ));
+        log.topics =
+                new ArrayList<>(List.of(Transfer.topic0Hex(), padAddress(from), padAddress(to)));
         return log;
     }
 

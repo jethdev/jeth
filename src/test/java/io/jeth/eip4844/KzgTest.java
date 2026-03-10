@@ -4,26 +4,25 @@
  */
 package io.jeth.eip4844;
 
-import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 
 import java.math.BigInteger;
 import java.util.Arrays;
-
-import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.Test;
 
 /**
  * Tests for KZG polynomial commitment scheme (EIP-4844).
  *
- * Tests use known mathematical vectors rather than a live trusted setup,
- * so they run without needing the bundled kzg-setup.bin resource.
+ * <p>Tests use known mathematical vectors rather than a live trusted setup, so they run without
+ * needing the bundled kzg-setup.bin resource.
  */
 class KzgTest {
 
     private static final BigInteger R = Bls12381.R;
 
     // omega_4096 = 7^((r-1)/2^32 * 2^20) mod r  — verified correct
-    private static final BigInteger OMEGA_4096 = new BigInteger(
-        "564c0a11a0f704f4fc3e8acfe0f8245f0ad1347b378fbf96e206da11a5d36306", 16);
+    private static final BigInteger OMEGA_4096 =
+            new BigInteger("564c0a11a0f704f4fc3e8acfe0f8245f0ad1347b378fbf96e206da11a5d36306", 16);
 
     // ─── rootOfUnity ─────────────────────────────────────────────────────────
 
@@ -37,11 +36,15 @@ class KzgTest {
     void rootOfUnityOrder() {
         BigInteger omega = Kzg.rootOfUnity(4096);
         // omega^4096 = 1
-        assertEquals(BigInteger.ONE, omega.modPow(BigInteger.valueOf(4096), R),
-            "omega_4096^4096 must be 1");
+        assertEquals(
+                BigInteger.ONE,
+                omega.modPow(BigInteger.valueOf(4096), R),
+                "omega_4096^4096 must be 1");
         // omega^2048 != 1  (primitive)
-        assertNotEquals(BigInteger.ONE, omega.modPow(BigInteger.valueOf(2048), R),
-            "omega_4096 must be a primitive 4096th root (omega^2048 != 1)");
+        assertNotEquals(
+                BigInteger.ONE,
+                omega.modPow(BigInteger.valueOf(2048), R),
+                "omega_4096 must be a primitive 4096th root (omega^2048 != 1)");
     }
 
     @Test
@@ -63,8 +66,9 @@ class KzgTest {
         commitment[0] = (byte) 0xC0; // G1 point at infinity
 
         BigInteger z = Kzg.computeChallenge(blob, commitment);
-        BigInteger expected = new BigInteger(
-            "0911dbbaa9a22c1facd1422d0236c4acf70f612f981c6fef5684d9169ccc335e", 16);
+        BigInteger expected =
+                new BigInteger(
+                        "0911dbbaa9a22c1facd1422d0236c4acf70f612f981c6fef5684d9169ccc335e", 16);
         assertEquals(expected, z, "Challenge must match reference implementation");
     }
 
@@ -72,7 +76,7 @@ class KzgTest {
     void challengeUsesUint64DegreeEncoding() {
         // If degree were encoded as 16 bytes instead of 8, hash would differ
         // This test locks in the correct 8-byte encoding
-        byte[] blob       = new byte[131072];
+        byte[] blob = new byte[131072];
         byte[] commitment = new byte[48];
         commitment[0] = (byte) 0xC0;
 
@@ -83,7 +87,7 @@ class KzgTest {
 
         // Must be in field Fr
         assertTrue(z1.compareTo(R) < 0, "Challenge must be < r");
-        assertTrue(z1.signum() >= 0,    "Challenge must be >= 0");
+        assertTrue(z1.signum() >= 0, "Challenge must be >= 0");
     }
 
     // ─── blobToFieldElements ─────────────────────────────────────────────────
@@ -113,11 +117,11 @@ class KzgTest {
         // Set first field element to r (scalar field order) — invalid
         byte[] rBytes = R.toByteArray();
         // r fits in 32 bytes (strip leading zero from toByteArray)
-        System.arraycopy(rBytes, rBytes.length > 32 ? 1 : 0, blob, 0,
-            Math.min(rBytes.length, 32));
-        assertThrows(IllegalArgumentException.class,
-            () -> Kzg.blobToFieldElements(blob),
-            "Field element >= r must be rejected");
+        System.arraycopy(rBytes, rBytes.length > 32 ? 1 : 0, blob, 0, Math.min(rBytes.length, 32));
+        assertThrows(
+                IllegalArgumentException.class,
+                () -> Kzg.blobToFieldElements(blob),
+                "Field element >= r must be rejected");
     }
 
     // ─── evaluatePolynomialInEvaluationForm ───────────────────────────────────
@@ -145,8 +149,10 @@ class KzgTest {
         BigInteger omega3 = omega.modPow(BigInteger.valueOf(3), R);
 
         BigInteger y = Kzg.evaluatePolynomialInEvaluationForm(poly, omega3);
-        assertEquals(BigInteger.valueOf(4), y,
-            "p(omega^3) must return poly[3] = 4 directly (no computation needed)");
+        assertEquals(
+                BigInteger.valueOf(4),
+                y,
+                "p(omega^3) must return poly[3] = 4 directly (no computation needed)");
     }
 
     // ─── computeQuotientEvalForm ──────────────────────────────────────────────
@@ -196,7 +202,8 @@ class KzgTest {
 
         // q[1..4095] should all be 1
         for (int i = 1; i < 4096; i++) {
-            assertEquals(BigInteger.ONE, q[i], "q[" + i + "] must be 1 for identity polynomial at z=1");
+            assertEquals(
+                    BigInteger.ONE, q[i], "q[" + i + "] must be 1 for identity polynomial at z=1");
         }
 
         // q[0] = -(4095) = r - 4095
@@ -222,7 +229,16 @@ class KzgTest {
         for (int i = 0; i < 4096; i++) {
             BigInteger lhs = Bls12381.frMul(q[i], Bls12381.frSub(wi, z));
             BigInteger rhs = Bls12381.frSub(poly[i], y);
-            assertEquals(rhs, lhs, "KZG check: q[" + i + "] * (omega^" + i + " - z) must equal poly[" + i + "] - y");
+            assertEquals(
+                    rhs,
+                    lhs,
+                    "KZG check: q["
+                            + i
+                            + "] * (omega^"
+                            + i
+                            + " - z) must equal poly["
+                            + i
+                            + "] - y");
             wi = Bls12381.frMul(wi, omega);
         }
     }
@@ -252,21 +268,26 @@ class KzgTest {
         // All field elements must be < r (first byte = 0x00 guarantees this)
         for (int i = 0; i < 4096; i++) {
             BigInteger fe = new BigInteger(1, blob, i * 32, 32);
-            assertTrue(fe.compareTo(R) < 0,
-                "Field element " + i + " must be < r after BlobEncoder encoding");
+            assertTrue(
+                    fe.compareTo(R) < 0,
+                    "Field element " + i + " must be < r after BlobEncoder encoding");
         }
     }
 
     @Test
     void blobEncoderMultiBlob() {
         byte[] data = new byte[BlobEncoder.MAX_BYTES_PER_BLOB + 100];
-        Blob[] blobs = BlobEncoder.encode(data); // should NOT throw (no KZG needed for this assertion)
+        Blob[] blobs =
+                BlobEncoder.encode(data); // should NOT throw (no KZG needed for this assertion)
         // Actually this WILL call KZG... we only care it splits correctly
         // Check split without KZG by testing encodeChunk directly
-        byte[] blob1 = BlobEncoder.encodeChunk(
-            java.util.Arrays.copyOf(data, BlobEncoder.MAX_BYTES_PER_BLOB));
-        byte[] blob2 = BlobEncoder.encodeChunk(
-            java.util.Arrays.copyOfRange(data, BlobEncoder.MAX_BYTES_PER_BLOB, data.length));
+        byte[] blob1 =
+                BlobEncoder.encodeChunk(
+                        java.util.Arrays.copyOf(data, BlobEncoder.MAX_BYTES_PER_BLOB));
+        byte[] blob2 =
+                BlobEncoder.encodeChunk(
+                        java.util.Arrays.copyOfRange(
+                                data, BlobEncoder.MAX_BYTES_PER_BLOB, data.length));
         assertEquals(131072, blob1.length);
         assertEquals(131072, blob2.length);
     }

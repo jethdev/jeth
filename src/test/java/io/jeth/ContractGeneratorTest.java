@@ -4,15 +4,16 @@
  */
 package io.jeth;
 
-import io.jeth.codegen.ContractGenerator;
-import org.junit.jupiter.api.Test;
-
 import static org.junit.jupiter.api.Assertions.*;
+
+import io.jeth.codegen.ContractGenerator;
 import java.nio.file.Files;
+import org.junit.jupiter.api.Test;
 
 class ContractGeneratorTest {
 
-    static final String GREETER_ABI = """
+    static final String GREETER_ABI =
+            """
         [
           {
             "type": "function",
@@ -38,7 +39,8 @@ class ContractGeneratorTest {
         ]
         """;
 
-    static final String ERC20_ABI = """
+    static final String ERC20_ABI =
+            """
         [
           {"type":"function","name":"name","inputs":[],"outputs":[{"name":"","type":"string"}],"stateMutability":"view"},
           {"type":"function","name":"symbol","inputs":[],"outputs":[{"name":"","type":"string"}],"stateMutability":"view"},
@@ -52,7 +54,8 @@ class ContractGeneratorTest {
         ]
         """;
 
-    static final String COMPLEX_ABI = """
+    static final String COMPLEX_ABI =
+            """
         [
           {"type":"function","name":"deposit","inputs":[],"outputs":[],"stateMutability":"payable"},
           {"type":"function","name":"withdraw","inputs":[{"name":"amount","type":"uint256"}],"outputs":[],"stateMutability":"nonpayable"},
@@ -63,7 +66,8 @@ class ContractGeneratorTest {
         """;
 
     // Hardhat artifact format (has wrapping object with "abi" key)
-    static final String HARDHAT_ARTIFACT = """
+    static final String HARDHAT_ARTIFACT =
+            """
         {
           "contractName": "Greeter",
           "abi": [
@@ -88,7 +92,9 @@ class ContractGeneratorTest {
         assertTrue(source.contains("CompletableFuture<String> getGreeting()"));
 
         // setGreeting takes a wallet + string
-        assertTrue(source.contains("CompletableFuture<String> setGreeting(Wallet wallet, String greeting)"));
+        assertTrue(
+                source.contains(
+                        "CompletableFuture<String> setGreeting(Wallet wallet, String greeting)"));
 
         // owner() returns address (String)
         assertTrue(source.contains("CompletableFuture<String> owner()"));
@@ -96,7 +102,8 @@ class ContractGeneratorTest {
 
     @Test
     void testGenerateERC20() throws Exception {
-        String source = ContractGenerator.generateSource("MyToken", ERC20_ABI, "com.example.tokens");
+        String source =
+                ContractGenerator.generateSource("MyToken", ERC20_ABI, "com.example.tokens");
 
         System.out.println("=== MyToken.java ===");
         System.out.println(source);
@@ -126,7 +133,9 @@ class ContractGeneratorTest {
         // view with address param
         assertTrue(source.contains("CompletableFuture<BigInteger> getBalance(String user)"));
         // two address inputs
-        assertTrue(source.contains("CompletableFuture<Boolean> isApproved(String user, String operator)"));
+        assertTrue(
+                source.contains(
+                        "CompletableFuture<Boolean> isApproved(String user, String operator)"));
         // multi-return -> Object[]
         assertTrue(source.contains("CompletableFuture<Object[]> getInfo()"));
     }
@@ -134,13 +143,16 @@ class ContractGeneratorTest {
     @Test
     void testHardhatArtifactFormat() throws Exception {
         // Should handle { "abi": [...] } wrapping
-        String source = ContractGenerator.generateSource("Greeter", HARDHAT_ARTIFACT, "com.example");
+        String source =
+                ContractGenerator.generateSource("Greeter", HARDHAT_ARTIFACT, "com.example");
 
         System.out.println("=== Greeter (Hardhat) ===");
         System.out.println(source);
 
         assertTrue(source.contains("CompletableFuture<String> greet()"));
-        assertTrue(source.contains("CompletableFuture<String> setGreeting(Wallet wallet, String _greeting)"));
+        assertTrue(
+                source.contains(
+                        "CompletableFuture<String> setGreeting(Wallet wallet, String _greeting)"));
     }
 
     @Test

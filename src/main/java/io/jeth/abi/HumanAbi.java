@@ -10,7 +10,7 @@ import java.util.List;
 /**
  * Parse human-readable Solidity ABI fragments into {@link Function} objects.
  *
- * Supports the full syntax including named params, returns, modifiers, and visibility.
+ * <p>Supports the full syntax including named params, returns, modifiers, and visibility.
  *
  * <pre>
  * // Simple
@@ -40,8 +40,8 @@ public final class HumanAbi {
     /**
      * Parse a single human-readable ABI function fragment.
      *
-     * Accepts both full form ({@code function foo(type name) returns (type)})
-     * and shorthand ({@code foo(type,type)}).
+     * <p>Accepts both full form ({@code function foo(type name) returns (type)}) and shorthand
+     * ({@code foo(type,type)}).
      *
      * @throws IllegalArgumentException if the fragment cannot be parsed
      */
@@ -49,14 +49,11 @@ public final class HumanAbi {
         fragment = fragment.trim();
 
         // Strip leading 'function' keyword if present
-        String body = fragment.startsWith("function ")
-                ? fragment.substring(9).trim()
-                : fragment;
+        String body = fragment.startsWith("function ") ? fragment.substring(9).trim() : fragment;
 
         // Extract function name
         int parenOpen = body.indexOf('(');
-        if (parenOpen < 0)
-            throw new IllegalArgumentException("Missing '(' in: " + fragment);
+        if (parenOpen < 0) throw new IllegalArgumentException("Missing '(' in: " + fragment);
 
         String name = body.substring(0, parenOpen).trim();
         if (name.isEmpty())
@@ -84,23 +81,22 @@ public final class HumanAbi {
     }
 
     /**
-     * Parse multiple function fragments, one per non-empty line.
-     * Lines starting with {@code //} or {@code #} are treated as comments.
+     * Parse multiple function fragments, one per non-empty line. Lines starting with {@code //} or
+     * {@code #} are treated as comments.
      */
     public static List<Function> parseFunctions(String fragments) {
         List<Function> result = new ArrayList<>();
         for (String line : fragments.split("\\n")) {
             String trimmed = line.trim();
-            if (trimmed.isEmpty() || trimmed.startsWith("//") || trimmed.startsWith("#"))
-                continue;
+            if (trimmed.isEmpty() || trimmed.startsWith("//") || trimmed.startsWith("#")) continue;
             result.add(parseFunction(trimmed));
         }
         return result;
     }
 
     /**
-     * Parse an ABI fragment and return the 4-byte function selector.
-     * Equivalent to {@code keccak256(canonicalSignature)[0..4]}.
+     * Parse an ABI fragment and return the 4-byte function selector. Equivalent to {@code
+     * keccak256(canonicalSignature)[0..4]}.
      *
      * <pre>
      * String sel = HumanAbi.selector("function transfer(address,uint256)"); // "0xa9059cbb"
@@ -128,9 +124,11 @@ public final class HumanAbi {
         if (rest.isEmpty()) return new AbiType[0];
 
         // Strip modifiers: view, pure, external, public, payable, nonpayable
-        String stripped = rest
-                .replaceAll("\\b(view|pure|external|internal|public|private|payable|nonpayable)\\b", "")
-                .trim();
+        String stripped =
+                rest.replaceAll(
+                                "\\b(view|pure|external|internal|public|private|payable|nonpayable)\\b",
+                                "")
+                        .trim();
 
         if (!stripped.startsWith("returns")) return new AbiType[0];
 
@@ -147,8 +145,8 @@ public final class HumanAbi {
     }
 
     /**
-     * Extract just the Solidity type from a "type name" or "type" string.
-     * Handles tuples: "(address,uint256) name" → "(address,uint256)"
+     * Extract just the Solidity type from a "type name" or "type" string. Handles tuples:
+     * "(address,uint256) name" → "(address,uint256)"
      */
     public static String extractType(String paramDecl) {
         paramDecl = paramDecl.trim();
@@ -211,7 +209,9 @@ public final class HumanAbi {
         int depth = 0;
         for (int i = openIdx; i < s.length(); i++) {
             if (s.charAt(i) == '(') depth++;
-            else if (s.charAt(i) == ')') { if (--depth == 0) return i; }
+            else if (s.charAt(i) == ')') {
+                if (--depth == 0) return i;
+            }
         }
         return -1;
     }

@@ -10,18 +10,17 @@ import io.jeth.core.EthClient;
 import io.jeth.core.EthException;
 import io.jeth.model.EthModels;
 import io.jeth.util.Hex;
-import java.util.Locale;
 import io.jeth.util.Keccak;
-
 import java.nio.charset.StandardCharsets;
+import java.util.Locale;
 import java.util.concurrent.CompletableFuture;
 
 /**
  * ENS (Ethereum Name Service) resolver.
  *
- * Resolves .eth names to addresses and reverse-resolves addresses to names.
- * Follows ENSIP-10 (wildcard resolution) for subdomains.
- * Supports EIP-3668 CCIP-Read for off-chain resolvers (e.g. Coinbase, offchain.resolver.eth).
+ * <p>Resolves .eth names to addresses and reverse-resolves addresses to names. Follows ENSIP-10
+ * (wildcard resolution) for subdomains. Supports EIP-3668 CCIP-Read for off-chain resolvers (e.g.
+ * Coinbase, offchain.resolver.eth).
  *
  * <pre>
  * var ens = new EnsResolver(client);              // mainnet
@@ -48,61 +47,65 @@ public class EnsResolver {
     public static final String ENS_REGISTRY_MAINNET = "0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e";
 
     private final EthClient client;
-    private final String    registry;
+    private final String registry;
 
     // Pre-built functions
-    private static final Function FN_RESOLVER = Function.of("resolver", AbiType.BYTES32)
-            .withReturns(AbiType.ADDRESS);
-    private static final Function FN_ADDR     = Function.of("addr", AbiType.BYTES32)
-            .withReturns(AbiType.ADDRESS);
-    private static final Function FN_NAME     = Function.of("name", AbiType.BYTES32)
-            .withReturns(AbiType.STRING);
-    private static final Function FN_TEXT     = Function.of("text", AbiType.BYTES32, AbiType.STRING)
-            .withReturns(AbiType.STRING);
-    private static final Function FN_CONTENTHASH = Function.of("contenthash", AbiType.BYTES32)
-            .withReturns(AbiType.BYTES);
+    private static final Function FN_RESOLVER =
+            Function.of("resolver", AbiType.BYTES32).withReturns(AbiType.ADDRESS);
+    private static final Function FN_ADDR =
+            Function.of("addr", AbiType.BYTES32).withReturns(AbiType.ADDRESS);
+    private static final Function FN_NAME =
+            Function.of("name", AbiType.BYTES32).withReturns(AbiType.STRING);
+    private static final Function FN_TEXT =
+            Function.of("text", AbiType.BYTES32, AbiType.STRING).withReturns(AbiType.STRING);
+    private static final Function FN_CONTENTHASH =
+            Function.of("contenthash", AbiType.BYTES32).withReturns(AbiType.BYTES);
 
     public EnsResolver(EthClient client) {
         this(client, ENS_REGISTRY_MAINNET);
     }
 
     public EnsResolver(EthClient client, String registryAddress) {
-        this.client   = client;
+        this.client = client;
         this.registry = registryAddress;
     }
 
     // ─── Forward resolution ───────────────────────────────────────────────────
 
     /**
-     * Resolve an ENS name to an Ethereum address.
-     * Returns null if the name is not registered or has no address record.
+     * Resolve an ENS name to an Ethereum address. Returns null if the name is not registered or has
+     * no address record.
      */
     /**
      * Resolves an ENS name to an Ethereum address.
      *
      * @param name ENS name, e.g. {@code "vitalik.eth"}
-     * @return the resolved address, or {@code null} if the name is not registered or has no address record
+     * @return the resolved address, or {@code null} if the name is not registered or has no address
+     *     record
      */
     public CompletableFuture<String> resolve(String name) {
         byte[] node = namehash(name);
 
-        return getResolver(node).thenCompose(resolverAddr -> {
-            if (resolverAddr == null || isZeroAddress(resolverAddr)) {
-                return CompletableFuture.completedFuture(null);
-            }
-            return callResolver(resolverAddr, FN_ADDR, node).thenApply(result -> {
-                if (result == null) return null;
-                String addr = (String) result;
-                return isZeroAddress(addr) ? null : addr;
-            });
-        });
+        return getResolver(node)
+                .thenCompose(
+                        resolverAddr -> {
+                            if (resolverAddr == null || isZeroAddress(resolverAddr)) {
+                                return CompletableFuture.completedFuture(null);
+                            }
+                            return callResolver(resolverAddr, FN_ADDR, node)
+                                    .thenApply(
+                                            result -> {
+                                                if (result == null) return null;
+                                                String addr = (String) result;
+                                                return isZeroAddress(addr) ? null : addr;
+                                            });
+                        });
     }
 
     // ─── Reverse resolution ───────────────────────────────────────────────────
 
     /**
-     * Reverse-resolve an address to its primary ENS name.
-     * Returns null if no reverse record is set.
+     * Reverse-resolve an address to its primary ENS name. Returns null if no reverse record is set.
      */
     /**
      * Performs a reverse lookup: maps an Ethereum address to an ENS name.
@@ -115,31 +118,41 @@ public class EnsResolver {
         String normalized = address.toLowerCase().replace("0x", "") + ".addr.reverse";
         byte[] node = namehash(normalized);
 
-        return getResolver(node).thenCompose(resolverAddr -> {
-            if (resolverAddr == null || isZeroAddress(resolverAddr)) {
-                return CompletableFuture.completedFuture(null);
-            }
-            return callResolver(resolverAddr, FN_NAME, node).thenApply(result ->
-                result instanceof String s && !s.isBlank() ? s : null
-            );
-        });
+        return getResolver(node)
+                .thenCompose(
+                        resolverAddr -> {
+                            if (resolverAddr == null || isZeroAddress(resolverAddr)) {
+                                return CompletableFuture.completedFuture(null);
+                            }
+                            return callResolver(resolverAddr, FN_NAME, node)
+                                    .thenApply(
+                                            result ->
+                                                    result instanceof String s && !s.isBlank()
+                                                            ? s
+                                                            : null);
+                        });
     }
 
     // ─── Text records ─────────────────────────────────────────────────────────
 
     /**
-     * Get a text record for a name.
-     * Common keys: "email", "url", "avatar", "description", "com.twitter", "com.github"
+     * Get a text record for a name. Common keys: "email", "url", "avatar", "description",
+     * "com.twitter", "com.github"
      */
     public CompletableFuture<String> getText(String name, String key) {
         byte[] node = namehash(name);
-        return getResolver(node).thenCompose(resolverAddr -> {
-            if (resolverAddr == null || isZeroAddress(resolverAddr))
-                return CompletableFuture.completedFuture(null);
-            return callResolverText(resolverAddr, node, key).thenApply(result ->
-                result instanceof String s && !s.isBlank() ? s : null
-            );
-        });
+        return getResolver(node)
+                .thenCompose(
+                        resolverAddr -> {
+                            if (resolverAddr == null || isZeroAddress(resolverAddr))
+                                return CompletableFuture.completedFuture(null);
+                            return callResolverText(resolverAddr, node, key)
+                                    .thenApply(
+                                            result ->
+                                                    result instanceof String s && !s.isBlank()
+                                                            ? s
+                                                            : null);
+                        });
     }
 
     /** Shorthand for the "avatar" text record. */
@@ -150,18 +163,19 @@ public class EnsResolver {
     // ─── Content hash ─────────────────────────────────────────────────────────
 
     /**
-     * Get the content hash for a name (IPFS/IPNS/Swarm).
-     * Returns the raw bytes — use a content hash library to decode.
+     * Get the content hash for a name (IPFS/IPNS/Swarm). Returns the raw bytes — use a content hash
+     * library to decode.
      */
     public CompletableFuture<byte[]> getContenthash(String name) {
         byte[] node = namehash(name);
-        return getResolver(node).thenCompose(resolverAddr -> {
-            if (resolverAddr == null || isZeroAddress(resolverAddr))
-                return CompletableFuture.completedFuture(null);
-            return callResolver(resolverAddr, FN_CONTENTHASH, node).thenApply(result ->
-                result instanceof byte[] b ? b : null
-            );
-        });
+        return getResolver(node)
+                .thenCompose(
+                        resolverAddr -> {
+                            if (resolverAddr == null || isZeroAddress(resolverAddr))
+                                return CompletableFuture.completedFuture(null);
+                            return callResolver(resolverAddr, FN_CONTENTHASH, node)
+                                    .thenApply(result -> result instanceof byte[] b ? b : null);
+                        });
     }
 
     // ─── Resolver lookup ──────────────────────────────────────────────────────
@@ -170,11 +184,12 @@ public class EnsResolver {
     public CompletableFuture<String> getResolver(byte[] node) {
         String calldata = FN_RESOLVER.encode((Object) node);
         return client.call(EthModels.CallRequest.builder().to(registry).data(calldata).build())
-                .thenApply(hex -> {
-                    if (hex == null || hex.equals("0x")) return null;
-                    Object[] decoded = FN_RESOLVER.decodeReturn(hex);
-                    return decoded.length > 0 ? (String) decoded[0] : null;
-                });
+                .thenApply(
+                        hex -> {
+                            if (hex == null || hex.equals("0x")) return null;
+                            Object[] decoded = FN_RESOLVER.decodeReturn(hex);
+                            return decoded.length > 0 ? (String) decoded[0] : null;
+                        });
     }
 
     public CompletableFuture<String> getResolver(String name) {
@@ -184,10 +199,9 @@ public class EnsResolver {
     // ─── ENS Namehash (EIP-137) ───────────────────────────────────────────────
 
     /**
-     * Compute the ENS namehash for a name.
-     * namehash("") = 0x00..00
-     * namehash("eth") = keccak256(namehash("") || keccak256("eth"))
-     * namehash("vitalik.eth") = keccak256(namehash("eth") || keccak256("vitalik"))
+     * Compute the ENS namehash for a name. namehash("") = 0x00..00 namehash("eth") =
+     * keccak256(namehash("") || keccak256("eth")) namehash("vitalik.eth") =
+     * keccak256(namehash("eth") || keccak256("vitalik"))
      */
     public static byte[] namehash(String name) {
         byte[] node = new byte[32]; // starts as 0x00..00
@@ -210,39 +224,48 @@ public class EnsResolver {
     // ─── Helpers ─────────────────────────────────────────────────────────────
 
     /**
-     * Call a resolver function, transparently handling EIP-3668 CCIP-Read (off-chain lookup).
-     * Falls back to a direct eth_call if CCIP-Read is not triggered.
+     * Call a resolver function, transparently handling EIP-3668 CCIP-Read (off-chain lookup). Falls
+     * back to a direct eth_call if CCIP-Read is not triggered.
      */
     private CompletableFuture<Object> callResolver(String resolver, Function fn, byte[] node) {
         String calldata = fn.encode((Object) node);
         return CcipRead.call(client, resolver, calldata)
-                .thenApply(hex -> {
-                    if (hex == null || hex.equals("0x") || hex.length() <= 2) return null;
-                    try {
-                        Object[] decoded = fn.decodeReturn(hex);
-                        return decoded.length > 0 ? decoded[0] : null;
-                    } catch (Exception e) { return null; }
-                })
-                .exceptionally(ex -> {
-                    // Unwrap CompletionException wrapping
-                    Throwable cause = ex.getCause() != null ? ex.getCause() : ex;
-                    // ENS resolver errors (name not registered, no addr set, etc.) → return null
-                    if (cause instanceof EthException) return null;
-                    // Unexpected error → propagate
-                    throw cause instanceof RuntimeException re ? re
-                            : new EthException("Resolver call failed", cause);
-                });
+                .thenApply(
+                        hex -> {
+                            if (hex == null || hex.equals("0x") || hex.length() <= 2) return null;
+                            try {
+                                Object[] decoded = fn.decodeReturn(hex);
+                                return decoded.length > 0 ? decoded[0] : null;
+                            } catch (Exception e) {
+                                return null;
+                            }
+                        })
+                .exceptionally(
+                        ex -> {
+                            // Unwrap CompletionException wrapping
+                            Throwable cause = ex.getCause() != null ? ex.getCause() : ex;
+                            // ENS resolver errors (name not registered, no addr set, etc.) → return
+                            // null
+                            if (cause instanceof EthException) return null;
+                            // Unexpected error → propagate
+                            throw cause instanceof RuntimeException re
+                                    ? re
+                                    : new EthException("Resolver call failed", cause);
+                        });
     }
 
     private CompletableFuture<Object> callResolverText(String resolver, byte[] node, String key) {
         String calldata = FN_TEXT.encode(node, key);
         return CcipRead.call(client, resolver, calldata)
-                .thenApply(hex -> {
-                    if (hex == null || hex.equals("0x") || hex.length() <= 2) return null;
-                    try {
-                        return FN_TEXT.decodeReturn(hex)[0];
-                    } catch (Exception e) { return null; }
-                })
+                .thenApply(
+                        hex -> {
+                            if (hex == null || hex.equals("0x") || hex.length() <= 2) return null;
+                            try {
+                                return FN_TEXT.decodeReturn(hex)[0];
+                            } catch (Exception e) {
+                                return null;
+                            }
+                        })
                 .exceptionally(ex -> null);
     }
 

@@ -7,15 +7,14 @@ package io.jeth.storage;
 import io.jeth.core.EthClient;
 import io.jeth.util.Hex;
 import io.jeth.util.Keccak;
-
 import java.math.BigInteger;
 import java.util.concurrent.CompletableFuture;
 
 /**
  * EVM storage layout reader — access contract storage slots directly.
  *
- * Essential for debugging, MEV, and protocol analysis.
- * Follows Solidity storage layout rules: packed slots, mappings, arrays.
+ * <p>Essential for debugging, MEV, and protocol analysis. Follows Solidity storage layout rules:
+ * packed slots, mappings, arrays.
  *
  * <pre>
  * var storage = StorageLayout.of(client, "0xUSDC");
@@ -36,10 +35,10 @@ import java.util.concurrent.CompletableFuture;
 public class StorageLayout {
 
     private final EthClient client;
-    private final String    address;
+    private final String address;
 
     private StorageLayout(EthClient client, String address) {
-        this.client  = client;
+        this.client = client;
         this.address = address;
     }
 
@@ -69,8 +68,8 @@ public class StorageLayout {
     // ─── Mappings ────────────────────────────────────────────────────────────
 
     /**
-     * Read mapping(key => value) at a given base slot.
-     * Solidity: slot = keccak256(abi.encode(key, baseSlot))
+     * Read mapping(key => value) at a given base slot. Solidity: slot = keccak256(abi.encode(key,
+     * baseSlot))
      */
     public CompletableFuture<BigInteger> readMapping(long baseSlot, String keyAddress) {
         BigInteger slot = mappingSlot(baseSlot, keyAddress);
@@ -83,8 +82,8 @@ public class StorageLayout {
     }
 
     /**
-     * Read nested mapping: mapping(key1 => mapping(key2 => value))
-     * slot = keccak256(abi.encode(key2, keccak256(abi.encode(key1, baseSlot))))
+     * Read nested mapping: mapping(key1 => mapping(key2 => value)) slot =
+     * keccak256(abi.encode(key2, keccak256(abi.encode(key1, baseSlot))))
      */
     public CompletableFuture<BigInteger> readNestedMapping(
             long baseSlot, String key1Address, String key2Address) {
@@ -95,41 +94,38 @@ public class StorageLayout {
 
     // ─── Dynamic arrays ───────────────────────────────────────────────────────
 
-    /**
-     * Read the length of a dynamic array at baseSlot.
-     */
+    /** Read the length of a dynamic array at baseSlot. */
     public CompletableFuture<BigInteger> readArrayLength(long baseSlot) {
         return readSlot(baseSlot);
     }
 
-    /**
-     * Read dynamic array element at index.
-     * Data slot = keccak256(baseSlot) + index * elemSlots
-     */
+    /** Read dynamic array element at index. Data slot = keccak256(baseSlot) + index * elemSlots */
     public CompletableFuture<BigInteger> readArrayElement(long baseSlot, long index) {
         return readArrayElement(baseSlot, index, 1);
     }
 
-    public CompletableFuture<BigInteger> readArrayElement(long baseSlot, long index, int slotsPerElem) {
+    public CompletableFuture<BigInteger> readArrayElement(
+            long baseSlot, long index, int slotsPerElem) {
         byte[] slotBytes = bigToBytes32(BigInteger.valueOf(baseSlot));
-        BigInteger dataSlot = new BigInteger(1, Keccak.hash(slotBytes))
-                .add(BigInteger.valueOf(index * slotsPerElem));
+        BigInteger dataSlot =
+                new BigInteger(1, Keccak.hash(slotBytes))
+                        .add(BigInteger.valueOf(index * slotsPerElem));
         return readSlot(dataSlot);
     }
 
     // ─── Packed slot helpers ──────────────────────────────────────────────────
 
     /**
-     * Extract a packed value from a slot.
-     * Solidity packs small values right-to-left within a 32-byte slot.
+     * Extract a packed value from a slot. Solidity packs small values right-to-left within a
+     * 32-byte slot.
      *
-     * @param slot      raw slot value
+     * @param slot raw slot value
      * @param byteOffset offset from the right (0 = rightmost byte)
-     * @param byteLen   number of bytes to read
+     * @param byteLen number of bytes to read
      */
     public static BigInteger unpackSlot(BigInteger slot, int byteOffset, int byteLen) {
         return slot.shiftRight(byteOffset * 8)
-                   .and(BigInteger.TWO.pow(byteLen * 8).subtract(BigInteger.ONE));
+                .and(BigInteger.TWO.pow(byteLen * 8).subtract(BigInteger.ONE));
     }
 
     // ─── Slot computation helpers ─────────────────────────────────────────────

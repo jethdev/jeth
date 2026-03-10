@@ -4,15 +4,14 @@
  */
 package io.jeth;
 
+import static org.junit.jupiter.api.Assertions.*;
+
 import io.jeth.abi.AbiCodec;
 import io.jeth.abi.AbiType;
 import io.jeth.abi.Function;
 import io.jeth.util.Hex;
-import org.junit.jupiter.api.Test;
-
 import java.math.BigInteger;
-
-import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.Test;
 
 class AbiCodecTest {
 
@@ -76,13 +75,13 @@ class AbiCodecTest {
 
     @Test
     void testEncodeTransferCall() {
-        Function transfer = Function.of("transfer", AbiType.ADDRESS, AbiType.UINT256)
-                .withReturns(AbiType.BOOL);
+        Function transfer =
+                Function.of("transfer", AbiType.ADDRESS, AbiType.UINT256).withReturns(AbiType.BOOL);
 
-        String calldata = transfer.encode(
-                "0xdAC17F958D2ee523a2206206994597C13D831ec7",
-                BigInteger.valueOf(1_000_000L)
-        );
+        String calldata =
+                transfer.encode(
+                        "0xdAC17F958D2ee523a2206206994597C13D831ec7",
+                        BigInteger.valueOf(1_000_000L));
 
         assertNotNull(calldata);
         assertTrue(calldata.startsWith("0xa9059cbb")); // selector
@@ -93,7 +92,9 @@ class AbiCodecTest {
     void testDecodeMultipleTypes() {
         // Encode then decode address + uint256
         AbiType[] types = {AbiType.ADDRESS, AbiType.UINT256};
-        Object[] values = {"0xdAC17F958D2ee523a2206206994597C13D831ec7", BigInteger.valueOf(42_000L)};
+        Object[] values = {
+            "0xdAC17F958D2ee523a2206206994597C13D831ec7", BigInteger.valueOf(42_000L)
+        };
 
         byte[] encoded = AbiCodec.encode(types, values);
         Object[] decoded = AbiCodec.decode(types, encoded);
@@ -107,9 +108,9 @@ class AbiCodecTest {
     void testAbiTypeOf() {
         assertEquals("uint256", AbiType.of("uint256").toString());
         assertEquals("address", AbiType.of("address").toString());
-        assertEquals("bool",    AbiType.of("bool").toString());
-        assertEquals("string",  AbiType.of("string").toString());
+        assertEquals("bool", AbiType.of("bool").toString());
+        assertEquals("string", AbiType.of("string").toString());
         assertEquals("bytes32", AbiType.of("bytes32").toString());
-        assertEquals("uint8",   AbiType.of("uint8").toString());
+        assertEquals("uint8", AbiType.of("uint8").toString());
     }
 }

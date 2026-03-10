@@ -7,23 +7,21 @@ package io.jeth.scan;
 import io.jeth.core.EthClient;
 import io.jeth.event.EventDef;
 import io.jeth.model.EthModels;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
-import java.util.logging.Logger;
 import java.util.concurrent.atomic.AtomicLong;
-
+import java.util.logging.Logger;
 
 /**
- * Typed event block scanner — iterate historical events across arbitrary block ranges
- * with progress reporting, early exit, and resumable cursors.
+ * Typed event block scanner — iterate historical events across arbitrary block ranges with progress
+ * reporting, early exit, and resumable cursors.
  *
- * Handles chunking, progress callbacks, concurrent fetching, and resumable cursors
- * so you don't have to hand-roll getLogs loops.
+ * <p>Handles chunking, progress callbacks, concurrent fetching, and resumable cursors so you don't
+ * have to hand-roll getLogs loops.
  *
  * <pre>
  * var scanner = BlockScanner.of(client);
@@ -62,22 +60,23 @@ public class BlockScanner {
 
     private static final Logger LOG = Logger.getLogger(BlockScanner.class.getName());
 
-    private static final int DEFAULT_CHUNK_SIZE  = 2_000;
-    private static final int DEFAULT_CONCURRENCY = 1;     // sequential by default (safe for rate limits)
+    private static final int DEFAULT_CHUNK_SIZE = 2_000;
+    private static final int DEFAULT_CONCURRENCY =
+            1; // sequential by default (safe for rate limits)
 
     private final EthClient client;
-    private final int       chunkSize;
-    private final int       concurrency;
+    private final int chunkSize;
+    private final int concurrency;
 
     private BlockScanner(EthClient client, int chunkSize, int concurrency) {
-        this.client      = client;
-        this.chunkSize   = chunkSize;
+        this.client = client;
+        this.chunkSize = chunkSize;
         this.concurrency = concurrency;
     }
 
     /**
-     * Creates a scanner with default settings: 2000-block chunks, sequential (no concurrency).
-     * This is the right starting point for most use cases.
+     * Creates a scanner with default settings: 2000-block chunks, sequential (no concurrency). This
+     * is the right starting point for most use cases.
      */
     public static BlockScanner of(EthClient client) {
         return new BlockScanner(client, DEFAULT_CHUNK_SIZE, DEFAULT_CONCURRENCY);
@@ -86,9 +85,9 @@ public class BlockScanner {
     /**
      * Creates a scanner with a custom chunk size.
      *
-     * <p>Smaller chunks (e.g. 500) are safer for slow or rate-limited nodes.
-     * Larger chunks (e.g. 5000) reduce the number of RPC calls but may hit node limits.
-     * The Ethereum JSON-RPC default cap is typically 2000 blocks per {@code eth_getLogs}.
+     * <p>Smaller chunks (e.g. 500) are safer for slow or rate-limited nodes. Larger chunks (e.g.
+     * 5000) reduce the number of RPC calls but may hit node limits. The Ethereum JSON-RPC default
+     * cap is typically 2000 blocks per {@code eth_getLogs}.
      *
      * @param chunkSize number of blocks per {@code eth_getLogs} call
      */
@@ -99,11 +98,11 @@ public class BlockScanner {
     /**
      * Creates a scanner with custom chunk size and concurrency.
      *
-     * <p><strong>Note:</strong> concurrent chunk fetching is not yet implemented;
-     * the {@code concurrency} parameter is reserved for a future release.
-     * Scanning is always sequential regardless of the value set here.
+     * <p><strong>Note:</strong> concurrent chunk fetching is not yet implemented; the {@code
+     * concurrency} parameter is reserved for a future release. Scanning is always sequential
+     * regardless of the value set here.
      *
-     * @param chunkSize   blocks per chunk
+     * @param chunkSize blocks per chunk
      * @param concurrency reserved — has no effect in the current implementation
      * @deprecated Use {@link #of(EthClient, int)} until concurrent fetching is implemented
      */
@@ -118,25 +117,27 @@ public class BlockScanner {
      * Scan a single contract for a single event type across a block range.
      *
      * @param contractAddress the contract to scan
-     * @param event           the event definition to filter for
-     * @param fromBlock       first block (inclusive)
-     * @param toBlock         last block (inclusive)
-     * @param handler         called for each batch of decoded events; return false to stop early
+     * @param event the event definition to filter for
+     * @param fromBlock first block (inclusive)
+     * @param toBlock last block (inclusive)
+     * @param handler called for each batch of decoded events; return false to stop early
      * @return future that completes when scanning is done (or handler returned false)
      */
     public CompletableFuture<ScanResult> scan(
-            String contractAddress, EventDef event,
-            long fromBlock, long toBlock,
+            String contractAddress,
+            EventDef event,
+            long fromBlock,
+            long toBlock,
             ScanHandler handler) {
         return scan(contractAddress, event, ScanCursor.at(fromBlock), toBlock, handler);
     }
 
-    /**
-     * Scan with a resumable cursor (pick up where a previous scan left off).
-     */
+    /** Scan with a resumable cursor (pick up where a previous scan left off). */
     public CompletableFuture<ScanResult> scan(
-            String contractAddress, EventDef event,
-            ScanCursor cursor, long toBlock,
+            String contractAddress,
+            EventDef event,
+            ScanCursor cursor,
+            long toBlock,
             ScanHandler handler) {
         long startBlock = cursor.nextBlock();
         long totalBlocks = toBlock - startBlock + 1;
@@ -144,60 +145,73 @@ public class BlockScanner {
             return CompletableFuture.completedFuture(
                     new ScanResult(0, 0, startBlock, ScanResult.Reason.COMPLETE));
 
-        return CompletableFuture.supplyAsync(() -> {
-            long processed = 0;
-            long eventsFound = 0;
-            long current = startBlock;
+        return CompletableFuture.supplyAsync(
+                () -> {
+                    long processed = 0;
+                    long eventsFound = 0;
+                    long current = startBlock;
 
-            while (current <= toBlock) {
-                long chunkEnd = Math.min(current + chunkSize - 1, toBlock);
+                    while (current <= toBlock) {
+                        long chunkEnd = Math.min(current + chunkSize - 1, toBlock);
 
-                final long from = current;
-                final long to   = chunkEnd;
+                        final long from = current;
+                        final long to = chunkEnd;
 
-                // Fetch and decode this chunk
-                List<EventDef.DecodedEvent> decoded;
-                try {
-                    var filter = buildFilter(contractAddress, event, from, to);
-                    List<EthModels.Log> logs = client.getLogs(filter).join();
-                    decoded = event.decodeAll(logs);
-                } catch (Exception e) {
-                    throw new ScanException("Failed to fetch logs for blocks " + from + "-" + to, e);
-                }
+                        // Fetch and decode this chunk
+                        List<EventDef.DecodedEvent> decoded;
+                        try {
+                            var filter = buildFilter(contractAddress, event, from, to);
+                            List<EthModels.Log> logs = client.getLogs(filter).join();
+                            decoded = event.decodeAll(logs);
+                        } catch (Exception e) {
+                            throw new ScanException(
+                                    "Failed to fetch logs for blocks " + from + "-" + to, e);
+                        }
 
-                processed += (chunkEnd - current + 1);
-                eventsFound += decoded.size();
+                        processed += (chunkEnd - current + 1);
+                        eventsFound += decoded.size();
 
-                double pct = totalBlocks > 0 ? (double) processed / totalBlocks * 100 : 100;
-                ScanProgress progress = new ScanProgress(
-                        from, chunkEnd, toBlock, processed, totalBlocks, pct, eventsFound);
+                        double pct = totalBlocks > 0 ? (double) processed / totalBlocks * 100 : 100;
+                        ScanProgress progress =
+                                new ScanProgress(
+                                        from,
+                                        chunkEnd,
+                                        toBlock,
+                                        processed,
+                                        totalBlocks,
+                                        pct,
+                                        eventsFound);
 
-                boolean cont = handler.onBatch(decoded, progress);
-                if (!cont)
-                    return new ScanResult(eventsFound, processed, chunkEnd, ScanResult.Reason.EARLY_EXIT);
+                        boolean cont = handler.onBatch(decoded, progress);
+                        if (!cont)
+                            return new ScanResult(
+                                    eventsFound, processed, chunkEnd, ScanResult.Reason.EARLY_EXIT);
 
-                current = chunkEnd + 1;
-            }
+                        current = chunkEnd + 1;
+                    }
 
-            return new ScanResult(eventsFound, processed, toBlock, ScanResult.Reason.COMPLETE);
-        });
+                    return new ScanResult(
+                            eventsFound, processed, toBlock, ScanResult.Reason.COMPLETE);
+                });
     }
 
     // ─── Multiple contracts + events ─────────────────────────────────────────
 
     /**
-     * Scan multiple contracts and event types simultaneously in each chunk.
-     * All matching events across all contracts are returned in each batch, merged and sorted by block.
+     * Scan multiple contracts and event types simultaneously in each chunk. All matching events
+     * across all contracts are returned in each batch, merged and sorted by block.
      *
      * @param contracts list of contract addresses
-     * @param events    list of event definitions (matched against all contracts)
+     * @param events list of event definitions (matched against all contracts)
      * @param fromBlock first block
-     * @param toBlock   last block
-     * @param handler   receives merged, block-sorted batches
+     * @param toBlock last block
+     * @param handler receives merged, block-sorted batches
      */
     public CompletableFuture<ScanResult> scanMulti(
-            List<String> contracts, List<EventDef> events,
-            long fromBlock, long toBlock,
+            List<String> contracts,
+            List<EventDef> events,
+            long fromBlock,
+            long toBlock,
             ScanHandler handler) {
 
         if (contracts.isEmpty() || events.isEmpty())
@@ -206,89 +220,120 @@ public class BlockScanner {
 
         long totalBlocks = toBlock - fromBlock + 1;
 
-        return CompletableFuture.supplyAsync(() -> {
-            long processed   = 0;
-            long eventsFound = 0;
-            long current     = fromBlock;
+        return CompletableFuture.supplyAsync(
+                () -> {
+                    long processed = 0;
+                    long eventsFound = 0;
+                    long current = fromBlock;
 
-            while (current <= toBlock) {
-                long chunkEnd = Math.min(current + chunkSize - 1, toBlock);
-                final long from = current;
-                final long to   = chunkEnd;
+                    while (current <= toBlock) {
+                        long chunkEnd = Math.min(current + chunkSize - 1, toBlock);
+                        final long from = current;
+                        final long to = chunkEnd;
 
-                // Build one filter per (contract × event) pair — or merge topics
-                List<EventDef.DecodedEvent> allDecoded = new ArrayList<>();
-                try {
-                    // Fetch logs once with merged topic0 list
-                    List<String> topic0s = events.stream().map(EventDef::topic0Hex).toList();
-                    var filter = new LinkedHashMap<String, Object>();
-                    filter.put("address", contracts);
-                    filter.put("topics",  List.of(topic0s));
-                    filter.put("fromBlock", "0x" + Long.toHexString(from));
-                    filter.put("toBlock",   "0x" + Long.toHexString(to));
+                        // Build one filter per (contract × event) pair — or merge topics
+                        List<EventDef.DecodedEvent> allDecoded = new ArrayList<>();
+                        try {
+                            // Fetch logs once with merged topic0 list
+                            List<String> topic0s =
+                                    events.stream().map(EventDef::topic0Hex).toList();
+                            var filter = new LinkedHashMap<String, Object>();
+                            filter.put("address", contracts);
+                            filter.put("topics", List.of(topic0s));
+                            filter.put("fromBlock", "0x" + Long.toHexString(from));
+                            filter.put("toBlock", "0x" + Long.toHexString(to));
 
-                    List<EthModels.Log> logs = client.getLogsRaw(filter).join();
+                            List<EthModels.Log> logs = client.getLogsRaw(filter).join();
 
-                    // Decode each log against the matching event
-                    for (EthModels.Log log : logs) {
-                        if (log.topics == null || log.topics.isEmpty()) continue;
-                        String logTopic0 = log.topics.get(0);
-                        for (EventDef ev : events) {
-                            if (ev.topic0Hex().equalsIgnoreCase(logTopic0)) {
-                                try { allDecoded.add(ev.decode(log)); } catch (Exception e) { LOG.warning("Skipping undecoded log: " + e.getMessage()); }
-                                break;
+                            // Decode each log against the matching event
+                            for (EthModels.Log log : logs) {
+                                if (log.topics == null || log.topics.isEmpty()) continue;
+                                String logTopic0 = log.topics.get(0);
+                                for (EventDef ev : events) {
+                                    if (ev.topic0Hex().equalsIgnoreCase(logTopic0)) {
+                                        try {
+                                            allDecoded.add(ev.decode(log));
+                                        } catch (Exception e) {
+                                            LOG.warning(
+                                                    "Skipping undecoded log: " + e.getMessage());
+                                        }
+                                        break;
+                                    }
+                                }
                             }
+                        } catch (Exception e) {
+                            throw new ScanException(
+                                    "Failed to fetch logs for blocks " + from + "-" + to, e);
                         }
+
+                        processed += (chunkEnd - current + 1);
+                        eventsFound += allDecoded.size();
+
+                        double pct = totalBlocks > 0 ? (double) processed / totalBlocks * 100 : 100;
+                        ScanProgress progress =
+                                new ScanProgress(
+                                        from,
+                                        chunkEnd,
+                                        toBlock,
+                                        processed,
+                                        totalBlocks,
+                                        pct,
+                                        eventsFound);
+
+                        boolean cont = handler.onBatch(allDecoded, progress);
+                        if (!cont)
+                            return new ScanResult(
+                                    eventsFound, processed, chunkEnd, ScanResult.Reason.EARLY_EXIT);
+
+                        current = chunkEnd + 1;
                     }
-                } catch (Exception e) {
-                    throw new ScanException("Failed to fetch logs for blocks " + from + "-" + to, e);
-                }
 
-                processed   += (chunkEnd - current + 1);
-                eventsFound += allDecoded.size();
-
-                double pct = totalBlocks > 0 ? (double) processed / totalBlocks * 100 : 100;
-                ScanProgress progress = new ScanProgress(
-                        from, chunkEnd, toBlock, processed, totalBlocks, pct, eventsFound);
-
-                boolean cont = handler.onBatch(allDecoded, progress);
-                if (!cont)
-                    return new ScanResult(eventsFound, processed, chunkEnd, ScanResult.Reason.EARLY_EXIT);
-
-                current = chunkEnd + 1;
-            }
-
-            return new ScanResult(eventsFound, processed, toBlock, ScanResult.Reason.COMPLETE);
-        });
+                    return new ScanResult(
+                            eventsFound, processed, toBlock, ScanResult.Reason.COMPLETE);
+                });
     }
 
     // ─── Collect variant (returns all events in memory) ──────────────────────
 
     /**
-     * Scan and collect ALL matching events into a list.
-     * Only suitable for small ranges — can OOM on very large scans.
+     * Scan and collect ALL matching events into a list. Only suitable for small ranges — can OOM on
+     * very large scans.
      *
      * @return list of all decoded events in block order
      */
     public CompletableFuture<List<EventDef.DecodedEvent>> collect(
             String contractAddress, EventDef event, long fromBlock, long toBlock) {
         List<EventDef.DecodedEvent> all = Collections.synchronizedList(new ArrayList<>());
-        return scan(contractAddress, event, fromBlock, toBlock,
-                (batch, __) -> { all.addAll(batch); return true; })
+        return scan(
+                        contractAddress,
+                        event,
+                        fromBlock,
+                        toBlock,
+                        (batch, __) -> {
+                            all.addAll(batch);
+                            return true;
+                        })
                 .thenApply(__ -> all);
     }
 
     // ─── Count variant ────────────────────────────────────────────────────────
 
     /**
-     * Count matching events in a block range without materializing them.
-     * More memory-efficient than {@link #collect} for analytics use cases.
+     * Count matching events in a block range without materializing them. More memory-efficient than
+     * {@link #collect} for analytics use cases.
      */
     public CompletableFuture<Long> count(
             String contractAddress, EventDef event, long fromBlock, long toBlock) {
         AtomicLong counter = new AtomicLong(0);
-        return scan(contractAddress, event, fromBlock, toBlock,
-                (batch, __) -> { counter.addAndGet(batch.size()); return true; })
+        return scan(
+                        contractAddress,
+                        event,
+                        fromBlock,
+                        toBlock,
+                        (batch, __) -> {
+                            counter.addAndGet(batch.size());
+                            return true;
+                        })
                 .thenApply(result -> result.totalEvents());
     }
 
@@ -297,10 +342,10 @@ public class BlockScanner {
     private static Map<String, Object> buildFilter(
             String address, EventDef event, long from, long to) {
         var filter = new LinkedHashMap<String, Object>();
-        filter.put("address",   address);
-        filter.put("topics",    List.of(event.topic0Hex()));
+        filter.put("address", address);
+        filter.put("topics", List.of(event.topic0Hex()));
         filter.put("fromBlock", "0x" + Long.toHexString(from));
-        filter.put("toBlock",   "0x" + Long.toHexString(to));
+        filter.put("toBlock", "0x" + Long.toHexString(to));
         return filter;
     }
 
@@ -319,13 +364,13 @@ public class BlockScanner {
     /**
      * Progress snapshot for a single chunk.
      *
-     * @param chunkFrom     first block of this chunk
-     * @param chunkTo       last block of this chunk
-     * @param targetBlock   final block of the overall scan
+     * @param chunkFrom first block of this chunk
+     * @param chunkTo last block of this chunk
+     * @param targetBlock final block of the overall scan
      * @param blocksScanned total blocks scanned so far
-     * @param totalBlocks   total blocks in the scan range
-     * @param percentDone   0.0–100.0
-     * @param eventsFound   total events found so far across all chunks
+     * @param totalBlocks total blocks in the scan range
+     * @param percentDone 0.0–100.0
+     * @param eventsFound total events found so far across all chunks
      */
     public record ScanProgress(
             long chunkFrom,
@@ -337,47 +382,71 @@ public class BlockScanner {
             long eventsFound) {
 
         /** Cursor to resume from the next block after this chunk. */
-        public ScanCursor cursor() { return ScanCursor.at(chunkTo + 1); }
+        public ScanCursor cursor() {
+            return ScanCursor.at(chunkTo + 1);
+        }
 
-        @Override public String toString() {
-            return String.format("ScanProgress{%.1f%%, blocks=%d/%d, events=%d, chunk=%d..%d}",
+        @Override
+        public String toString() {
+            return String.format(
+                    "ScanProgress{%.1f%%, blocks=%d/%d, events=%d, chunk=%d..%d}",
                     percentDone, blocksScanned, totalBlocks, eventsFound, chunkFrom, chunkTo);
         }
     }
 
     /**
-     * Resumable cursor — saves the next block to scan.
-     * Serialize {@link #nextBlock()} to persist between runs.
+     * Resumable cursor — saves the next block to scan. Serialize {@link #nextBlock()} to persist
+     * between runs.
      */
     public record ScanCursor(long nextBlock) {
-        public static ScanCursor at(long block) { return new ScanCursor(block); }
-        public static ScanCursor start()        { return new ScanCursor(0L); }
+        public static ScanCursor at(long block) {
+            return new ScanCursor(block);
+        }
+
+        public static ScanCursor start() {
+            return new ScanCursor(0L);
+        }
     }
 
     /**
      * Final result of a scan.
      *
-     * @param totalEvents  total decoded events found
+     * @param totalEvents total decoded events found
      * @param blocksScanned total blocks scanned
-     * @param lastBlock    last block scanned (use as resume cursor)
-     * @param reason       why the scan ended: COMPLETE or EARLY_EXIT
+     * @param lastBlock last block scanned (use as resume cursor)
+     * @param reason why the scan ended: COMPLETE or EARLY_EXIT
      */
     public record ScanResult(long totalEvents, long blocksScanned, long lastBlock, Reason reason) {
-        public boolean isComplete()  { return reason == Reason.COMPLETE; }
-        public boolean isEarlyExit() { return reason == Reason.EARLY_EXIT; }
+        public boolean isComplete() {
+            return reason == Reason.COMPLETE;
+        }
+
+        public boolean isEarlyExit() {
+            return reason == Reason.EARLY_EXIT;
+        }
+
         /** Resume cursor for the next run. */
-        public ScanCursor cursor()   { return ScanCursor.at(lastBlock + 1); }
+        public ScanCursor cursor() {
+            return ScanCursor.at(lastBlock + 1);
+        }
 
-        public enum Reason { COMPLETE, EARLY_EXIT }
+        public enum Reason {
+            COMPLETE,
+            EARLY_EXIT
+        }
 
-        @Override public String toString() {
-            return String.format("ScanResult{events=%d, blocks=%d, lastBlock=%d, %s}",
+        @Override
+        public String toString() {
+            return String.format(
+                    "ScanResult{events=%d, blocks=%d, lastBlock=%d, %s}",
                     totalEvents, blocksScanned, lastBlock, reason);
         }
     }
 
     /** Thrown when fetching a chunk fails. Wraps the underlying RPC exception. */
     public static class ScanException extends RuntimeException {
-        public ScanException(String msg, Throwable cause) { super(msg, cause); }
+        public ScanException(String msg, Throwable cause) {
+            super(msg, cause);
+        }
     }
 }

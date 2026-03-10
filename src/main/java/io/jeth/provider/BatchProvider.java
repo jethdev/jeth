@@ -8,7 +8,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.jeth.core.EthException;
 import io.jeth.model.RpcModels;
-
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
@@ -20,19 +19,19 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
 /**
  * JSON-RPC batch provider — combines multiple requests into a single HTTP call.
  *
- * Reduces network round-trips dramatically. Instead of N sequential HTTP requests,
- * everything is bundled and sent at once, then results are dispatched back.
+ * <p>Reduces network round-trips dramatically. Instead of N sequential HTTP requests, everything is
+ * bundled and sent at once, then results are dispatched back.
  *
- * jeth automatically uses batching when you use {@link io.jeth.multicall.Multicall3}
- * on-chain. Use this provider when you want HTTP-level batching for arbitrary calls.
+ * <p>jeth automatically uses batching when you use {@link io.jeth.multicall.Multicall3} on-chain.
+ * Use this provider when you want HTTP-level batching for arbitrary calls.
  *
  * <pre>
  * var provider = BatchProvider.of("https://mainnet.infura.io/v3/KEY")
@@ -57,25 +56,30 @@ public class BatchProvider implements Provider {
     private final int maxBatchSize;
     private final long windowMs;
 
-    private final Map<Long, CompletableFuture<RpcModels.RpcResponse>> pending = new ConcurrentHashMap<>();
-    private final List<RpcModels.RpcRequest> queue = Collections.synchronizedList(new ArrayList<>());
-    private final ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor(r -> {
-        var t = new Thread(r, "jeth-batch-flush");
-        t.setDaemon(true);
-        return t;
-    });
+    private final Map<Long, CompletableFuture<RpcModels.RpcResponse>> pending =
+            new ConcurrentHashMap<>();
+    private final List<RpcModels.RpcRequest> queue =
+            Collections.synchronizedList(new ArrayList<>());
+    private final ScheduledExecutorService scheduler =
+            Executors.newSingleThreadScheduledExecutor(
+                    r -> {
+                        var t = new Thread(r, "jeth-batch-flush");
+                        t.setDaemon(true);
+                        return t;
+                    });
     private volatile ScheduledFuture<?> flushTask;
 
     private BatchProvider(Builder b) {
-        this.url          = URI.create(b.url);
+        this.url = URI.create(b.url);
         this.maxBatchSize = b.maxBatchSize;
-        this.windowMs     = b.windowMs;
-        this.mapper       = new ObjectMapper();
-        this.httpClient   = HttpClient.newBuilder()
-                .connectTimeout(Duration.ofSeconds(30)).build();
+        this.windowMs = b.windowMs;
+        this.mapper = new ObjectMapper();
+        this.httpClient = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(30)).build();
     }
 
-    public static Builder of(String url) { return new Builder(url); }
+    public static Builder of(String url) {
+        return new Builder(url);
+    }
 
     @Override
     public CompletableFuture<RpcModels.RpcResponse> send(RpcModels.RpcRequest request) {
@@ -101,26 +105,33 @@ public class BatchProvider implements Provider {
 
         try {
             byte[] body = mapper.writeValueAsBytes(batch);
-            HttpRequest req = HttpRequest.newBuilder(url)
-                    .header("Content-Type", "application/json")
-                    .POST(HttpRequest.BodyPublishers.ofByteArray(body))
-                    .timeout(Duration.ofSeconds(30))
-                    .build();
+            HttpRequest req =
+                    HttpRequest.newBuilder(url)
+                            .header("Content-Type", "application/json")
+                            .POST(HttpRequest.BodyPublishers.ofByteArray(body))
+                            .timeout(Duration.ofSeconds(30))
+                            .build();
 
-            httpClient.sendAsync(req, HttpResponse.BodyHandlers.ofByteArray())
-                .thenAccept(resp -> {
-                    try {
-                        JsonNode root = mapper.readTree(resp.body());
-                        if (root.isArray()) {
-                            root.forEach(node -> dispatch(node));
-                        } else {
-                            dispatch(root);
-                        }
-                    } catch (Exception e) {
-                        batch.forEach(r -> fail(r.id, e));
-                    }
-                })
-                .exceptionally(ex -> { batch.forEach(r -> fail(r.id, ex)); return null; });
+            httpClient
+                    .sendAsync(req, HttpResponse.BodyHandlers.ofByteArray())
+                    .thenAccept(
+                            resp -> {
+                                try {
+                                    JsonNode root = mapper.readTree(resp.body());
+                                    if (root.isArray()) {
+                                        root.forEach(node -> dispatch(node));
+                                    } else {
+                                        dispatch(root);
+                                    }
+                                } catch (Exception e) {
+                                    batch.forEach(r -> fail(r.id, e));
+                                }
+                            })
+                    .exceptionally(
+                            ex -> {
+                                batch.forEach(r -> fail(r.id, ex));
+                                return null;
+                            });
         } catch (Exception e) {
             batch.forEach(r -> fail(r.id, e));
         }
@@ -141,17 +152,37 @@ public class BatchProvider implements Provider {
         if (f != null) f.completeExceptionally(ex);
     }
 
-    @Override public ObjectMapper getObjectMapper() { return mapper; }
-    @Override public void close() { scheduler.shutdown(); }
+    @Override
+    public ObjectMapper getObjectMapper() {
+        return mapper;
+    }
+
+    @Override
+    public void close() {
+        scheduler.shutdown();
+    }
 
     public static class Builder {
         private final String url;
-        private int  maxBatchSize = 20;
-        private long windowMs     = 10;
+        private int maxBatchSize = 20;
+        private long windowMs = 10;
 
-        Builder(String url) { this.url = url; }
-        public Builder maxBatchSize(int n)  { this.maxBatchSize = n; return this; }
-        public Builder windowMs(long ms)    { this.windowMs = ms; return this; }
-        public BatchProvider build()        { return new BatchProvider(this); }
+        Builder(String url) {
+            this.url = url;
+        }
+
+        public Builder maxBatchSize(int n) {
+            this.maxBatchSize = n;
+            return this;
+        }
+
+        public Builder windowMs(long ms) {
+            this.windowMs = ms;
+            return this;
+        }
+
+        public BatchProvider build() {
+            return new BatchProvider(this);
+        }
     }
 }

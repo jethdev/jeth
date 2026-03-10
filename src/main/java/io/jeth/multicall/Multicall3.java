@@ -11,7 +11,6 @@ import io.jeth.abi.Function;
 import io.jeth.core.EthClient;
 import io.jeth.model.EthModels;
 import io.jeth.util.Hex;
-
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -23,7 +22,7 @@ import java.util.concurrent.CompletableFuture;
 /**
  * Multicall3 — batch hundreds of contract reads into a SINGLE eth_call.
  *
- * Reduces N RPC calls to 1. Canonical deployment on every major EVM chain.
+ * <p>Reduces N RPC calls to 1. Canonical deployment on every major EVM chain.
  *
  * <pre>
  * var mc = new Multicall3(client);
@@ -41,6 +40,7 @@ import java.util.concurrent.CompletableFuture;
  * </pre>
  *
  * Fluent builder API:
+ *
  * <pre>
  * List<BigInteger> balances = Multicall3.builder(client)
  *     .call("0xUSDC", balanceOf, "0xAddr1")
@@ -54,12 +54,15 @@ public class Multicall3 {
     public static final String ADDRESS = "0xcA11bde05977b3631167028862bE2a173976CA11";
 
     private final EthClient client;
-    private final String    address;
+    private final String address;
     private final List<Call> calls = new ArrayList<>();
 
-    public Multicall3(EthClient client) { this(client, ADDRESS); }
+    public Multicall3(EthClient client) {
+        this(client, ADDRESS);
+    }
+
     public Multicall3(EthClient client, String address) {
-        this.client  = client;
+        this.client = client;
         this.address = address;
     }
 
@@ -68,8 +71,8 @@ public class Multicall3 {
     /**
      * Queues a required call. The entire batch reverts if this call fails.
      *
-     * <p>Returns the index of this call in the result list, so you can retrieve
-     * the value after {@link #execute()} without counting manually:
+     * <p>Returns the index of this call in the result list, so you can retrieve the value after
+     * {@link #execute()} without counting manually:
      *
      * <pre>
      * int i = mc.add("0xUSDC", balanceOf, "0xUser");
@@ -78,8 +81,8 @@ public class Multicall3 {
      * </pre>
      *
      * @param contractAddress the contract to call
-     * @param function        the ABI function definition
-     * @param args            call arguments (matched to function input types by position)
+     * @param function the ABI function definition
+     * @param args call arguments (matched to function input types by position)
      * @return result index — use this to retrieve the value from the {@link #execute()} result list
      */
     public int add(String contractAddress, Function function, Object... args) {
@@ -89,15 +92,15 @@ public class Multicall3 {
     }
 
     /**
-     * Queues an optional call. If this call reverts, its slot in the result list will be
-     * {@code null} instead of propagating the revert to the whole batch.
+     * Queues an optional call. If this call reverts, its slot in the result list will be {@code
+     * null} instead of propagating the revert to the whole batch.
      *
-     * <p>Use for calls that might fail on some inputs (e.g. querying a contract that
-     * may not be deployed on all chains, or a balance that may be zero and revert).
+     * <p>Use for calls that might fail on some inputs (e.g. querying a contract that may not be
+     * deployed on all chains, or a balance that may be zero and revert).
      *
      * @param contractAddress the contract to call
-     * @param function        the ABI function definition
-     * @param args            call arguments
+     * @param function the ABI function definition
+     * @param args call arguments
      * @return result index
      */
     public int addOptional(String contractAddress, Function function, Object... args) {
@@ -106,25 +109,38 @@ public class Multicall3 {
         return idx;
     }
 
-    /** @deprecated Use addOptional */
-    @Deprecated public int addAllowFailure(String contractAddress, Function fn, Object... args) {
+    /**
+     * @deprecated Use addOptional
+     */
+    @Deprecated
+    public int addAllowFailure(String contractAddress, Function fn, Object... args) {
         return addOptional(contractAddress, fn, args);
     }
 
-    public void clear() { calls.clear(); }
-    public int  size()  { return calls.size(); }
+    public void clear() {
+        calls.clear();
+    }
+
+    public int size() {
+        return calls.size();
+    }
 
     // ─── Execute ──────────────────────────────────────────────────────────────
 
-    public CompletableFuture<List<Object>> execute() { return execute("latest"); }
+    public CompletableFuture<List<Object>> execute() {
+        return execute("latest");
+    }
 
     public CompletableFuture<List<Object>> execute(String blockTag) {
         if (calls.isEmpty()) return CompletableFuture.completedFuture(List.of());
         List<Call> snap = List.copyOf(calls);
         return client.call(
-                EthModels.CallRequest.builder().to(address).data(encodeAggregate3(snap)).build(),
-                blockTag
-        ).thenApply(hex -> decodeResults(hex, snap));
+                        EthModels.CallRequest.builder()
+                                .to(address)
+                                .data(encodeAggregate3(snap))
+                                .build(),
+                        blockTag)
+                .thenApply(hex -> decodeResults(hex, snap));
     }
 
     /** Execute and get typed Result wrappers (success flag + value). */
@@ -136,25 +152,29 @@ public class Multicall3 {
         if (calls.isEmpty()) return CompletableFuture.completedFuture(List.of());
         List<Call> snap = List.copyOf(calls);
         return client.call(
-                EthModels.CallRequest.builder().to(address).data(encodeAggregate3(snap)).build(),
-                blockTag
-        ).thenApply(hex -> {
-            List<Object> values = decodeResults(hex, snap);
-            List<Result> out = new ArrayList<>(values.size());
-            for (int i = 0; i < snap.size(); i++)
-                out.add(new Result(i, values.get(i), values.get(i) != null));
-            return out;
-        });
+                        EthModels.CallRequest.builder()
+                                .to(address)
+                                .data(encodeAggregate3(snap))
+                                .build(),
+                        blockTag)
+                .thenApply(
+                        hex -> {
+                            List<Object> values = decodeResults(hex, snap);
+                            List<Result> out = new ArrayList<>(values.size());
+                            for (int i = 0; i < snap.size(); i++)
+                                out.add(new Result(i, values.get(i), values.get(i) != null));
+                            return out;
+                        });
     }
 
     /**
      * Execute with per-call failure tolerance — equivalent to Multicall3's {@code tryAggregate}.
      *
-     * Unlike {@link #execute()} which throws if any required call fails, this method
-     * returns a {@link TryResult} per call: each result has a {@code success} flag and
-     * either a decoded value or a revert reason.
+     * <p>Unlike {@link #execute()} which throws if any required call fails, this method returns a
+     * {@link TryResult} per call: each result has a {@code success} flag and either a decoded value
+     * or a revert reason.
      *
-     * All calls are treated as "allow failure" regardless of how they were added.
+     * <p>All calls are treated as "allow failure" regardless of how they were added.
      *
      * <pre>
      * mc.add("0xUSDC",   balanceOf, user1);  // might revert (e.g. non-existent account)
@@ -173,14 +193,18 @@ public class Multicall3 {
     public CompletableFuture<List<TryResult>> tryExecute(String blockTag) {
         if (calls.isEmpty()) return CompletableFuture.completedFuture(List.of());
         // Override all calls to allowFailure=true
-        List<Call> permissive = calls.stream()
-                .map(c -> new Call(c.address(), c.function(), c.args(), false))
-                .toList();
+        List<Call> permissive =
+                calls.stream()
+                        .map(c -> new Call(c.address(), c.function(), c.args(), false))
+                        .toList();
 
         return client.call(
-                EthModels.CallRequest.builder().to(address).data(encodeAggregate3(permissive)).build(),
-                blockTag
-        ).thenApply(hex -> decodeTryResults(hex, permissive));
+                        EthModels.CallRequest.builder()
+                                .to(address)
+                                .data(encodeAggregate3(permissive))
+                                .build(),
+                        blockTag)
+                .thenApply(hex -> decodeTryResults(hex, permissive));
     }
 
     private List<TryResult> decodeTryResults(String hexResult, List<Call> snap) {
@@ -189,11 +213,19 @@ public class Multicall3 {
         List<TryResult> out = new ArrayList<>(n);
 
         for (int i = 0; i < n && i < snap.size(); i++) {
-            int elemOff = 64 + (int) new BigInteger(1,
-                    Arrays.copyOfRange(data, 64 + i * 32, 96 + i * 32)).longValue();
+            int elemOff =
+                    64
+                            + (int)
+                                    new BigInteger(
+                                                    1,
+                                                    Arrays.copyOfRange(
+                                                            data, 64 + i * 32, 96 + i * 32))
+                                            .longValue();
             boolean success = data[elemOff + 31] != 0;
-            int bytesLen = (int) new BigInteger(1,
-                    Arrays.copyOfRange(data, elemOff + 32, elemOff + 64)).longValue();
+            int bytesLen =
+                    (int)
+                            new BigInteger(1, Arrays.copyOfRange(data, elemOff + 32, elemOff + 64))
+                                    .longValue();
 
             if (success && bytesLen > 0) {
                 byte[] ret = Arrays.copyOfRange(data, elemOff + 64, elemOff + 64 + bytesLen);
@@ -221,9 +253,7 @@ public class Multicall3 {
         return out;
     }
 
-    /**
-     * Per-call result from {@link #tryExecute()}.
-     */
+    /** Per-call result from {@link #tryExecute()}. */
     public record TryResult(boolean success, Object value, String revertReason) {
         @SuppressWarnings("unchecked")
         public <T> T as(Class<T> t) {
@@ -233,15 +263,18 @@ public class Multicall3 {
 
         @SuppressWarnings("unchecked")
         public <T> Optional<T> opt(Class<T> t) {
-            return success && value != null ? Optional.of(t.cast(value))
-                                           : Optional.empty();
+            return success && value != null ? Optional.of(t.cast(value)) : Optional.empty();
         }
 
-        public boolean isNull() { return value == null; }
+        public boolean isNull() {
+            return value == null;
+        }
 
-        @Override public String toString() {
-            return success ? "TryResult{ok=" + value + "}"
-                           : "TryResult{failed=" + revertReason + "}";
+        @Override
+        public String toString() {
+            return success
+                    ? "TryResult{ok=" + value + "}"
+                    : "TryResult{failed=" + revertReason + "}";
         }
     }
 
@@ -251,10 +284,11 @@ public class Multicall3 {
      * Batches {@code eth_getBalance} for every address in a single Multicall3 call.
      *
      * @param client the RPC client
-     * @param addrs  list of addresses to query
+     * @param addrs list of addresses to query
      * @return wei balances in the same order as {@code addrs}
      */
-    public static CompletableFuture<List<BigInteger>> getEthBalances(EthClient client, List<String> addrs) {
+    public static CompletableFuture<List<BigInteger>> getEthBalances(
+            EthClient client, List<String> addrs) {
         var mc = new Multicall3(client);
         Function fn = Function.of("getEthBalance", AbiType.ADDRESS).withReturns(AbiType.UINT256);
         addrs.forEach(a -> mc.add(ADDRESS, fn, a));
@@ -264,12 +298,12 @@ public class Multicall3 {
     /**
      * Batches {@code balanceOf} for many addresses against one ERC-20 token.
      *
-     * <p>Uses {@link #addOptional} so addresses with no balance (or non-ERC-20 contracts)
-     * return {@code BigInteger.ZERO} instead of failing the batch.
+     * <p>Uses {@link #addOptional} so addresses with no balance (or non-ERC-20 contracts) return
+     * {@code BigInteger.ZERO} instead of failing the batch.
      *
      * @param client the RPC client
-     * @param token  ERC-20 contract address
-     * @param addrs  addresses to query
+     * @param token ERC-20 contract address
+     * @param addrs addresses to query
      * @return raw token balances in the same order as {@code addrs}
      */
     public static CompletableFuture<List<BigInteger>> getTokenBalances(
@@ -277,27 +311,49 @@ public class Multicall3 {
         var mc = new Multicall3(client);
         Function fn = Function.of("balanceOf", AbiType.ADDRESS).withReturns(AbiType.UINT256);
         addrs.forEach(a -> mc.addOptional(token, fn, a));
-        return mc.execute().thenApply(r ->
-                r.stream().map(v -> v instanceof BigInteger bi ? bi : BigInteger.ZERO).toList());
+        return mc.execute()
+                .thenApply(
+                        r ->
+                                r.stream()
+                                        .map(v -> v instanceof BigInteger bi ? bi : BigInteger.ZERO)
+                                        .toList());
     }
 
     // ─── Fluent builder ───────────────────────────────────────────────────────
 
-    public static FluentBuilder builder(EthClient client) { return new FluentBuilder(client); }
+    public static FluentBuilder builder(EthClient client) {
+        return new FluentBuilder(client);
+    }
 
     public static class FluentBuilder {
         private final Multicall3 mc;
-        FluentBuilder(EthClient client) { this.mc = new Multicall3(client); }
 
-        public FluentBuilder call(String addr, Function fn, Object... args) { mc.add(addr, fn, args); return this; }
-        public FluentBuilder optional(String addr, Function fn, Object... args) { mc.addOptional(addr, fn, args); return this; }
-        public CompletableFuture<List<Object>> execute() { return mc.execute(); }
+        FluentBuilder(EthClient client) {
+            this.mc = new Multicall3(client);
+        }
+
+        public FluentBuilder call(String addr, Function fn, Object... args) {
+            mc.add(addr, fn, args);
+            return this;
+        }
+
+        public FluentBuilder optional(String addr, Function fn, Object... args) {
+            mc.addOptional(addr, fn, args);
+            return this;
+        }
+
+        public CompletableFuture<List<Object>> execute() {
+            return mc.execute();
+        }
 
         @SuppressWarnings("unchecked")
         public <T> CompletableFuture<List<T>> executeAs(Class<T> type) {
             return mc.execute().thenApply(r -> r.stream().map(v -> (T) v).toList());
         }
-        public CompletableFuture<List<Result>> executeWithResults() { return mc.executeWithResults(); }
+
+        public CompletableFuture<List<Result>> executeWithResults() {
+            return mc.executeWithResults();
+        }
     }
 
     // ─── Encoding ─────────────────────────────────────────────────────────────
@@ -311,12 +367,13 @@ public class Multicall3 {
         int n = calls.size();
         List<byte[]> elements = new ArrayList<>(n);
         for (int i = 0; i < n; i++) {
-            Call c  = calls.get(i);
+            Call c = calls.get(i);
             byte[] cd = calldatas.get(i);
-            byte[] target     = AbiCodec.encodeAddress(c.address);
-            byte[] allowFail  = new byte[32]; allowFail[31] = (byte)(c.requireSuccess ? 0 : 1);
-            byte[] offsetPtr  = be32(96);
-            byte[] lenBytes   = be32(cd.length);
+            byte[] target = AbiCodec.encodeAddress(c.address);
+            byte[] allowFail = new byte[32];
+            allowFail[31] = (byte) (c.requireSuccess ? 0 : 1);
+            byte[] offsetPtr = be32(96);
+            byte[] lenBytes = be32(cd.length);
             int pad = ((cd.length + 31) / 32) * 32;
             byte[] cdPad = Arrays.copyOf(cd, pad);
             elements.add(concat(target, allowFail, offsetPtr, lenBytes, cdPad));
@@ -325,12 +382,15 @@ public class Multicall3 {
         int headSize = n * 32;
         int[] tailOffsets = new int[n];
         int running = headSize;
-        for (int i = 0; i < n; i++) { tailOffsets[i] = running; running += elements.get(i).length; }
+        for (int i = 0; i < n; i++) {
+            tailOffsets[i] = running;
+            running += elements.get(i).length;
+        }
 
         ByteBuilder bb = new ByteBuilder();
         bb.add(AGGREGATE3_SELECTOR);
-        bb.add(be32(32));        // outer offset
-        bb.add(be32(n));         // array length
+        bb.add(be32(32)); // outer offset
+        bb.add(be32(n)); // array length
         for (int off : tailOffsets) bb.add(be32(off));
         for (byte[] e : elements) bb.add(e);
         return Hex.encode(bb.build());
@@ -342,9 +402,19 @@ public class Multicall3 {
         List<Object> out = new ArrayList<>(Collections.nCopies(n, null));
 
         for (int i = 0; i < n && i < calls.size(); i++) {
-            int elemOff = 64 + (int) new BigInteger(1, Arrays.copyOfRange(data, 64 + i * 32, 96 + i * 32)).longValue();
+            int elemOff =
+                    64
+                            + (int)
+                                    new BigInteger(
+                                                    1,
+                                                    Arrays.copyOfRange(
+                                                            data, 64 + i * 32, 96 + i * 32))
+                                            .longValue();
             boolean success = data[elemOff + 31] != 0;
-            int bytesLen = (int) new BigInteger(1, Arrays.copyOfRange(data, elemOff + 32, elemOff + 64)).longValue();
+            int bytesLen =
+                    (int)
+                            new BigInteger(1, Arrays.copyOfRange(data, elemOff + 32, elemOff + 64))
+                                    .longValue();
             if (success && bytesLen > 0) {
                 byte[] ret = Arrays.copyOfRange(data, elemOff + 64, elemOff + 64 + bytesLen);
                 try {
@@ -353,7 +423,9 @@ public class Multicall3 {
                         Object[] dec = AbiCodec.decode(types, ret);
                         out.set(i, dec.length == 1 ? dec[0] : dec);
                     } else out.set(i, ret);
-                } catch (Exception e) { out.set(i, null); }
+                } catch (Exception e) {
+                    out.set(i, null);
+                }
             }
         }
         return out;
@@ -363,23 +435,40 @@ public class Multicall3 {
 
     private static byte[] be32(int v) {
         byte[] b = new byte[32];
-        b[28] = (byte)(v >> 24); b[29] = (byte)(v >> 16);
-        b[30] = (byte)(v >> 8);  b[31] = (byte) v;
+        b[28] = (byte) (v >> 24);
+        b[29] = (byte) (v >> 16);
+        b[30] = (byte) (v >> 8);
+        b[31] = (byte) v;
         return b;
     }
+
     private static byte[] concat(byte[]... parts) {
-        int total = 0; for (byte[] p : parts) total += p.length;
-        byte[] out = new byte[total]; int pos = 0;
-        for (byte[] p : parts) { System.arraycopy(p, 0, out, pos, p.length); pos += p.length; }
+        int total = 0;
+        for (byte[] p : parts) total += p.length;
+        byte[] out = new byte[total];
+        int pos = 0;
+        for (byte[] p : parts) {
+            System.arraycopy(p, 0, out, pos, p.length);
+            pos += p.length;
+        }
         return out;
     }
+
     private static class ByteBuilder {
         final List<byte[]> parts = new ArrayList<>();
-        void add(byte[] b) { parts.add(b); }
+
+        void add(byte[] b) {
+            parts.add(b);
+        }
+
         byte[] build() {
             int tot = parts.stream().mapToInt(a -> a.length).sum();
-            byte[] out = new byte[tot]; int pos = 0;
-            for (byte[] p : parts) { System.arraycopy(p, 0, out, pos, p.length); pos += p.length; }
+            byte[] out = new byte[tot];
+            int pos = 0;
+            for (byte[] p : parts) {
+                System.arraycopy(p, 0, out, pos, p.length);
+                pos += p.length;
+            }
             return out;
         }
     }
@@ -389,7 +478,13 @@ public class Multicall3 {
     private record Call(String address, Function function, Object[] args, boolean requireSuccess) {}
 
     public record Result(int index, Object value, boolean success) {
-        @SuppressWarnings("unchecked") public <T> T as(Class<T> t) { return t.cast(value); }
-        public boolean isNull() { return value == null; }
+        @SuppressWarnings("unchecked")
+        public <T> T as(Class<T> t) {
+            return t.cast(value);
+        }
+
+        public boolean isNull() {
+            return value == null;
+        }
     }
 }

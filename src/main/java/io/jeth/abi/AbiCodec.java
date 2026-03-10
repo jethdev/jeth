@@ -6,7 +6,6 @@ package io.jeth.abi;
 
 import io.jeth.util.Address;
 import io.jeth.util.Hex;
-
 import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
@@ -15,38 +14,34 @@ import java.util.List;
 /**
  * Complete Solidity ABI encoder/decoder.
  *
- * Supports all Solidity types:
- * - Primitives: uint/int (8-256 bit), address, bool, bytesN, bytes, string
- * - Arrays: T[], T[N] (including nested arrays)
- * - Tuples: (T1,T2,...), (T1,T2,...)[], (T1,T2,...)[N]
+ * <p>Supports all Solidity types: - Primitives: uint/int (8-256 bit), address, bool, bytesN, bytes,
+ * string - Arrays: T[], T[N] (including nested arrays) - Tuples: (T1,T2,...), (T1,T2,...)[],
+ * (T1,T2,...)[N]
  *
- * Follows the ABI spec: https://docs.soliditylang.org/en/latest/abi-spec.html
+ * <p>Follows the ABI spec: https://docs.soliditylang.org/en/latest/abi-spec.html
  */
 public class AbiCodec {
 
     // ─── Encode ──────────────────────────────────────────────────────────────
 
     /**
-     * Encode a list of typed values into ABI bytes.
-     * This is the top-level encoding — the "calldata" minus the function selector.
+     * Encode a list of typed values into ABI bytes. This is the top-level encoding — the "calldata"
+     * minus the function selector.
      */
     public static byte[] encode(AbiType[] types, Object[] values) {
         if (types.length != values.length)
-            throw new AbiException("types/values length mismatch: " + types.length + " vs " + values.length);
+            throw new AbiException(
+                    "types/values length mismatch: " + types.length + " vs " + values.length);
         return encodeSequence(types, values, 0);
     }
 
-    /**
-     * Encode a single tuple (struct) — same as encode() but takes a single AbiType.TUPLE.
-     */
+    /** Encode a single tuple (struct) — same as encode() but takes a single AbiType.TUPLE. */
     public static byte[] encodeTuple(AbiType tupleType, Object[] values) {
         if (!tupleType.isTuple()) throw new AbiException("Type is not a tuple: " + tupleType);
         return encodeSequence(tupleType.getTupleTypes(), values, 0);
     }
 
-    /**
-     * Core encoding: handles head/tail layout for any sequence of typed values.
-     */
+    /** Core encoding: handles head/tail layout for any sequence of typed values. */
     static byte[] encodeSequence(AbiType[] types, Object[] values, int tailBaseOffset) {
         // Step 1: encode each value and decide head (32-byte slot or offset pointer)
         byte[][] encodedTails = new byte[types.length][];
@@ -97,22 +92,23 @@ public class AbiCodec {
     }
 
     /**
-     * Encode a single value of a given type. Returns 32 bytes for static types,
-     * variable length for dynamic.
+     * Encode a single value of a given type. Returns 32 bytes for static types, variable length for
+     * dynamic.
      */
     public static byte[] encodeValue(AbiType type, Object value) {
         if (type.isArray()) return encodeArray(type, value);
         if (type.isTuple()) return encodeTupleValue(type, value);
 
         return switch (type.baseType()) {
-            case "uint"    -> encodeUint256(toBigInteger(value));
-            case "int"     -> encodeInt(toBigInteger(value));
+            case "uint" -> encodeUint256(toBigInteger(value));
+            case "int" -> encodeInt(toBigInteger(value));
             case "address" -> encodeAddress(value.toString());
-            case "bool"    -> encodeBool(toBoolean(value));
-            case "bytes"   -> encodeDynamicBytes(toBytes(value));
-            case "string"  -> encodeString(value.toString());
+            case "bool" -> encodeBool(toBoolean(value));
+            case "bytes" -> encodeDynamicBytes(toBytes(value));
+            case "string" -> encodeString(value.toString());
             default -> {
-                if (type.baseType().startsWith("bytes")) yield encodeFixedBytes(toBytes(value), type.size());
+                if (type.baseType().startsWith("bytes"))
+                    yield encodeFixedBytes(toBytes(value), type.size());
                 throw new AbiException("Unsupported type: " + type);
             }
         };
@@ -126,7 +122,8 @@ public class AbiCodec {
         } else if (value instanceof List<?> list) {
             values = list.toArray();
         } else {
-            throw new AbiException("Tuple value must be Object[] or List, got: " + value.getClass());
+            throw new AbiException(
+                    "Tuple value must be Object[] or List, got: " + value.getClass());
         }
         return encodeSequence(components, values, 0);
     }
@@ -143,8 +140,11 @@ public class AbiCodec {
         } else {
             // Fixed array: no length prefix, just elements
             if (elements.length != arrayType.getArraySize())
-                throw new AbiException("Fixed array size mismatch: expected " + arrayType.getArraySize()
-                    + " but got " + elements.length);
+                throw new AbiException(
+                        "Fixed array size mismatch: expected "
+                                + arrayType.getArraySize()
+                                + " but got "
+                                + elements.length);
             return encodeArrayElements(elemType, elements);
         }
     }
@@ -175,7 +175,10 @@ public class AbiCodec {
     }
 
     public static byte[] encodeAddress(String address) {
-        String addr = address.startsWith("0x") || address.startsWith("0X") ? address.substring(2) : address;
+        String addr =
+                address.startsWith("0x") || address.startsWith("0X")
+                        ? address.substring(2)
+                        : address;
         if (addr.length() != 40) throw new AbiException("Invalid address length: " + address);
         byte[] addrBytes = Hex.decode(addr);
         byte[] padded = new byte[32];
@@ -210,9 +213,7 @@ public class AbiCodec {
 
     // ─── Decode ──────────────────────────────────────────────────────────────
 
-    /**
-     * Decode ABI-encoded bytes into typed Java objects.
-     */
+    /** Decode ABI-encoded bytes into typed Java objects. */
     public static Object[] decode(AbiType[] types, byte[] data) {
         return decodeSequence(types, data, 0);
     }
@@ -238,14 +239,15 @@ public class AbiCodec {
         if (type.isTuple()) return decodeTuple(type, data, offset);
 
         return switch (type.baseType()) {
-            case "uint"    -> decodeBigInt(data, offset);
-            case "int"     -> decodeSignedInt(data, offset, type.size());
+            case "uint" -> decodeBigInt(data, offset);
+            case "int" -> decodeSignedInt(data, offset, type.size());
             case "address" -> decodeAddress(data, offset);
-            case "bool"    -> data[offset + 31] != 0;
-            case "bytes"   -> decodeDynamicBytes(data, offset);
-            case "string"  -> decodeString(data, offset);
+            case "bool" -> data[offset + 31] != 0;
+            case "bytes" -> decodeDynamicBytes(data, offset);
+            case "string" -> decodeString(data, offset);
             default -> {
-                if (type.baseType().startsWith("bytes")) yield decodeFixedBytes(data, offset, type.size());
+                if (type.baseType().startsWith("bytes"))
+                    yield decodeFixedBytes(data, offset, type.size());
                 throw new AbiException("Unsupported type: " + type);
             }
         };
@@ -330,16 +332,21 @@ public class AbiCodec {
 
     static BigInteger toBigInteger(Object value) {
         if (value instanceof BigInteger bi) return bi;
-        if (value instanceof Long l)        return BigInteger.valueOf(l);
-        if (value instanceof Integer i)     return BigInteger.valueOf(i);
-        if (value instanceof Short s)       return BigInteger.valueOf(s);
-        if (value instanceof Byte b)        return BigInteger.valueOf(b & 0xFF);
-        if (value instanceof Boolean bool)  return bool ? BigInteger.ONE : BigInteger.ZERO;
+        if (value instanceof Long l) return BigInteger.valueOf(l);
+        if (value instanceof Integer i) return BigInteger.valueOf(i);
+        if (value instanceof Short s) return BigInteger.valueOf(s);
+        if (value instanceof Byte b) return BigInteger.valueOf(b & 0xFF);
+        if (value instanceof Boolean bool) return bool ? BigInteger.ONE : BigInteger.ZERO;
         if (value instanceof String s) {
             if (s.startsWith("0x")) return new BigInteger(s.substring(2), 16);
             return new BigInteger(s);
         }
-        throw new AbiException("Cannot convert to BigInteger: " + value + " (" + value.getClass().getSimpleName() + ")");
+        throw new AbiException(
+                "Cannot convert to BigInteger: "
+                        + value
+                        + " ("
+                        + value.getClass().getSimpleName()
+                        + ")");
     }
 
     static boolean toBoolean(Object value) {
@@ -352,7 +359,12 @@ public class AbiCodec {
     static byte[] toBytes(Object value) {
         if (value instanceof byte[] b) return b;
         if (value instanceof String s) return Hex.decode(s);
-        throw new AbiException("Cannot convert to bytes: " + value + " (" + value.getClass().getSimpleName() + ")");
+        throw new AbiException(
+                "Cannot convert to bytes: "
+                        + value
+                        + " ("
+                        + value.getClass().getSimpleName()
+                        + ")");
     }
 
     @SuppressWarnings("unchecked")

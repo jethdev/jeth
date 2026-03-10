@@ -5,7 +5,6 @@
 package io.jeth.eip4844;
 
 import java.io.*;
-import java.math.BigInteger;
 import java.net.URL;
 import java.nio.file.*;
 import java.util.zip.*;
@@ -14,21 +13,23 @@ import java.util.zip.*;
  * Loads and caches the Ethereum KZG trusted setup for EIP-4844 blob transactions.
  *
  * <p>The trusted setup (from the KZG ceremony at <a href="https://ceremony.ethereum.org">
- * ceremony.ethereum.org</a>) contains 4096 G1 points in both monomial and Lagrange forms,
- * plus 65 G2 points for proof verification.
+ * ceremony.ethereum.org</a>) contains 4096 G1 points in both monomial and Lagrange forms, plus 65
+ * G2 points for proof verification.
  *
  * <p>Three ways to supply the trusted setup:
+ *
  * <ol>
- *   <li><b>Bundled</b> (default): jeth ships a compressed copy embedded in the jar.
- *       No configuration needed — it loads automatically.</li>
- *   <li><b>Custom path</b>: {@code KzgTrustedSetup.loadFromFile(path)} for a local
- *       {@code trusted_setup.txt} in the Ethereum consensus-spec format.</li>
- *   <li><b>Environment variable</b>: set {@code JETH_KZG_SETUP} to a file path and
- *       {@link #getInstance()} will load it automatically.</li>
+ *   <li><b>Bundled</b> (default): jeth ships a compressed copy embedded in the jar. No
+ *       configuration needed — it loads automatically.
+ *   <li><b>Custom path</b>: {@code KzgTrustedSetup.loadFromFile(path)} for a local {@code
+ *       trusted_setup.txt} in the Ethereum consensus-spec format.
+ *   <li><b>Environment variable</b>: set {@code JETH_KZG_SETUP} to a file path and {@link
+ *       #getInstance()} will load it automatically.
  * </ol>
  *
- * <p>Setup format: the standard {@code trusted_setup.txt} from
- * <a href="https://github.com/ethereum/consensus-spec-tests">ethereum/consensus-spec-tests</a>:
+ * <p>Setup format: the standard {@code trusted_setup.txt} from <a
+ * href="https://github.com/ethereum/consensus-spec-tests">ethereum/consensus-spec-tests</a>:
+ *
  * <pre>
  * g1_monomial
  * 0x... (4096 lines)
@@ -47,19 +48,17 @@ public final class KzgTrustedSetup {
     public static final int G2_COUNT = 65;
 
     private static final String BUNDLED_RESOURCE = "/io/jeth/eip4844/kzg-setup.bin";
-    private static final String ENV_SETUP_PATH   = "JETH_KZG_SETUP";
+    private static final String ENV_SETUP_PATH = "JETH_KZG_SETUP";
 
     private static volatile KzgTrustedSetup INSTANCE;
 
     /**
-     * G1 setup points in <b>Lagrange (evaluation) form</b>: [L_0(τ)]G1, ..., [L_4095(τ)]G1.
-     * Used for commitment and proof MSM (primary setup array per EIP-4844 spec).
+     * G1 setup points in <b>Lagrange (evaluation) form</b>: [L_0(τ)]G1, ..., [L_4095(τ)]G1. Used
+     * for commitment and proof MSM (primary setup array per EIP-4844 spec).
      */
     final Bls12381.G1[] g1Lagrange;
 
-    /**
-     * G1 setup points in <b>monomial (powers) form</b>: [τ^0]G1, ..., [τ^4095]G1.
-     */
+    /** G1 setup points in <b>monomial (powers) form</b>: [τ^0]G1, ..., [τ^4095]G1. */
     final Bls12381.G1[] g1Monomial;
 
     /** G2 points (raw compressed bytes, 96 bytes each) for proof verification. */
@@ -68,7 +67,7 @@ public final class KzgTrustedSetup {
     private KzgTrustedSetup(Bls12381.G1[] g1Lagrange, Bls12381.G1[] g1Monomial, byte[][] g2Raw) {
         this.g1Lagrange = g1Lagrange;
         this.g1Monomial = g1Monomial;
-        this.g2Raw      = g2Raw;
+        this.g2Raw = g2Raw;
     }
 
     // Public API
@@ -79,9 +78,7 @@ public final class KzgTrustedSetup {
         synchronized (KzgTrustedSetup.class) {
             if (INSTANCE == null) {
                 String envPath = System.getenv(ENV_SETUP_PATH);
-                INSTANCE = envPath != null
-                    ? loadFromFile(Path.of(envPath))
-                    : loadBundled();
+                INSTANCE = envPath != null ? loadFromFile(Path.of(envPath)) : loadBundled();
             }
             return INSTANCE;
         }
@@ -91,7 +88,8 @@ public final class KzgTrustedSetup {
         try (BufferedReader reader = Files.newBufferedReader(path)) {
             return parseTextFormat(reader);
         } catch (IOException e) {
-            throw new KzgException("Failed to load KZG trusted setup from " + path + ": " + e.getMessage(), e);
+            throw new KzgException(
+                    "Failed to load KZG trusted setup from " + path + ": " + e.getMessage(), e);
         }
     }
 
@@ -105,13 +103,15 @@ public final class KzgTrustedSetup {
         URL url = KzgTrustedSetup.class.getResource(BUNDLED_RESOURCE);
         if (url == null) {
             throw new KzgException(
-                "Bundled KZG trusted setup not found in jar (" + BUNDLED_RESOURCE + "). " +
-                "Run: ./gradlew bundleKzgSetup   then rebuild the jar. " +
-                "Or set JETH_KZG_SETUP=/path/to/trusted_setup.txt.");
+                    "Bundled KZG trusted setup not found in jar ("
+                            + BUNDLED_RESOURCE
+                            + "). "
+                            + "Run: ./gradlew bundleKzgSetup   then rebuild the jar. "
+                            + "Or set JETH_KZG_SETUP=/path/to/trusted_setup.txt.");
         }
         try (InputStream raw = url.openStream();
-             GZIPInputStream gz  = new GZIPInputStream(raw);
-             DataInputStream dis = new DataInputStream(new BufferedInputStream(gz))) {
+                GZIPInputStream gz = new GZIPInputStream(raw);
+                DataInputStream dis = new DataInputStream(new BufferedInputStream(gz))) {
             return readBinaryFormat(dis);
         } catch (IOException e) {
             throw new KzgException("Failed to read bundled KZG setup: " + e.getMessage(), e);
@@ -121,7 +121,7 @@ public final class KzgTrustedSetup {
     static KzgTrustedSetup parseTextFormat(BufferedReader reader) throws IOException {
         Bls12381.G1[] g1Monomial = new Bls12381.G1[G1_COUNT];
         Bls12381.G1[] g1Lagrange = new Bls12381.G1[G1_COUNT];
-        byte[][]      g2Raw      = new byte[G2_COUNT][];
+        byte[][] g2Raw = new byte[G2_COUNT][];
 
         String line;
 
@@ -186,9 +186,8 @@ public final class KzgTrustedSetup {
     }
 
     /**
-     * Write the compact gzip-binary format for bundling in the jar.
-     * Layout: version(4) | g1Count(4) | g2Count(4)
-     *       | g1Monomial(g1Count×48) | g1Lagrange(g1Count×48) | g2Raw(g2Count×96)
+     * Write the compact gzip-binary format for bundling in the jar. Layout: version(4) | g1Count(4)
+     * | g2Count(4) | g1Monomial(g1Count×48) | g1Lagrange(g1Count×48) | g2Raw(g2Count×96)
      *
      * <p>Run {@code ./gradlew bundleKzgSetup} to generate from {@code trusted_setup.txt}.
      */
@@ -199,7 +198,7 @@ public final class KzgTrustedSetup {
         dos.writeInt(g2Raw.length);
         for (Bls12381.G1 p : g1Monomial) dos.write(p.compress());
         for (Bls12381.G1 p : g1Lagrange) dos.write(p.compress());
-        for (byte[] g2 : g2Raw)           dos.write(g2);
+        for (byte[] g2 : g2Raw) dos.write(g2);
         dos.flush();
     }
 
@@ -214,7 +213,12 @@ public final class KzgTrustedSetup {
 
     /** Thrown when the KZG setup cannot be loaded or a computation fails. */
     public static class KzgException extends RuntimeException {
-        public KzgException(String msg)              { super(msg); }
-        public KzgException(String msg, Throwable c) { super(msg, c); }
+        public KzgException(String msg) {
+            super(msg);
+        }
+
+        public KzgException(String msg, Throwable c) {
+            super(msg, c);
+        }
     }
 }

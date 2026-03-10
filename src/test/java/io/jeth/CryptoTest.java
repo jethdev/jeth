@@ -4,17 +4,16 @@
  */
 package io.jeth;
 
+import static org.junit.jupiter.api.Assertions.*;
+
 import io.jeth.crypto.Rlp;
 import io.jeth.crypto.Signature;
 import io.jeth.crypto.Wallet;
 import io.jeth.util.Address;
 import io.jeth.util.Hex;
-import org.junit.jupiter.api.Test;
-
 import java.math.BigInteger;
 import java.util.List;
-
-import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.Test;
 
 class CryptoTest {
 
@@ -46,8 +45,11 @@ class CryptoTest {
 
     @Test
     void testWalletSign() {
-        Wallet wallet = Wallet.fromPrivateKey("0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80");
-        byte[] hash = Hex.decode("0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef");
+        Wallet wallet =
+                Wallet.fromPrivateKey(
+                        "0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80");
+        byte[] hash =
+                Hex.decode("0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef");
         Signature sig = wallet.sign(hash);
 
         assertNotNull(sig);
@@ -101,15 +103,13 @@ class CryptoTest {
 
     @Test
     void testRlpDecodeRoundtripList() {
-        List<Object> list = List.of(
-            BigInteger.ONE, BigInteger.valueOf(255), BigInteger.ZERO
-        );
+        List<Object> list = List.of(BigInteger.ONE, BigInteger.valueOf(255), BigInteger.ZERO);
         byte[] encoded = Rlp.encode(list);
         Object decoded = Rlp.decode(encoded);
         assertTrue(decoded instanceof List<?>);
         List<?> decodedList = (List<?>) decoded;
         assertEquals(3, decodedList.size());
-        assertEquals(BigInteger.ONE,         new BigInteger(1, (byte[]) decodedList.get(0)));
+        assertEquals(BigInteger.ONE, new BigInteger(1, (byte[]) decodedList.get(0)));
         assertEquals(BigInteger.valueOf(255), new BigInteger(1, (byte[]) decodedList.get(1)));
         // RLP(0) = 0x80 = empty byte array
         assertEquals(0, ((byte[]) decodedList.get(2)).length);
@@ -134,5 +134,4 @@ class CryptoTest {
         assertEquals(2, list.size());
         assertTrue(list.get(1) instanceof List<?>);
     }
-
 }

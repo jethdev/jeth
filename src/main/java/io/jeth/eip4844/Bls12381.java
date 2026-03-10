@@ -10,16 +10,17 @@ import java.math.BigInteger;
  * BLS12-381 curve arithmetic needed for KZG polynomial commitments (EIP-4844).
  *
  * <p>Implements the minimum required for KZG:
+ *
  * <ul>
- *   <li>Fp — base field arithmetic (mod p)</li>
- *   <li>Fr — scalar field arithmetic (mod r)</li>
- *   <li>G1 — curve point in projective coordinates, add/double/scalar-mul/MSM</li>
- *   <li>G1 point compression/decompression (ZCash serialisation)</li>
+ *   <li>Fp — base field arithmetic (mod p)
+ *   <li>Fr — scalar field arithmetic (mod r)
+ *   <li>G1 — curve point in projective coordinates, add/double/scalar-mul/MSM
+ *   <li>G1 point compression/decompression (ZCash serialisation)
  * </ul>
  *
- * <p>All arithmetic uses {@link BigInteger} — correct but not optimised for speed.
- * For high-throughput use, replace with native c-kzg-4844 JNI bindings.
- * For blob submission (one blob per tx, occasional), this is fast enough.
+ * <p>All arithmetic uses {@link BigInteger} — correct but not optimised for speed. For
+ * high-throughput use, replace with native c-kzg-4844 JNI bindings. For blob submission (one blob
+ * per tx, occasional), this is fast enough.
  *
  * <p>Constants from the Ethereum consensus spec and BLS12-381 IETF draft.
  */
@@ -30,20 +31,26 @@ public final class Bls12381 {
     // ─── Field constants ──────────────────────────────────────────────────────
 
     /** BLS12-381 base field prime p. */
-    public static final BigInteger P = new BigInteger(
-        "1a0111ea397fe69a4b1ba7b6434bacd764774b84f38512bf6730d2a0f6b0f6241eabfffeb153ffffb9feffffffffaaab", 16);
+    public static final BigInteger P =
+            new BigInteger(
+                    "1a0111ea397fe69a4b1ba7b6434bacd764774b84f38512bf6730d2a0f6b0f6241eabfffeb153ffffb9feffffffffaaab",
+                    16);
 
     /** BLS12-381 scalar field order r (group order). */
-    public static final BigInteger R = new BigInteger(
-        "73eda753299d7d483339d80809a1d80553bda402fffe5bfeffffffff00000001", 16);
+    public static final BigInteger R =
+            new BigInteger("73eda753299d7d483339d80809a1d80553bda402fffe5bfeffffffff00000001", 16);
 
     /** G1 generator x-coordinate. */
-    private static final BigInteger Gx = new BigInteger(
-        "17f1d3a73197d7942695638c4fa9ac0fc3688c4f9774b905a14e3a3f171bac586c55e83ff97a1aeffb3af00adb22c6bb", 16);
+    private static final BigInteger Gx =
+            new BigInteger(
+                    "17f1d3a73197d7942695638c4fa9ac0fc3688c4f9774b905a14e3a3f171bac586c55e83ff97a1aeffb3af00adb22c6bb",
+                    16);
 
     /** G1 generator y-coordinate. */
-    private static final BigInteger Gy = new BigInteger(
-        "08b3f481e3aaa0f1a09e30ed741d8ae4fcf5e095d5d00af600db18cb2c04b3edd03cc744a2888ae40caa232946c5e7e1", 16);
+    private static final BigInteger Gy =
+            new BigInteger(
+                    "08b3f481e3aaa0f1a09e30ed741d8ae4fcf5e095d5d00af600db18cb2c04b3edd03cc744a2888ae40caa232946c5e7e1",
+                    16);
 
     /** Cofactor h (= 1 for G1 on BLS12-381). */
     public static final BigInteger H = BigInteger.ONE;
@@ -56,31 +63,67 @@ public final class Bls12381 {
 
     // ─── Fp field helpers ─────────────────────────────────────────────────────
 
-    static BigInteger fpAdd(BigInteger a, BigInteger b)  { return a.add(b).mod(P); }
-    static BigInteger fpSub(BigInteger a, BigInteger b)  { return a.subtract(b).mod(P); }
-    static BigInteger fpMul(BigInteger a, BigInteger b)  { return a.multiply(b).mod(P); }
-    static BigInteger fpNeg(BigInteger a)                { return a.signum() == 0 ? BigInteger.ZERO : P.subtract(a); }
-    static BigInteger fpInv(BigInteger a)                { return a.modPow(P.subtract(BigInteger.TWO), P); }
-    static BigInteger fpSqrt(BigInteger a)               { return a.modPow(P.add(BigInteger.ONE).divide(BigInteger.valueOf(4)), P); }
+    static BigInteger fpAdd(BigInteger a, BigInteger b) {
+        return a.add(b).mod(P);
+    }
+
+    static BigInteger fpSub(BigInteger a, BigInteger b) {
+        return a.subtract(b).mod(P);
+    }
+
+    static BigInteger fpMul(BigInteger a, BigInteger b) {
+        return a.multiply(b).mod(P);
+    }
+
+    static BigInteger fpNeg(BigInteger a) {
+        return a.signum() == 0 ? BigInteger.ZERO : P.subtract(a);
+    }
+
+    static BigInteger fpInv(BigInteger a) {
+        return a.modPow(P.subtract(BigInteger.TWO), P);
+    }
+
+    static BigInteger fpSqrt(BigInteger a) {
+        return a.modPow(P.add(BigInteger.ONE).divide(BigInteger.valueOf(4)), P);
+    }
 
     // ─── Fr scalar field helpers ──────────────────────────────────────────────
 
-    public static BigInteger frMod(BigInteger a)         { return a.mod(R); }
-    public static BigInteger frAdd(BigInteger a, BigInteger b) { return a.add(b).mod(R); }
-    public static BigInteger frSub(BigInteger a, BigInteger b) { return a.subtract(b).mod(R); }
-    public static BigInteger frMul(BigInteger a, BigInteger b) { return a.multiply(b).mod(R); }
-    public static BigInteger frInv(BigInteger a)         { return a.modPow(R.subtract(BigInteger.TWO), R); }
-    public static BigInteger frNeg(BigInteger a)         { return a.signum() == 0 ? BigInteger.ZERO : R.subtract(a); }
-    public static BigInteger frPow(BigInteger a, BigInteger e) { return a.modPow(e, R); }
+    public static BigInteger frMod(BigInteger a) {
+        return a.mod(R);
+    }
+
+    public static BigInteger frAdd(BigInteger a, BigInteger b) {
+        return a.add(b).mod(R);
+    }
+
+    public static BigInteger frSub(BigInteger a, BigInteger b) {
+        return a.subtract(b).mod(R);
+    }
+
+    public static BigInteger frMul(BigInteger a, BigInteger b) {
+        return a.multiply(b).mod(R);
+    }
+
+    public static BigInteger frInv(BigInteger a) {
+        return a.modPow(R.subtract(BigInteger.TWO), R);
+    }
+
+    public static BigInteger frNeg(BigInteger a) {
+        return a.signum() == 0 ? BigInteger.ZERO : R.subtract(a);
+    }
+
+    public static BigInteger frPow(BigInteger a, BigInteger e) {
+        return a.modPow(e, R);
+    }
 
     // ─── G1 point (projective Jacobian coordinates) ───────────────────────────
 
     /**
      * A point on the BLS12-381 G1 curve.
      *
-     * <p>Internally stored in projective (Jacobian) coordinates (X, Y, Z)
-     * where the affine point is (X/Z², Y/Z³).
-     * External API uses affine (x, y).
+     * <p>Internally stored in projective (Jacobian) coordinates (X, Y, Z) where the affine point is
+     * (X/Z², Y/Z³). External API uses affine (x, y).
      */
     public static final class G1 {
 
@@ -93,37 +136,40 @@ public final class Bls12381 {
 
         /** Point at infinity (identity). */
         public G1() {
-            this.X        = BigInteger.ZERO;
-            this.Y        = BigInteger.ONE;
-            this.Z        = BigInteger.ZERO;
+            this.X = BigInteger.ZERO;
+            this.Y = BigInteger.ONE;
+            this.Z = BigInteger.ZERO;
             this.infinity = true;
         }
 
         /** Affine point. */
         public G1(BigInteger x, BigInteger y) {
-            this.X        = x;
-            this.Y        = y;
-            this.Z        = BigInteger.ONE;
+            this.X = x;
+            this.Y = y;
+            this.Z = BigInteger.ONE;
             this.infinity = false;
         }
 
         /** Projective point (internal use). */
         private G1(BigInteger X, BigInteger Y, BigInteger Z) {
-            this.X        = X;
-            this.Y        = Y;
-            this.Z        = Z;
+            this.X = X;
+            this.Y = Y;
+            this.Z = Z;
             this.infinity = Z.signum() == 0;
         }
 
-        public boolean isInfinity() { return infinity; }
+        public boolean isInfinity() {
+            return infinity;
+        }
 
         /** Convert to affine (x, y). */
         public BigInteger[] toAffine() {
-            if (infinity) throw new ArithmeticException("Point at infinity has no affine representation");
-            BigInteger zInv  = fpInv(Z);
+            if (infinity)
+                throw new ArithmeticException("Point at infinity has no affine representation");
+            BigInteger zInv = fpInv(Z);
             BigInteger zInv2 = fpMul(zInv, zInv);
             BigInteger zInv3 = fpMul(zInv2, zInv);
-            return new BigInteger[]{ fpMul(X, zInv2), fpMul(Y, zInv3) };
+            return new BigInteger[] {fpMul(X, zInv2), fpMul(Y, zInv3)};
         }
 
         /** Point doubling. */
@@ -131,10 +177,11 @@ public final class Bls12381 {
             if (infinity) return this;
             // Jacobian doubling formulas (a=0 for BLS12-381)
             BigInteger Y2 = fpMul(Y, Y);
-            BigInteger S  = fpMul(BigInteger.valueOf(4), fpMul(X, Y2));
-            BigInteger M  = fpMul(BigInteger.valueOf(3), fpMul(X, X));
+            BigInteger S = fpMul(BigInteger.valueOf(4), fpMul(X, Y2));
+            BigInteger M = fpMul(BigInteger.valueOf(3), fpMul(X, X));
             BigInteger X3 = fpSub(fpMul(M, M), fpMul(BigInteger.TWO, S));
-            BigInteger Y3 = fpSub(fpMul(M, fpSub(S, X3)), fpMul(BigInteger.valueOf(8), fpMul(Y2, Y2)));
+            BigInteger Y3 =
+                    fpSub(fpMul(M, fpSub(S, X3)), fpMul(BigInteger.valueOf(8), fpMul(Y2, Y2)));
             BigInteger Z3 = fpMul(BigInteger.TWO, fpMul(Y, Z));
             return new G1(X3, Y3, Z3);
         }
@@ -155,8 +202,8 @@ public final class Bls12381 {
                 S2 = fpMul(other.Y, fpMul(Z2, Z));
             } else {
                 BigInteger oZ2 = fpMul(oZ, oZ);
-                U1 = fpMul(X,       oZ2);
-                S1 = fpMul(Y,       fpMul(oZ2, oZ));
+                U1 = fpMul(X, oZ2);
+                S1 = fpMul(Y, fpMul(oZ2, oZ));
                 U2 = fpMul(other.X, Z2);
                 S2 = fpMul(other.Y, fpMul(Z2, Z));
             }
@@ -210,10 +257,8 @@ public final class Bls12381 {
         // ─── Serialization (ZCash / IETF compressed G1) ──────────────────────
 
         /**
-         * Compress to 48 bytes (ZCash format, used by EIP-4844).
-         * Bit 7 of byte 0: compression flag (1)
-         * Bit 6 of byte 0: infinity flag
-         * Bit 5 of byte 0: y-parity (sign bit)
+         * Compress to 48 bytes (ZCash format, used by EIP-4844). Bit 7 of byte 0: compression flag
+         * (1) Bit 6 of byte 0: infinity flag Bit 5 of byte 0: y-parity (sign bit)
          */
         public byte[] compress() {
             if (infinity) {
@@ -233,20 +278,18 @@ public final class Bls12381 {
         }
 
         /**
-         * Decompress from 48 bytes (ZCash format).
-         * Recovers y from x using the curve equation y² = x³ + 4.
+         * Decompress from 48 bytes (ZCash format). Recovers y from x using the curve equation y² =
+         * x³ + 4.
          */
         public static G1 decompress(byte[] bytes) {
             if (bytes.length != 48)
                 throw new IllegalArgumentException("G1 compressed point must be 48 bytes");
             boolean compressed = (bytes[0] & 0x80) != 0;
-            boolean infinity   = (bytes[0] & 0x40) != 0;
-            boolean ySign      = (bytes[0] & 0x20) != 0;
+            boolean infinity = (bytes[0] & 0x40) != 0;
+            boolean ySign = (bytes[0] & 0x20) != 0;
 
-            if (!compressed)
-                throw new IllegalArgumentException("Expected compressed G1 point");
-            if (infinity)
-                return INFINITY;
+            if (!compressed) throw new IllegalArgumentException("Expected compressed G1 point");
+            if (infinity) return INFINITY;
 
             // Strip flag bits from x
             byte[] xBytes = bytes.clone();
@@ -283,7 +326,11 @@ public final class Bls12381 {
         public String toString() {
             if (infinity) return "G1(∞)";
             BigInteger[] a = toAffine();
-            return "G1(" + a[0].toString(16).substring(0, 8) + "..., " + a[1].toString(16).substring(0, 8) + "...)";
+            return "G1("
+                    + a[0].toString(16).substring(0, 8)
+                    + "..., "
+                    + a[1].toString(16).substring(0, 8)
+                    + "...)";
         }
     }
 

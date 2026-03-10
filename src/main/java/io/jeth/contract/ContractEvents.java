@@ -8,7 +8,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import io.jeth.event.EventDef;
 import io.jeth.model.EthModels;
 import io.jeth.ws.WsProvider;
-
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -19,8 +18,8 @@ import java.util.function.Consumer;
 /**
  * Contract-level event subscriptions via WebSocket.
  *
- * Provides an ethers.js-style {@code contract.on("Transfer", handler)} API
- * backed by jeth's {@link WsProvider} and {@link EventDef} for typed decoding.
+ * <p>Provides an ethers.js-style {@code contract.on("Transfer", handler)} API backed by jeth's
+ * {@link WsProvider} and {@link EventDef} for typed decoding.
  *
  * <pre>
  * var ws       = WsProvider.connect("wss://mainnet.infura.io/ws/v3/KEY");
@@ -50,58 +49,63 @@ import java.util.function.Consumer;
  */
 public class ContractEvents implements AutoCloseable {
 
-    private final String     address;
+    private final String address;
     private final WsProvider ws;
     private final List<String> subscriptionIds = new ArrayList<>();
 
     public ContractEvents(String contractAddress, WsProvider ws) {
         this.address = contractAddress;
-        this.ws      = ws;
+        this.ws = ws;
     }
 
     // ─── Typed event subscriptions ────────────────────────────────────────────
 
     /**
-     * Subscribe to a typed event. The handler receives a decoded {@link EventDef.DecodedEvent}
-     * with typed accessors: {@code decoded.address("from")}, {@code decoded.uint("value")}, etc.
+     * Subscribe to a typed event. The handler receives a decoded {@link EventDef.DecodedEvent} with
+     * typed accessors: {@code decoded.address("from")}, {@code decoded.uint("value")}, etc.
      *
      * @return subscription ID (use with {@link #off(String)} to remove)
      */
-    public CompletableFuture<String> on(EventDef eventDef, Consumer<EventDef.DecodedEvent> handler) {
-        return onRaw(eventDef.topic0Hex(), rawLog -> {
-            EthModels.Log log = toLog(rawLog);
-            EventDef.DecodedEvent decoded = eventDef.decode(log);
-            if (decoded != null) handler.accept(decoded);
-        });
+    public CompletableFuture<String> on(
+            EventDef eventDef, Consumer<EventDef.DecodedEvent> handler) {
+        return onRaw(
+                eventDef.topic0Hex(),
+                rawLog -> {
+                    EthModels.Log log = toLog(rawLog);
+                    EventDef.DecodedEvent decoded = eventDef.decode(log);
+                    if (decoded != null) handler.accept(decoded);
+                });
     }
 
     /**
      * Subscribe once — handler is called for the first matching event then automatically removed.
      */
-    public CompletableFuture<String> once(EventDef eventDef, Consumer<EventDef.DecodedEvent> handler) {
+    public CompletableFuture<String> once(
+            EventDef eventDef, Consumer<EventDef.DecodedEvent> handler) {
         final String[] subId = {null};
-        return on(eventDef, decoded -> {
-            handler.accept(decoded);
-            if (subId[0] != null) off(subId[0]);
-        }).whenComplete((id, ex) -> subId[0] = id);
+        return on(
+                        eventDef,
+                        decoded -> {
+                            handler.accept(decoded);
+                            if (subId[0] != null) off(subId[0]);
+                        })
+                .whenComplete((id, ex) -> subId[0] = id);
     }
 
     // ─── Raw log subscriptions ────────────────────────────────────────────────
 
     /**
-     * Subscribe to a specific topic0 (event signature hash) from this contract.
-     * Handler receives raw JsonNode log objects.
+     * Subscribe to a specific topic0 (event signature hash) from this contract. Handler receives
+     * raw JsonNode log objects.
      */
     public CompletableFuture<String> onRaw(String topic0Hex, Consumer<JsonNode> handler) {
         Map<String, Object> filter = new LinkedHashMap<>();
         filter.put("address", address);
-        filter.put("topics",  List.of(topic0Hex));
+        filter.put("topics", List.of(topic0Hex));
         return subscribe(filter, handler);
     }
 
-    /**
-     * Subscribe to ALL events from this contract address, regardless of event type.
-     */
+    /** Subscribe to ALL events from this contract address, regardless of event type. */
     public CompletableFuture<String> onAny(Consumer<JsonNode> handler) {
         Map<String, Object> filter = new LinkedHashMap<>();
         filter.put("address", address);
@@ -119,33 +123,39 @@ public class ContractEvents implements AutoCloseable {
     /** Remove all listeners registered through this ContractEvents instance. */
     public CompletableFuture<Void> removeAllListeners() {
         List<CompletableFuture<Boolean>> futures = new ArrayList<>();
-        for (String id : new ArrayList<>(subscriptionIds))
-            futures.add(ws.unsubscribe(id));
+        for (String id : new ArrayList<>(subscriptionIds)) futures.add(ws.unsubscribe(id));
         subscriptionIds.clear();
         return CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]));
     }
 
     /** How many active subscriptions this instance manages. */
-    public int listenerCount() { return subscriptionIds.size(); }
+    public int listenerCount() {
+        return subscriptionIds.size();
+    }
 
     @Override
-    public void close() { removeAllListeners(); }
+    public void close() {
+        removeAllListeners();
+    }
 
     // ─── Helpers ─────────────────────────────────────────────────────────────
 
-    private CompletableFuture<String> subscribe(Map<String, Object> filter, Consumer<JsonNode> handler) {
-        return ws.onLogs(filter, handler).whenComplete((id, ex) -> {
-            if (id != null) subscriptionIds.add(id);
-        });
+    private CompletableFuture<String> subscribe(
+            Map<String, Object> filter, Consumer<JsonNode> handler) {
+        return ws.onLogs(filter, handler)
+                .whenComplete(
+                        (id, ex) -> {
+                            if (id != null) subscriptionIds.add(id);
+                        });
     }
 
     private static EthModels.Log toLog(JsonNode node) {
         EthModels.Log log = new EthModels.Log();
-        log.address         = node.path("address").asText(null);
+        log.address = node.path("address").asText(null);
         log.transactionHash = node.path("transactionHash").asText(null);
-        log.blockHash       = node.path("blockHash").asText(null);
-        log.data            = node.path("data").asText("0x");
-        log.removed         = node.path("removed").asBoolean(false);
+        log.blockHash = node.path("blockHash").asText(null);
+        log.data = node.path("data").asText("0x");
+        log.removed = node.path("removed").asBoolean(false);
         JsonNode topics = node.path("topics");
         if (topics.isArray()) {
             List<String> topicList = new ArrayList<>();

@@ -10,14 +10,6 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.jeth.crypto.Wallet;
 import io.jeth.util.Hex;
 import io.jeth.util.Keccak;
-import org.bouncycastle.crypto.generators.SCrypt;
-import org.bouncycastle.crypto.params.KeyParameter;
-import org.bouncycastle.crypto.engines.AESEngine;
-import org.bouncycastle.crypto.modes.SICBlockCipher;
-import org.bouncycastle.crypto.params.ParametersWithIV;
-
-import javax.crypto.SecretKeyFactory;
-import javax.crypto.spec.PBEKeySpec;
 import java.nio.charset.StandardCharsets;
 import java.security.SecureRandom;
 import java.time.Instant;
@@ -25,12 +17,19 @@ import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.UUID;
+import javax.crypto.SecretKeyFactory;
+import javax.crypto.spec.PBEKeySpec;
+import org.bouncycastle.crypto.engines.AESEngine;
+import org.bouncycastle.crypto.generators.SCrypt;
+import org.bouncycastle.crypto.modes.SICBlockCipher;
+import org.bouncycastle.crypto.params.KeyParameter;
+import org.bouncycastle.crypto.params.ParametersWithIV;
 
 /**
  * Ethereum Keystore V3 — encrypted JSON wallet format.
  *
- * Compatible with MetaMask, Geth, MyCrypto, MyEtherWallet.
- * Uses scrypt (default) or pbkdf2 for key derivation.
+ * <p>Compatible with MetaMask, Geth, MyCrypto, MyEtherWallet. Uses scrypt (default) or pbkdf2 for
+ * key derivation.
  *
  * <pre>
  * // Encrypt a wallet
@@ -53,17 +52,17 @@ public final class Keystore {
 
     // Scrypt parameters (MetaMask/Geth defaults)
     public static final int SCRYPT_N_STANDARD = 1 << 18; // 262144 — production
-    public static final int SCRYPT_N_LIGHT    = 1 << 12; // 4096   — testing
-    public static final int SCRYPT_R          = 8;
-    public static final int SCRYPT_P          = 1;
-    public static final int SCRYPT_DKLEN      = 32;
+    public static final int SCRYPT_N_LIGHT = 1 << 12; // 4096   — testing
+    public static final int SCRYPT_R = 8;
+    public static final int SCRYPT_P = 1;
+    public static final int SCRYPT_DKLEN = 32;
 
     // AES-128-CTR parameters
-    private static final int AES_IV_LEN  = 16;
-    private static final int SALT_LEN    = 32;
+    private static final int AES_IV_LEN = 16;
+    private static final int SALT_LEN = 32;
 
     private static final ObjectMapper MAPPER = new ObjectMapper();
-    private static final SecureRandom RNG    = new SecureRandom();
+    private static final SecureRandom RNG = new SecureRandom();
 
     private Keystore() {}
 
@@ -71,6 +70,7 @@ public final class Keystore {
 
     /**
      * Encrypt a wallet with standard scrypt parameters (secure, ~5s on modern hardware).
+     *
      * @return Keystore V3 JSON string
      */
     public static String encrypt(Wallet wallet, String password) {
@@ -79,6 +79,7 @@ public final class Keystore {
 
     /**
      * Encrypt a wallet with lightweight scrypt (fast, for dev/testing only).
+     *
      * @return Keystore V3 JSON string
      */
     public static String encryptLight(Wallet wallet, String password) {
@@ -87,12 +88,13 @@ public final class Keystore {
 
     /**
      * Encrypt a wallet with custom scrypt N parameter.
+     *
      * @param n scrypt N parameter (must be power of 2)
      */
     public static String encrypt(Wallet wallet, String password, int n) {
         byte[] salt = randomBytes(SALT_LEN);
-        byte[] iv   = randomBytes(AES_IV_LEN);
-        byte[] pwd  = password.getBytes(StandardCharsets.UTF_8);
+        byte[] iv = randomBytes(AES_IV_LEN);
+        byte[] pwd = password.getBytes(StandardCharsets.UTF_8);
 
         // Derive 32-byte key via scrypt
         byte[] derivedKey = SCrypt.generate(pwd, salt, n, SCRYPT_R, SCRYPT_P, SCRYPT_DKLEN);
@@ -140,25 +142,27 @@ public final class Keystore {
 
     /**
      * Decrypt a Keystore V3 JSON string and return the wallet.
+     *
      * @throws KeystoreException if password is wrong or JSON is invalid
      */
     public static Wallet decrypt(String json, String password) {
         try {
-            JsonNode root   = MAPPER.readTree(json);
-            int version     = root.path("version").asInt();
-            if (version != 3) throw new KeystoreException("Unsupported keystore version: " + version);
+            JsonNode root = MAPPER.readTree(json);
+            int version = root.path("version").asInt();
+            if (version != 3)
+                throw new KeystoreException("Unsupported keystore version: " + version);
 
             JsonNode crypto = root.path("crypto");
             if (crypto.isMissingNode()) crypto = root.path("Crypto"); // Geth compat
 
-            String cipher   = crypto.path("cipher").asText();
+            String cipher = crypto.path("cipher").asText();
             if (!"aes-128-ctr".equals(cipher))
                 throw new KeystoreException("Unsupported cipher: " + cipher);
 
             byte[] ciphertext = Hex.decode(crypto.path("ciphertext").asText());
-            byte[] iv         = Hex.decode(crypto.path("cipherparams").path("iv").asText());
-            byte[] mac        = Hex.decode(crypto.path("mac").asText());
-            byte[] pwd        = password.getBytes(StandardCharsets.UTF_8);
+            byte[] iv = Hex.decode(crypto.path("cipherparams").path("iv").asText());
+            byte[] mac = Hex.decode(crypto.path("mac").asText());
+            byte[] pwd = password.getBytes(StandardCharsets.UTF_8);
 
             String kdf = crypto.path("kdf").asText();
             JsonNode kdfparams = crypto.path("kdfparams");
@@ -166,11 +170,11 @@ public final class Keystore {
 
             if ("scrypt".equals(kdf)) {
                 byte[] salt = Hex.decode(kdfparams.path("salt").asText());
-                int n       = kdfparams.path("n").asInt(SCRYPT_N_STANDARD);
-                int r       = kdfparams.path("r").asInt(SCRYPT_R);
-                int p       = kdfparams.path("p").asInt(SCRYPT_P);
-                int dklen   = kdfparams.path("dklen").asInt(SCRYPT_DKLEN);
-                derivedKey  = SCrypt.generate(pwd, salt, n, r, p, dklen);
+                int n = kdfparams.path("n").asInt(SCRYPT_N_STANDARD);
+                int r = kdfparams.path("r").asInt(SCRYPT_R);
+                int p = kdfparams.path("p").asInt(SCRYPT_P);
+                int dklen = kdfparams.path("dklen").asInt(SCRYPT_DKLEN);
+                derivedKey = SCrypt.generate(pwd, salt, n, r, p, dklen);
             } else if ("pbkdf2".equals(kdf)) {
                 derivedKey = pbkdf2(pwd, kdfparams);
             } else {
@@ -186,7 +190,7 @@ public final class Keystore {
                 throw new KeystoreException("Wrong password or corrupted keystore (MAC mismatch)");
 
             // Decrypt
-            byte[] encryptionKey   = Arrays.copyOfRange(derivedKey, 0, 16);
+            byte[] encryptionKey = Arrays.copyOfRange(derivedKey, 0, 16);
             byte[] privateKeyBytes = aesCtr(encryptionKey, iv, ciphertext);
 
             return Wallet.fromPrivateKey(privateKeyBytes);
@@ -200,12 +204,14 @@ public final class Keystore {
     // ─── Filename ─────────────────────────────────────────────────────────────
 
     /**
-     * Generate the standard UTC keystore filename.
-     * Example: UTC--2024-01-15T12-30-00.000000000Z--f39fd6e51aad88f6f4ce6ab8827279cfffb92266
+     * Generate the standard UTC keystore filename. Example:
+     * UTC--2024-01-15T12-30-00.000000000Z--f39fd6e51aad88f6f4ce6ab8827279cfffb92266
      */
     public static String filename(Wallet wallet) {
-        String ts  = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH-mm-ss.SSSSSSSSS'Z'")
-                .withZone(ZoneOffset.UTC).format(Instant.now());
+        String ts =
+                DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH-mm-ss.SSSSSSSSS'Z'")
+                        .withZone(ZoneOffset.UTC)
+                        .format(Instant.now());
         String addr = wallet.getAddress().toLowerCase().replace("0x", "");
         return "UTC--" + ts + "--" + addr;
     }
@@ -223,15 +229,19 @@ public final class Keystore {
 
     /** PBKDF2-SHA256 key derivation (legacy keystore compat). */
     private static byte[] pbkdf2(byte[] password, JsonNode params) throws Exception {
-        byte[] salt  = Hex.decode(params.path("salt").asText());
-        int    c     = params.path("c").asInt(262144);
-        int    dklen = params.path("dklen").asInt(32);
-        String prf   = params.path("prf").asText("hmac-sha256");
+        byte[] salt = Hex.decode(params.path("salt").asText());
+        int c = params.path("c").asInt(262144);
+        int dklen = params.path("dklen").asInt(32);
+        String prf = params.path("prf").asText("hmac-sha256");
         if (!"hmac-sha256".equals(prf)) throw new KeystoreException("Unsupported PRF: " + prf);
 
         SecretKeyFactory factory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA256");
-        PBEKeySpec spec = new PBEKeySpec(
-                new String(password, StandardCharsets.UTF_8).toCharArray(), salt, c, dklen * 8);
+        PBEKeySpec spec =
+                new PBEKeySpec(
+                        new String(password, StandardCharsets.UTF_8).toCharArray(),
+                        salt,
+                        c,
+                        dklen * 8);
         return factory.generateSecret(spec).getEncoded();
     }
 
@@ -244,7 +254,12 @@ public final class Keystore {
     // ─── Exception ────────────────────────────────────────────────────────────
 
     public static class KeystoreException extends RuntimeException {
-        public KeystoreException(String msg)                { super(msg); }
-        public KeystoreException(String msg, Throwable cause) { super(msg, cause); }
+        public KeystoreException(String msg) {
+            super(msg);
+        }
+
+        public KeystoreException(String msg, Throwable cause) {
+            super(msg, cause);
+        }
     }
 }

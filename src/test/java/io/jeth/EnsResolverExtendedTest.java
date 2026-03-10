@@ -4,22 +4,19 @@
  */
 package io.jeth;
 
+import static org.junit.jupiter.api.Assertions.*;
+
 import io.jeth.ens.EnsResolver;
 import io.jeth.util.Hex;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
-import java.math.BigInteger;
-
-import static org.junit.jupiter.api.Assertions.*;
-
 /**
- * Extended EnsResolver tests covering methods not in the existing CoreTest:
- * reverseLookup, getText, getAvatar, getContenthash, namehashHex, getResolver.
+ * Extended EnsResolver tests covering methods not in the existing CoreTest: reverseLookup, getText,
+ * getAvatar, getContenthash, namehashHex, getResolver.
  *
- * <p>All tests mock the RPC layer so no live node is needed. ENS resolution
- * involves two RPC calls: one to get the resolver address from the Registry,
- * then one to call the resolver contract.
+ * <p>All tests mock the RPC layer so no live node is needed. ENS resolution involves two RPC calls:
+ * one to get the resolver address from the Registry, then one to call the resolver contract.
  */
 class EnsResolverExtendedTest {
 
@@ -32,39 +29,45 @@ class EnsResolverExtendedTest {
 
     // ─── namehashHex ──────────────────────────────────────────────────────────
 
-    @Test @DisplayName("namehashHex('') returns 0x + 64 zeros")
+    @Test
+    @DisplayName("namehashHex('') returns 0x + 64 zeros")
     void namehash_hex_empty() {
         String h = EnsResolver.namehashHex("");
         assertEquals("0x" + "0".repeat(64), h);
     }
 
-    @Test @DisplayName("namehashHex('eth') matches spec value")
+    @Test
+    @DisplayName("namehashHex('eth') matches spec value")
     void namehash_hex_eth() {
         String h = EnsResolver.namehashHex("eth");
         assertEquals("0x93cdeb708b7545dc668eb9280176169d1c33cfd8ed6f04690a0bcc88a93fc4ae", h);
     }
 
-    @Test @DisplayName("namehashHex('vitalik.eth') matches spec value")
+    @Test
+    @DisplayName("namehashHex('vitalik.eth') matches spec value")
     void namehash_hex_vitalik() {
         String h = EnsResolver.namehashHex("vitalik.eth");
         assertEquals("0xee6c4522aab0003e8d14cd40a6af439055fd2577951148c14b6cea9a53475835", h);
     }
 
-    @Test @DisplayName("namehashHex returns 0x-prefixed 66-char string")
+    @Test
+    @DisplayName("namehashHex returns 0x-prefixed 66-char string")
     void namehash_hex_format() {
         String h = EnsResolver.namehashHex("foo.eth");
         assertTrue(h.startsWith("0x"), "must be 0x-prefixed");
         assertEquals(66, h.length(), "must be 0x + 64 hex chars");
     }
 
-    @Test @DisplayName("namehashHex is deterministic")
+    @Test
+    @DisplayName("namehashHex is deterministic")
     void namehash_hex_deterministic() {
         assertEquals(EnsResolver.namehashHex("foo.eth"), EnsResolver.namehashHex("foo.eth"));
     }
 
     // ─── resolve (forward lookup) ──────────────────────────────────────────────
 
-    @Test @DisplayName("resolve returns null when resolver is zero address")
+    @Test
+    @DisplayName("resolve returns null when resolver is zero address")
     void resolve_no_resolver() throws Exception {
         try (var rpc = new RpcMock()) {
             // Registry returns zero address (no resolver set)
@@ -76,12 +79,13 @@ class EnsResolverExtendedTest {
         }
     }
 
-    @Test @DisplayName("resolve makes 2 RPC calls: getResolver + addr(node)")
+    @Test
+    @DisplayName("resolve makes 2 RPC calls: getResolver + addr(node)")
     void resolve_two_rpc_calls() throws Exception {
         try (var rpc = new RpcMock()) {
             String target = "0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045";
             rpc.enqueue(abiEncodeAddress(RESOLVER)); // resolver address
-            rpc.enqueue(abiEncodeAddress(target));    // resolved address
+            rpc.enqueue(abiEncodeAddress(target)); // resolved address
 
             EnsResolver ens = new EnsResolver(rpc.client());
             String addr = ens.resolve("vitalik.eth").join();
@@ -90,11 +94,12 @@ class EnsResolverExtendedTest {
         }
     }
 
-    @Test @DisplayName("resolve returns null when resolver returns zero address")
+    @Test
+    @DisplayName("resolve returns null when resolver returns zero address")
     void resolve_resolver_returns_zero() throws Exception {
         try (var rpc = new RpcMock()) {
             rpc.enqueue(abiEncodeAddress(RESOLVER)); // resolver exists
-            rpc.enqueue(abiEncodeAddress(ZERO));      // but addr() returns 0x0
+            rpc.enqueue(abiEncodeAddress(ZERO)); // but addr() returns 0x0
 
             EnsResolver ens = new EnsResolver(rpc.client());
             assertNull(ens.resolve("unregistered.eth").join());
@@ -103,7 +108,8 @@ class EnsResolverExtendedTest {
 
     // ─── reverseLookup ────────────────────────────────────────────────────────
 
-    @Test @DisplayName("reverseLookup returns null when no reverse resolver")
+    @Test
+    @DisplayName("reverseLookup returns null when no reverse resolver")
     void reverse_lookup_no_resolver() throws Exception {
         try (var rpc = new RpcMock()) {
             rpc.enqueue(abiEncodeAddress(ZERO)); // no resolver for addr.reverse node
@@ -114,10 +120,11 @@ class EnsResolverExtendedTest {
         }
     }
 
-    @Test @DisplayName("reverseLookup returns ENS name when reverse record set")
+    @Test
+    @DisplayName("reverseLookup returns ENS name when reverse record set")
     void reverse_lookup_success() throws Exception {
         try (var rpc = new RpcMock()) {
-            rpc.enqueue(abiEncodeAddress(RESOLVER));    // reverse resolver
+            rpc.enqueue(abiEncodeAddress(RESOLVER)); // reverse resolver
             rpc.enqueue(abiEncodeString("vitalik.eth")); // name() result
 
             EnsResolver ens = new EnsResolver(rpc.client());
@@ -126,7 +133,8 @@ class EnsResolverExtendedTest {
         }
     }
 
-    @Test @DisplayName("reverseLookup lowercases address for reverse node computation")
+    @Test
+    @DisplayName("reverseLookup lowercases address for reverse node computation")
     void reverse_lookup_case_insensitive() throws Exception {
         try (var rpc = new RpcMock()) {
             rpc.enqueue(abiEncodeAddress(RESOLVER));
@@ -139,20 +147,24 @@ class EnsResolverExtendedTest {
         }
     }
 
-    @Test @DisplayName("reverseLookup makes 2 RPC calls: getResolver + name(node)")
+    @Test
+    @DisplayName("reverseLookup makes 2 RPC calls: getResolver + name(node)")
     void reverse_lookup_rpc_count() throws Exception {
         try (var rpc = new RpcMock()) {
             rpc.enqueue(abiEncodeAddress(RESOLVER));
             rpc.enqueue(abiEncodeString("vitalik.eth"));
 
-            new EnsResolver(rpc.client()).reverseLookup("0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045").join();
+            new EnsResolver(rpc.client())
+                    .reverseLookup("0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045")
+                    .join();
             assertEquals(2, rpc.requestCount());
         }
     }
 
     // ─── getText ──────────────────────────────────────────────────────────────
 
-    @Test @DisplayName("getText returns null when no resolver set")
+    @Test
+    @DisplayName("getText returns null when no resolver set")
     void get_text_no_resolver() throws Exception {
         try (var rpc = new RpcMock()) {
             rpc.enqueue(abiEncodeAddress(ZERO));
@@ -162,7 +174,8 @@ class EnsResolverExtendedTest {
         }
     }
 
-    @Test @DisplayName("getText returns text record value")
+    @Test
+    @DisplayName("getText returns text record value")
     void get_text_success() throws Exception {
         try (var rpc = new RpcMock()) {
             rpc.enqueue(abiEncodeAddress(RESOLVER));
@@ -174,21 +187,24 @@ class EnsResolverExtendedTest {
         }
     }
 
-    @Test @DisplayName("getText returns null when record is empty string")
+    @Test
+    @DisplayName("getText returns null when record is empty string")
     void get_text_empty_record() throws Exception {
         try (var rpc = new RpcMock()) {
             rpc.enqueue(abiEncodeAddress(RESOLVER));
             rpc.enqueue(abiEncodeString("")); // empty text record
 
             EnsResolver ens = new EnsResolver(rpc.client());
-            assertNull(ens.getText("nobody.eth", "twitter").join(),
+            assertNull(
+                    ens.getText("nobody.eth", "twitter").join(),
                     "Empty text record should return null");
         }
     }
 
     // ─── getAvatar ────────────────────────────────────────────────────────────
 
-    @Test @DisplayName("getAvatar is shorthand for getText(name, 'avatar')")
+    @Test
+    @DisplayName("getAvatar is shorthand for getText(name, 'avatar')")
     void get_avatar_uses_avatar_key() throws Exception {
         try (var rpc = new RpcMock()) {
             rpc.enqueue(abiEncodeAddress(RESOLVER));
@@ -200,7 +216,8 @@ class EnsResolverExtendedTest {
         }
     }
 
-    @Test @DisplayName("getAvatar returns null when not set")
+    @Test
+    @DisplayName("getAvatar returns null when not set")
     void get_avatar_null() throws Exception {
         try (var rpc = new RpcMock()) {
             rpc.enqueue(abiEncodeAddress(ZERO)); // no resolver
@@ -211,7 +228,8 @@ class EnsResolverExtendedTest {
 
     // ─── getContenthash ───────────────────────────────────────────────────────
 
-    @Test @DisplayName("getContenthash returns null when no resolver")
+    @Test
+    @DisplayName("getContenthash returns null when no resolver")
     void get_contenthash_no_resolver() throws Exception {
         try (var rpc = new RpcMock()) {
             rpc.enqueue(abiEncodeAddress(ZERO));
@@ -219,11 +237,12 @@ class EnsResolverExtendedTest {
         }
     }
 
-    @Test @DisplayName("getContenthash returns raw bytes when set")
+    @Test
+    @DisplayName("getContenthash returns raw bytes when set")
     void get_contenthash_success() throws Exception {
         try (var rpc = new RpcMock()) {
             // IPFS CID encoded as bytes
-            byte[] cid = new byte[]{(byte)0xe3, 0x01, 0x01, 0x70};
+            byte[] cid = new byte[] {(byte) 0xe3, 0x01, 0x01, 0x70};
             rpc.enqueue(abiEncodeAddress(RESOLVER));
             rpc.enqueue(abiEncodeBytes(cid));
 

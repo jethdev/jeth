@@ -6,12 +6,11 @@ package io.jeth.provider;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.jeth.model.RpcModels;
-
 import java.util.concurrent.CompletableFuture;
 
 /**
- * Transport abstraction. Implement this to use any RPC transport
- * (HTTP, WebSocket, IPC, batching proxies, test mocks, etc.).
+ * Transport abstraction. Implement this to use any RPC transport (HTTP, WebSocket, IPC, batching
+ * proxies, test mocks, etc.).
  */
 public interface Provider {
 

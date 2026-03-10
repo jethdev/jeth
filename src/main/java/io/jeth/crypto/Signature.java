@@ -5,12 +5,9 @@
 package io.jeth.crypto;
 
 import io.jeth.util.Hex;
-
 import java.math.BigInteger;
 
-/**
- * ECDSA Signature (r, s, v components).
- */
+/** ECDSA Signature (r, s, v components). */
 public class Signature {
     public final BigInteger r;
     public final BigInteger s;

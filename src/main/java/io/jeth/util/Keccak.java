@@ -4,13 +4,10 @@
  */
 package io.jeth.util;
 
+import java.nio.charset.StandardCharsets;
 import org.bouncycastle.crypto.digests.KeccakDigest;
 
-import java.nio.charset.StandardCharsets;
-
-/**
- * Keccak-256 hashing utility (Ethereum uses Keccak-256, NOT SHA3-256).
- */
+/** Keccak-256 hashing utility (Ethereum uses Keccak-256, NOT SHA3-256). */
 public final class Keccak {
 
     private Keccak() {}
@@ -36,8 +33,8 @@ public final class Keccak {
     }
 
     /**
-     * Returns the 4-byte function selector for a given ABI signature.
-     * e.g. "transfer(address,uint256)" -> "0xa9059cbb"
+     * Returns the 4-byte function selector for a given ABI signature. e.g.
+     * "transfer(address,uint256)" -> "0xa9059cbb"
      */
     public static String functionSelector(String signature) {
         byte[] hash = hash(signature.getBytes(StandardCharsets.UTF_8));

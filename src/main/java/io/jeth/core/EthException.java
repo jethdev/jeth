@@ -5,8 +5,8 @@
 package io.jeth.core;
 
 /**
- * Base exception for all jeth errors.
- * Carries optional revert data for decoding with AbiDecodeError.
+ * Base exception for all jeth errors. Carries optional revert data for decoding with
+ * AbiDecodeError.
  */
 public class EthException extends RuntimeException {
 
@@ -28,7 +28,11 @@ public class EthException extends RuntimeException {
     }
 
     /** Raw hex revert data (if available). Decode with AbiDecodeError.decode(). */
-    public String getRevertData() { return revertData; }
+    public String getRevertData() {
+        return revertData;
+    }
 
-    public boolean hasRevertData() { return revertData != null && !revertData.isEmpty(); }
+    public boolean hasRevertData() {
+        return revertData != null && !revertData.isEmpty();
+    }
 }

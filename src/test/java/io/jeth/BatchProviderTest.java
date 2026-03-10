@@ -4,17 +4,19 @@
  */
 package io.jeth;
 
-import io.jeth.provider.BatchProvider;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
+
 import io.jeth.model.RpcModels;
+import io.jeth.provider.BatchProvider;
 import io.jeth.util.Hex;
 import java.util.List;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 
 class BatchProviderTest {
 
-    @Test @DisplayName("builder() creates provider without throwing")
+    @Test
+    @DisplayName("builder() creates provider without throwing")
     void builder_creates() throws Exception {
         try (var rpc = new RpcMock()) {
             var provider = BatchProvider.of(rpc.url()).maxBatchSize(5).windowMs(10).build();
@@ -23,7 +25,8 @@ class BatchProviderTest {
         }
     }
 
-    @Test @DisplayName("single request still returns correct result")
+    @Test
+    @DisplayName("single request still returns correct result")
     void single_request() throws Exception {
         try (var rpc = new RpcMock()) {
             rpc.enqueueHex(42L);
@@ -37,13 +40,14 @@ class BatchProviderTest {
         }
     }
 
-    @Test @DisplayName("maxBatchSize(1) sends each request individually")
+    @Test
+    @DisplayName("maxBatchSize(1) sends each request individually")
     void batch_size_1() throws Exception {
         try (var rpc = new RpcMock()) {
             rpc.enqueueHex(1L);
             rpc.enqueueHex(2L);
             try (var provider = BatchProvider.of(rpc.url()).maxBatchSize(1).windowMs(5).build()) {
-                var r1 = provider.send(new RpcModels.RpcRequest("eth_chainId",    List.of()));
+                var r1 = provider.send(new RpcModels.RpcRequest("eth_chainId", List.of()));
                 var r2 = provider.send(new RpcModels.RpcRequest("eth_blockNumber", List.of()));
                 assertNotNull(r1.join());
                 assertNotNull(r2.join());

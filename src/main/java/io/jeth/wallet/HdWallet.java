@@ -5,35 +5,34 @@
 package io.jeth.wallet;
 
 import io.jeth.crypto.Wallet;
+import java.math.BigInteger;
+import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
+import java.security.SecureRandom;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.logging.Logger;
+import javax.crypto.SecretKeyFactory;
+import javax.crypto.spec.PBEKeySpec;
 import org.bouncycastle.crypto.digests.SHA256Digest;
 import org.bouncycastle.crypto.digests.SHA512Digest;
 import org.bouncycastle.crypto.macs.HMac;
 import org.bouncycastle.crypto.params.KeyParameter;
 import org.bouncycastle.math.ec.ECPoint;
 
-import javax.crypto.SecretKeyFactory;
-import javax.crypto.spec.PBEKeySpec;
-import java.math.BigInteger;
-import java.nio.ByteBuffer;
-import java.nio.charset.StandardCharsets;
-import java.security.SecureRandom;
-import java.util.ArrayList;
-import java.util.logging.Logger;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Arrays;
-import java.util.List;
-
 /**
  * BIP-32 / BIP-39 / BIP-44 Hierarchical Deterministic (HD) wallet.
  *
- * <p>Generates a 12-word mnemonic (BIP-39), derives a master key via PBKDF2-HMAC-SHA512,
- * and then uses BIP-32 child key derivation to produce an unlimited sequence of
- * deterministic Ethereum accounts.
+ * <p>Generates a 12-word mnemonic (BIP-39), derives a master key via PBKDF2-HMAC-SHA512, and then
+ * uses BIP-32 child key derivation to produce an unlimited sequence of deterministic Ethereum
+ * accounts.
  *
- * <p>The standard Ethereum derivation path is {@code m/44'/60'/0'/0/index}, matching
- * MetaMask, Ledger, Trezor, and all major wallets. Custom paths are also supported.
+ * <p>The standard Ethereum derivation path is {@code m/44'/60'/0'/0/index}, matching MetaMask,
+ * Ledger, Trezor, and all major wallets. Custom paths are also supported.
  *
  * <pre>
  * // Generate — 12 words from BIP-39 English wordlist
@@ -51,9 +50,9 @@ import java.util.List;
  * Wallet custom = hd.derive("m/44'/60'/1'/0/5");
  * </pre>
  *
- * <p><strong>BIP-39 wordlist note:</strong> run {@code ./gradlew fetchBip39Wordlist}
- * once after cloning to download the official 2048-word English list.
- * Without it, {@link #generate()} may produce mnemonics incompatible with MetaMask.
+ * <p><strong>BIP-39 wordlist note:</strong> run {@code ./gradlew fetchBip39Wordlist} once after
+ * cloning to download the official 2048-word English list. Without it, {@link #generate()} may
+ * produce mnemonics incompatible with MetaMask.
  *
  * @see io.jeth.wallet.Keystore
  * @see io.jeth.crypto.Wallet
@@ -68,8 +67,8 @@ public class HdWallet {
     private final ExtendedKey masterKey;
 
     private HdWallet(String mnemonic, byte[] seed) {
-        this.mnemonic  = mnemonic;
-        this.seed      = seed;
+        this.mnemonic = mnemonic;
+        this.seed = seed;
         this.masterKey = ExtendedKey.fromSeed(seed);
     }
 
@@ -92,7 +91,9 @@ public class HdWallet {
         return fromMnemonic(mnemonic, "");
     }
 
-    /** Restore with an optional BIP-39 passphrase (extra security). Validates words and checksum. */
+    /**
+     * Restore with an optional BIP-39 passphrase (extra security). Validates words and checksum.
+     */
     public static HdWallet fromMnemonic(String mnemonic, String passphrase) {
         validate(mnemonic); // throws MnemonicException on invalid input
         byte[] seed = mnemonicToSeed(mnemonic.trim(), passphrase);
@@ -100,8 +101,9 @@ public class HdWallet {
     }
 
     /**
-     * Validate a BIP-39 mnemonic phrase without deriving any keys.
-     * Checks: word count (12/15/18/21/24), all words in wordlist, checksum.
+     * Validate a BIP-39 mnemonic phrase without deriving any keys. Checks: word count
+     * (12/15/18/21/24), all words in wordlist, checksum.
+     *
      * @throws MnemonicException with a human-readable reason on any failure
      */
     public static void validate(String mnemonic) {
@@ -111,31 +113,31 @@ public class HdWallet {
         String[] words = mnemonic.trim().toLowerCase().split("\\s+");
         int n = words.length;
         if (n != 12 && n != 15 && n != 18 && n != 21 && n != 24)
-            throw new MnemonicException("Invalid word count: " + n + " (must be 12, 15, 18, 21, or 24)");
+            throw new MnemonicException(
+                    "Invalid word count: " + n + " (must be 12, 15, 18, 21, or 24)");
 
         // Verify all words are in wordlist
         int[] indices = new int[n];
         for (int i = 0; i < n; i++) {
             Integer idx = WORD_INDEX.get(words[i]);
             if (idx == null)
-                throw new MnemonicException("Unknown word at position " + (i + 1) + ": '" + words[i] + "'");
+                throw new MnemonicException(
+                        "Unknown word at position " + (i + 1) + ": '" + words[i] + "'");
             indices[i] = idx;
         }
 
         // Verify checksum: convert 11-bit indices back to bits, last CS bits must match SHA256
-        int totalBits  = n * 11;
+        int totalBits = n * 11;
         int entropyBits = totalBits * 32 / 33;
-        int csLen      = totalBits - entropyBits;
+        int csLen = totalBits - entropyBits;
 
         boolean[] bits = new boolean[totalBits];
         for (int i = 0; i < n; i++)
-            for (int j = 0; j < 11; j++)
-                bits[i * 11 + j] = (indices[i] & (1 << (10 - j))) != 0;
+            for (int j = 0; j < 11; j++) bits[i * 11 + j] = (indices[i] & (1 << (10 - j))) != 0;
 
         byte[] entropy = new byte[entropyBits / 8];
         for (int i = 0; i < entropy.length; i++)
-            for (int j = 0; j < 8; j++)
-                if (bits[i * 8 + j]) entropy[i] |= 1 << (7 - j);
+            for (int j = 0; j < 8; j++) if (bits[i * 8 + j]) entropy[i] |= 1 << (7 - j);
 
         SHA256Digest sha = new SHA256Digest();
         sha.update(entropy, 0, entropy.length);
@@ -149,13 +151,21 @@ public class HdWallet {
         }
     }
 
-    /** @return true if the mnemonic is valid, false otherwise (no exception). */
+    /**
+     * @return true if the mnemonic is valid, false otherwise (no exception).
+     */
     public static boolean isValid(String mnemonic) {
-        try { validate(mnemonic); return true; } catch (MnemonicException e) { return false; }
+        try {
+            validate(mnemonic);
+            return true;
+        } catch (MnemonicException e) {
+            return false;
+        }
     }
 
     // Reverse index: word → BIP-39 index (lazy-built)
     private static final Map<String, Integer> WORD_INDEX;
+
     static {
         Map<String, Integer> idx = new HashMap<>(2048 * 2);
         for (int i = 0; i < WORDLIST.length; i++) idx.put(WORDLIST[i], i);
@@ -164,7 +174,9 @@ public class HdWallet {
 
     /** Thrown when a mnemonic phrase is invalid. */
     public static class MnemonicException extends RuntimeException {
-        public MnemonicException(String reason) { super("Invalid BIP-39 mnemonic: " + reason); }
+        public MnemonicException(String reason) {
+            super("Invalid BIP-39 mnemonic: " + reason);
+        }
     }
 
     /** Restore from raw 64-byte seed (no mnemonic). */
@@ -174,26 +186,19 @@ public class HdWallet {
 
     // ─── Account derivation ───────────────────────────────────────────────────
 
-    /**
-     * Get account at standard Ethereum path: m/44'/60'/0'/0/{index}
-     */
+    /** Get account at standard Ethereum path: m/44'/60'/0'/0/{index} */
     public Wallet getAccount(int index) {
         return derive(ETH_PATH + "/" + index);
     }
 
-    /**
-     * Get multiple accounts.
-     */
+    /** Get multiple accounts. */
     public List<Wallet> getAccounts(int count) {
         List<Wallet> wallets = new ArrayList<>();
         for (int i = 0; i < count; i++) wallets.add(getAccount(i));
         return wallets;
     }
 
-    /**
-     * Derive a wallet at a custom BIP-44 path.
-     * e.g. "m/44'/60'/0'/0/5" or "m/44'/60'/1'/0/0"
-     */
+    /** Derive a wallet at a custom BIP-44 path. e.g. "m/44'/60'/0'/0/5" or "m/44'/60'/1'/0/0" */
     public Wallet derive(String path) {
         ExtendedKey key = masterKey;
         String[] parts = path.split("/");
@@ -207,13 +212,17 @@ public class HdWallet {
         return Wallet.fromPrivateKey(key.privateKey);
     }
 
-    public String getMnemonic()  { return mnemonic; }
-    public byte[] getSeed()      { return Arrays.copyOf(seed, seed.length); }
+    public String getMnemonic() {
+        return mnemonic;
+    }
+
+    public byte[] getSeed() {
+        return Arrays.copyOf(seed, seed.length);
+    }
 
     // ─── BIP-39 mnemonic ──────────────────────────────────────────────────────
 
-    private static final Logger BIP39_LOG =
-        Logger.getLogger(HdWallet.class.getName());
+    private static final Logger BIP39_LOG = Logger.getLogger(HdWallet.class.getName());
 
     private static String[] loadWordlist() {
         // 1. Try classpath resource first (full official 2048-word list)
@@ -223,17 +232,23 @@ public class HdWallet {
                 String[] words = text.strip().split("\n");
                 for (int i = 0; i < words.length; i++) words[i] = words[i].trim();
                 if (words.length == 2048) return words;
-                BIP39_LOG.warning("BIP-39 resource has " + words.length + " words (expected 2048). Falling back to embedded list.");
+                BIP39_LOG.warning(
+                        "BIP-39 resource has "
+                                + words.length
+                                + " words (expected 2048). Falling back to embedded list.");
             }
-        } catch (IOException ignored) {}
+        } catch (IOException ignored) {
+        }
 
         // 2. Fallback: use embedded 2048-word list (no setup required)
         if (Bip39Words.WORDS.length != 2048) {
             BIP39_LOG.warning(
-                "Embedded BIP-39 wordlist has " + Bip39Words.WORDS.length + " words. " +
-                "Run: bash scripts/fetch-bip39-wordlist.sh for the official 2048-word list. " +
-                "HdWallet.fromMnemonic() is always correct; HdWallet.generate() may produce " +
-                "mnemonics with different word indices than other wallets.");
+                    "Embedded BIP-39 wordlist has "
+                            + Bip39Words.WORDS.length
+                            + " words. "
+                            + "Run: bash scripts/fetch-bip39-wordlist.sh for the official 2048-word list. "
+                            + "HdWallet.fromMnemonic() is always correct; HdWallet.generate() may produce "
+                            + "mnemonics with different word indices than other wallets.");
         }
         return Bip39Words.WORDS;
     }
@@ -248,7 +263,7 @@ public class HdWallet {
         sha.doFinal(hash, 0);
 
         int checksumBits = entropy.length * 8 / 32;
-        int totalBits    = entropy.length * 8 + checksumBits;
+        int totalBits = entropy.length * 8 + checksumBits;
 
         // Combine entropy + checksum into bit array
         boolean[] bits = new boolean[totalBits];
@@ -277,11 +292,12 @@ public class HdWallet {
     private static byte[] mnemonicToSeed(String mnemonic, String passphrase) {
         try {
             String salt = "mnemonic" + passphrase;
-            PBEKeySpec spec = new PBEKeySpec(
-                mnemonic.toCharArray(),
-                salt.getBytes(StandardCharsets.UTF_8),
-                2048, 512
-            );
+            PBEKeySpec spec =
+                    new PBEKeySpec(
+                            mnemonic.toCharArray(),
+                            salt.getBytes(StandardCharsets.UTF_8),
+                            2048,
+                            512);
             SecretKeyFactory skf = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA512");
             return skf.generateSecret(spec).getEncoded();
         } catch (Exception e) {
@@ -293,11 +309,11 @@ public class HdWallet {
 
     private static class ExtendedKey {
         final BigInteger privateKey;
-        final byte[]     chainCode;
+        final byte[] chainCode;
 
         ExtendedKey(BigInteger privateKey, byte[] chainCode) {
             this.privateKey = privateKey;
-            this.chainCode  = chainCode;
+            this.chainCode = chainCode;
         }
 
         static ExtendedKey fromSeed(byte[] seed) {
@@ -307,7 +323,7 @@ public class HdWallet {
             byte[] I = new byte[64];
             hmac.doFinal(I, 0);
 
-            byte[] IL = Arrays.copyOfRange(I, 0,  32);
+            byte[] IL = Arrays.copyOfRange(I, 0, 32);
             byte[] IR = Arrays.copyOfRange(I, 32, 64);
             return new ExtendedKey(new BigInteger(1, IL), IR);
         }
@@ -336,12 +352,10 @@ public class HdWallet {
             byte[] I = new byte[64];
             hmac.doFinal(I, 0);
 
-            byte[] IL = Arrays.copyOfRange(I, 0,  32);
+            byte[] IL = Arrays.copyOfRange(I, 0, 32);
             byte[] IR = Arrays.copyOfRange(I, 32, 64);
 
-            BigInteger childKey = new BigInteger(1, IL)
-                    .add(privateKey)
-                    .mod(Wallet.CURVE.getN());
+            BigInteger childKey = new BigInteger(1, IL).add(privateKey).mod(Wallet.CURVE.getN());
 
             return new ExtendedKey(childKey, IR);
         }

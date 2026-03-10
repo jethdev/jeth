@@ -17,9 +17,10 @@ public final class Hex {
     public static String encode(byte[] bytes) {
         if (bytes == null || bytes.length == 0) return "0x";
         char[] c = new char[bytes.length * 2 + 2];
-        c[0] = '0'; c[1] = 'x';
+        c[0] = '0';
+        c[1] = 'x';
         for (int i = 0; i < bytes.length; i++) {
-            c[2 + i * 2]     = HEX[(bytes[i] >> 4) & 0xF];
+            c[2 + i * 2] = HEX[(bytes[i] >> 4) & 0xF];
             c[2 + i * 2 + 1] = HEX[bytes[i] & 0xF];
         }
         return new String(c);
@@ -30,7 +31,7 @@ public final class Hex {
         if (bytes == null || bytes.length == 0) return "";
         char[] c = new char[bytes.length * 2];
         for (int i = 0; i < bytes.length; i++) {
-            c[i * 2]     = HEX[(bytes[i] >> 4) & 0xF];
+            c[i * 2] = HEX[(bytes[i] >> 4) & 0xF];
             c[i * 2 + 1] = HEX[bytes[i] & 0xF];
         }
         return new String(c);
@@ -44,7 +45,8 @@ public final class Hex {
         if (h.length() % 2 != 0) h = "0" + h;
         byte[] out = new byte[h.length() / 2];
         for (int i = 0; i < out.length; i++) {
-            out[i] = (byte) ((fromHexChar(h.charAt(i * 2)) << 4) | fromHexChar(h.charAt(i * 2 + 1)));
+            out[i] =
+                    (byte) ((fromHexChar(h.charAt(i * 2)) << 4) | fromHexChar(h.charAt(i * 2 + 1)));
         }
         return out;
     }
@@ -58,7 +60,8 @@ public final class Hex {
 
     /** Parse a hex string (0x-prefixed or not) to BigInteger. */
     public static BigInteger toBigInteger(String hex) {
-        if (hex == null || hex.isEmpty() || hex.equals("0x") || hex.equals("0X")) return BigInteger.ZERO;
+        if (hex == null || hex.isEmpty() || hex.equals("0x") || hex.equals("0X"))
+            return BigInteger.ZERO;
         String h = hex.startsWith("0x") || hex.startsWith("0X") ? hex.substring(2) : hex;
         return h.isEmpty() ? BigInteger.ZERO : new BigInteger(h, 16);
     }
@@ -78,8 +81,13 @@ public final class Hex {
     public static boolean isHex(String s) {
         if (s == null || s.isEmpty()) return false;
         String h = s.startsWith("0x") ? s.substring(2) : s;
-        return !h.isEmpty() && h.chars().allMatch(c -> (c >= '0' && c <= '9')
-                || (c >= 'a' && c <= 'f') || (c >= 'A' && c <= 'F'));
+        return !h.isEmpty()
+                && h.chars()
+                        .allMatch(
+                                c ->
+                                        (c >= '0' && c <= '9')
+                                                || (c >= 'a' && c <= 'f')
+                                                || (c >= 'A' && c <= 'F'));
     }
 
     /** Zero-pad a hex string to the given byte length. */

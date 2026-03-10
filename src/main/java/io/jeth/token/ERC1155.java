@@ -8,7 +8,6 @@ import io.jeth.contract.Contract;
 import io.jeth.contract.ContractFunction;
 import io.jeth.core.EthClient;
 import io.jeth.crypto.Wallet;
-
 import java.math.BigInteger;
 import java.util.concurrent.CompletableFuture;
 
@@ -39,13 +38,32 @@ public class ERC1155 {
         this.fnSafeTransfer = fn("safeTransferFrom(address,address,uint256,uint256,bytes)");
     }
 
-    private Contract.FunctionBuilder fn(String sig) { return contract.fn(sig); }
+    private Contract.FunctionBuilder fn(String sig) {
+        return contract.fn(sig);
+    }
 
-    public CompletableFuture<BigInteger> balanceOf(String account, BigInteger tokenId) { return fnBalanceOf.call(account, tokenId).as(BigInteger.class); }
-    public CompletableFuture<String>     uri(BigInteger tokenId)                       { return fnUri.call(tokenId).as(String.class); }
-    public CompletableFuture<Boolean>    isApprovedForAll(String owner, String op)     { return fnIsApproved.call(owner, op).as(Boolean.class); }
-    public CompletableFuture<String>     setApprovalForAll(Wallet w, String op, boolean approved) { return fnSetApproval.send(w, op, approved); }
-    public CompletableFuture<String>     safeTransferFrom(Wallet w, String from, String to, BigInteger id, BigInteger amount, byte[] data) { return fnSafeTransfer.send(w, from, to, id, amount, data); }
+    public CompletableFuture<BigInteger> balanceOf(String account, BigInteger tokenId) {
+        return fnBalanceOf.call(account, tokenId).as(BigInteger.class);
+    }
 
-    public String getAddress() { return contract.getAddress(); }
+    public CompletableFuture<String> uri(BigInteger tokenId) {
+        return fnUri.call(tokenId).as(String.class);
+    }
+
+    public CompletableFuture<Boolean> isApprovedForAll(String owner, String op) {
+        return fnIsApproved.call(owner, op).as(Boolean.class);
+    }
+
+    public CompletableFuture<String> setApprovalForAll(Wallet w, String op, boolean approved) {
+        return fnSetApproval.send(w, op, approved);
+    }
+
+    public CompletableFuture<String> safeTransferFrom(
+            Wallet w, String from, String to, BigInteger id, BigInteger amount, byte[] data) {
+        return fnSafeTransfer.send(w, from, to, id, amount, data);
+    }
+
+    public String getAddress() {
+        return contract.getAddress();
+    }
 }

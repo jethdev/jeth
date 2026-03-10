@@ -10,7 +10,6 @@ import io.jeth.codegen.AbiJson;
 import io.jeth.core.EthClient;
 import io.jeth.core.EthException;
 import io.jeth.crypto.Wallet;
-
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
@@ -22,18 +21,16 @@ import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.CompletableFuture;
 
 /**
  * Runtime contract proxy — give it ABI + interface, get back a typed object.
  *
- * No DTOs needed. Multi-return values are mapped to auto-generated records at runtime.
- * Single returns are cast directly to the declared return type.
+ * <p>No DTOs needed. Multi-return values are mapped to auto-generated records at runtime. Single
+ * returns are cast directly to the declared return type.
  *
- * The interface convention:
- *   - View functions:  CompletableFuture<ReturnType>  methodName(args...)
- *   - Write functions: CompletableFuture<String>       methodName(Wallet wallet, args...)
- *   - Payable:         CompletableFuture<String>       methodName(Wallet wallet, BigInteger ethValue, args...)
+ * <p>The interface convention: - View functions: CompletableFuture<ReturnType> methodName(args...)
+ * - Write functions: CompletableFuture<String> methodName(Wallet wallet, args...) - Payable:
+ * CompletableFuture<String> methodName(Wallet wallet, BigInteger ethValue, args...)
  *
  * <pre>
  * interface Greeter {
@@ -47,8 +44,8 @@ import java.util.concurrent.CompletableFuture;
  * String txHash = greeter.setGreeting(wallet, "hiii").join();
  * </pre>
  *
- * For multi-return functions, declare the return type as a plain interface
- * and the proxy maps ABI outputs to it by position:
+ * For multi-return functions, declare the return type as a plain interface and the proxy maps ABI
+ * outputs to it by position:
  *
  * <pre>
  * interface TokenInfo {
@@ -75,11 +72,9 @@ public class ContractProxy {
 
         Map<String, ContractFunction> fnMap = buildFunctionMap(address, abiJson, client);
 
-        return (T) Proxy.newProxyInstance(
-            iface.getClassLoader(),
-            new Class[]{iface},
-            new Handler(fnMap, iface)
-        );
+        return (T)
+                Proxy.newProxyInstance(
+                        iface.getClassLoader(), new Class[] {iface}, new Handler(fnMap, iface));
     }
 
     // ─── Build function map ───────────────────────────────────────────────────
@@ -92,13 +87,15 @@ public class ContractProxy {
         for (AbiJson.Entry entry : AbiJson.parse(abiJson)) {
             if (!entry.isFunction()) continue;
 
-            List<AbiJson.Param> inputs  = entry.inputs  != null ? entry.inputs  : List.of();
+            List<AbiJson.Param> inputs = entry.inputs != null ? entry.inputs : List.of();
             List<AbiJson.Param> outputs = entry.outputs != null ? entry.outputs : List.of();
 
-            AbiType[] inTypes  = inputs.stream()
-                    .map(p -> AbiType.of(p.canonicalType())).toArray(AbiType[]::new);
-            AbiType[] outTypes = outputs.stream()
-                    .map(p -> AbiType.of(p.canonicalType())).toArray(AbiType[]::new);
+            AbiType[] inTypes =
+                    inputs.stream().map(p -> AbiType.of(p.canonicalType())).toArray(AbiType[]::new);
+            AbiType[] outTypes =
+                    outputs.stream()
+                            .map(p -> AbiType.of(p.canonicalType()))
+                            .toArray(AbiType[]::new);
 
             Function fn = Function.of(entry.name, inTypes);
             if (outTypes.length > 0) fn = fn.withReturns(outTypes);
@@ -126,10 +123,10 @@ public class ContractProxy {
         public Object invoke(Object proxy, Method method, Object[] rawArgs) throws Throwable {
             if (method.getDeclaringClass() == Object.class) {
                 return switch (method.getName()) {
-                    case "toString"  -> "ContractProxy[" + iface.getSimpleName() + "]";
-                    case "hashCode"  -> System.identityHashCode(proxy);
-                    case "equals"    -> proxy == rawArgs[0];
-                    default          -> method.invoke(this, rawArgs);
+                    case "toString" -> "ContractProxy[" + iface.getSimpleName() + "]";
+                    case "hashCode" -> System.identityHashCode(proxy);
+                    case "equals" -> proxy == rawArgs[0];
+                    default -> method.invoke(this, rawArgs);
                 };
             }
             if (method.isDefault()) return InvocationHandler.invokeDefault(proxy, method, rawArgs);
@@ -137,16 +134,20 @@ public class ContractProxy {
             Object[] args = rawArgs != null ? rawArgs : new Object[0];
 
             ContractFunction cf = fnMap.get(method.getName());
-            if (cf == null) throw new EthException(
-                    "No ABI entry for: '" + method.getName() + "'. Available: " + fnMap.keySet());
+            if (cf == null)
+                throw new EthException(
+                        "No ABI entry for: '"
+                                + method.getName()
+                                + "'. Available: "
+                                + fnMap.keySet());
 
             // Split wallet / ethValue / contract args
-            Wallet     wallet    = null;
-            BigInteger ethValue  = BigInteger.ZERO;
-            int        argStart  = 0;
+            Wallet wallet = null;
+            BigInteger ethValue = BigInteger.ZERO;
+            int argStart = 0;
 
             if (args.length > 0 && args[0] instanceof Wallet w) {
-                wallet   = w;
+                wallet = w;
                 argStart = 1;
                 if (args.length > 1 && args[1] instanceof BigInteger bi && isPayable(method)) {
                     ethValue = bi;
@@ -168,10 +169,9 @@ public class ContractProxy {
         /**
          * Maps the raw Object[] from ABI decoding to whatever the interface method declares.
          *
-         * Rules:
-         *  - CompletableFuture<String>, <BigInteger>, <Boolean>, <Integer> etc → direct cast
-         *  - CompletableFuture<SomeInterface>  → auto-proxy: map outputs by position to interface methods
-         *  - CompletableFuture<Object[]>       → raw array pass-through
+         * <p>Rules: - CompletableFuture<String>, <BigInteger>, <Boolean>, <Integer> etc → direct
+         * cast - CompletableFuture<SomeInterface> → auto-proxy: map outputs by position to
+         * interface methods - CompletableFuture<Object[]> → raw array pass-through
          */
         private Object mapResult(ContractFunction.CallResult result, Method method) {
             Type returnType = method.getGenericReturnType();
@@ -200,32 +200,40 @@ public class ContractProxy {
         private static <T> T proxyStruct(Class<T> iface, Object[] values) {
             Method[] methods = iface.getMethods();
 
-            return (T) Proxy.newProxyInstance(
-                iface.getClassLoader(),
-                new Class[]{iface},
-                (proxy, method, args) -> {
-                    if (method.getDeclaringClass() == Object.class) {
-                        if ("toString".equals(method.getName())) {
-                            return buildStructToString(iface, methods, values);
-                        }
-                        return method.invoke(proxy, args);
-                    }
+            return (T)
+                    Proxy.newProxyInstance(
+                            iface.getClassLoader(),
+                            new Class[] {iface},
+                            (proxy, method, args) -> {
+                                if (method.getDeclaringClass() == Object.class) {
+                                    if ("toString".equals(method.getName())) {
+                                        return buildStructToString(iface, methods, values);
+                                    }
+                                    return method.invoke(proxy, args);
+                                }
 
-                    // Match method to its positional index in the interface's method list
-                    for (int i = 0; i < methods.length; i++) {
-                        if (methods[i].getName().equals(method.getName())) {
-                            if (i < values.length) return coerce(values[i], method.getReturnType());
-                            throw new EthException("ABI output index " + i
-                                    + " out of bounds (" + values.length + " values) for: "
-                                    + method.getName());
-                        }
-                    }
-                    throw new EthException("No ABI output mapped to: " + method.getName());
-                }
-            );
+                                // Match method to its positional index in the interface's method
+                                // list
+                                for (int i = 0; i < methods.length; i++) {
+                                    if (methods[i].getName().equals(method.getName())) {
+                                        if (i < values.length)
+                                            return coerce(values[i], method.getReturnType());
+                                        throw new EthException(
+                                                "ABI output index "
+                                                        + i
+                                                        + " out of bounds ("
+                                                        + values.length
+                                                        + " values) for: "
+                                                        + method.getName());
+                                    }
+                                }
+                                throw new EthException(
+                                        "No ABI output mapped to: " + method.getName());
+                            });
         }
 
-        private static String buildStructToString(Class<?> iface, Method[] methods, Object[] values) {
+        private static String buildStructToString(
+                Class<?> iface, Method[] methods, Object[] values) {
             StringBuilder sb = new StringBuilder(iface.getSimpleName()).append("{");
             for (int i = 0; i < methods.length && i < values.length; i++) {
                 if (i > 0) sb.append(", ");
@@ -239,9 +247,10 @@ public class ContractProxy {
             if (value == null) return null; // contract returned empty / null ABI output
             if (target.isInstance(value)) return value;
             if (value instanceof BigInteger bi) {
-                if (target == int.class     || target == Integer.class) return bi.intValue();
-                if (target == long.class    || target == Long.class)    return bi.longValue();
-                if (target == boolean.class || target == Boolean.class) return bi.compareTo(BigInteger.ZERO) != 0;
+                if (target == int.class || target == Integer.class) return bi.intValue();
+                if (target == long.class || target == Long.class) return bi.longValue();
+                if (target == boolean.class || target == Boolean.class)
+                    return bi.compareTo(BigInteger.ZERO) != 0;
                 if (target == String.class) return bi.toString();
             }
             if (value instanceof Boolean b && (target == boolean.class)) return b;
@@ -256,7 +265,7 @@ public class ContractProxy {
         }
 
         private static Class<?> rawClass(Type type) {
-            if (type instanceof Class<?> c)           return c;
+            if (type instanceof Class<?> c) return c;
             if (type instanceof ParameterizedType pt) return rawClass(pt.getRawType());
             return Object.class;
         }

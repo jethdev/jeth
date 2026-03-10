@@ -8,7 +8,6 @@ import io.jeth.contract.Contract;
 import io.jeth.contract.ContractFunction;
 import io.jeth.core.EthClient;
 import io.jeth.crypto.Wallet;
-
 import java.math.BigInteger;
 import java.util.concurrent.CompletableFuture;
 
@@ -55,21 +54,61 @@ public class ERC721 {
         this.fnSetApprovalForAll = fn("setApprovalForAll(address,bool)");
     }
 
-    private Contract.FunctionBuilder fn(String sig) { return contract.fn(sig); }
+    private Contract.FunctionBuilder fn(String sig) {
+        return contract.fn(sig);
+    }
 
-    public CompletableFuture<BigInteger> balanceOf(String owner)          { return fnBalanceOf.call(owner).as(BigInteger.class); }
-    public CompletableFuture<String>     ownerOf(BigInteger tokenId)      { return fnOwnerOf.call(tokenId).as(String.class); }
-    public CompletableFuture<String>     tokenURI(BigInteger tokenId)     { return fnTokenURI.call(tokenId).as(String.class); }
-    public CompletableFuture<String>     name()                           { return fnName.call().as(String.class); }
-    public CompletableFuture<String>     symbol()                         { return fnSymbol.call().as(String.class); }
-    public CompletableFuture<BigInteger> totalSupply()                    { return fnTotalSupply.call().as(BigInteger.class); }
-    public CompletableFuture<String>     getApproved(BigInteger tokenId)  { return fnGetApproved.call(tokenId).as(String.class); }
-    public CompletableFuture<Boolean>    isApprovedForAll(String owner, String op) { return fnIsApprovedForAll.call(owner, op).as(Boolean.class); }
+    public CompletableFuture<BigInteger> balanceOf(String owner) {
+        return fnBalanceOf.call(owner).as(BigInteger.class);
+    }
 
-    public CompletableFuture<String> transferFrom(Wallet w, String from, String to, BigInteger tokenId)   { return fnTransferFrom.send(w, from, to, tokenId); }
-    public CompletableFuture<String> safeTransferFrom(Wallet w, String from, String to, BigInteger tokenId) { return fnSafeTransferFrom.send(w, from, to, tokenId); }
-    public CompletableFuture<String> approve(Wallet w, String to, BigInteger tokenId)                     { return fnApprove.send(w, to, tokenId); }
-    public CompletableFuture<String> setApprovalForAll(Wallet w, String op, boolean approved)             { return fnSetApprovalForAll.send(w, op, approved); }
+    public CompletableFuture<String> ownerOf(BigInteger tokenId) {
+        return fnOwnerOf.call(tokenId).as(String.class);
+    }
 
-    public String getAddress() { return contract.getAddress(); }
+    public CompletableFuture<String> tokenURI(BigInteger tokenId) {
+        return fnTokenURI.call(tokenId).as(String.class);
+    }
+
+    public CompletableFuture<String> name() {
+        return fnName.call().as(String.class);
+    }
+
+    public CompletableFuture<String> symbol() {
+        return fnSymbol.call().as(String.class);
+    }
+
+    public CompletableFuture<BigInteger> totalSupply() {
+        return fnTotalSupply.call().as(BigInteger.class);
+    }
+
+    public CompletableFuture<String> getApproved(BigInteger tokenId) {
+        return fnGetApproved.call(tokenId).as(String.class);
+    }
+
+    public CompletableFuture<Boolean> isApprovedForAll(String owner, String op) {
+        return fnIsApprovedForAll.call(owner, op).as(Boolean.class);
+    }
+
+    public CompletableFuture<String> transferFrom(
+            Wallet w, String from, String to, BigInteger tokenId) {
+        return fnTransferFrom.send(w, from, to, tokenId);
+    }
+
+    public CompletableFuture<String> safeTransferFrom(
+            Wallet w, String from, String to, BigInteger tokenId) {
+        return fnSafeTransferFrom.send(w, from, to, tokenId);
+    }
+
+    public CompletableFuture<String> approve(Wallet w, String to, BigInteger tokenId) {
+        return fnApprove.send(w, to, tokenId);
+    }
+
+    public CompletableFuture<String> setApprovalForAll(Wallet w, String op, boolean approved) {
+        return fnSetApprovalForAll.send(w, op, approved);
+    }
+
+    public String getAddress() {
+        return contract.getAddress();
+    }
 }

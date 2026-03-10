@@ -10,7 +10,6 @@ import io.jeth.core.EthException;
 import io.jeth.model.RpcModels;
 import io.jeth.provider.HttpProvider;
 import io.jeth.provider.Provider;
-
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
@@ -21,8 +20,8 @@ import java.util.concurrent.TimeUnit;
 /**
  * ERC-4337 Bundler client — sends UserOperations to a bundler node.
  *
- * Compatible with any ERC-4337 bundler: Pimlico, Stackup, Alchemy, Biconomy, etc.
- * The bundler exposes the same JSON-RPC port with additional methods.
+ * <p>Compatible with any ERC-4337 bundler: Pimlico, Stackup, Alchemy, Biconomy, etc. The bundler
+ * exposes the same JSON-RPC port with additional methods.
  *
  * <pre>
  * var bundler = BundlerClient.of("https://api.pimlico.io/v1/sepolia/rpc?apikey=KEY");
@@ -45,7 +44,7 @@ public class BundlerClient {
 
     private BundlerClient(Provider provider) {
         this.provider = provider;
-        this.mapper   = provider.getObjectMapper();
+        this.mapper = provider.getObjectMapper();
     }
 
     public static BundlerClient of(String bundlerUrl) {
@@ -58,53 +57,60 @@ public class BundlerClient {
 
     /**
      * eth_sendUserOperation — submit a UserOperation to the bundler.
+     *
      * @return The userOpHash (not a tx hash — use waitForReceipt to get the tx hash)
      */
     public CompletableFuture<String> sendUserOperation(UserOperation op, String entryPoint) {
         return send("eth_sendUserOperation", List.of(op.toMap(), entryPoint))
-                .thenApply(r -> {
-                    checkError(r);
-                    return r.resultAsText();
-                });
+                .thenApply(
+                        r -> {
+                            checkError(r);
+                            return r.resultAsText();
+                        });
     }
 
     /**
-     * eth_estimateUserOperationGas — ask bundler to estimate gas fields.
-     * Returns a GasEstimate with callGasLimit, verificationGasLimit, preVerificationGas.
+     * eth_estimateUserOperationGas — ask bundler to estimate gas fields. Returns a GasEstimate with
+     * callGasLimit, verificationGasLimit, preVerificationGas.
      */
-    public CompletableFuture<GasEstimate> estimateUserOperationGas(UserOperation op, String entryPoint) {
+    public CompletableFuture<GasEstimate> estimateUserOperationGas(
+            UserOperation op, String entryPoint) {
         return send("eth_estimateUserOperationGas", List.of(op.toMap(), entryPoint))
-                .thenApply(r -> {
-                    checkError(r);
-                    JsonNode result = r.result;
-                    return new GasEstimate(
-                        hexToBigInt(result, "callGasLimit"),
-                        hexToBigInt(result, "verificationGasLimit"),
-                        hexToBigInt(result, "preVerificationGas")
-                    );
-                });
+                .thenApply(
+                        r -> {
+                            checkError(r);
+                            JsonNode result = r.result;
+                            return new GasEstimate(
+                                    hexToBigInt(result, "callGasLimit"),
+                                    hexToBigInt(result, "verificationGasLimit"),
+                                    hexToBigInt(result, "preVerificationGas"));
+                        });
     }
 
-    /**
-     * eth_getUserOperationByHash — get a UserOperation by its hash.
-     */
+    /** eth_getUserOperationByHash — get a UserOperation by its hash. */
     public CompletableFuture<JsonNode> getUserOperationByHash(String userOpHash) {
         return send("eth_getUserOperationByHash", List.of(userOpHash))
-                .thenApply(r -> { checkError(r); return r.result; });
+                .thenApply(
+                        r -> {
+                            checkError(r);
+                            return r.result;
+                        });
     }
 
     /**
-     * eth_getUserOperationReceipt — get the receipt for a mined UserOperation.
-     * Returns null if not yet mined.
+     * eth_getUserOperationReceipt — get the receipt for a mined UserOperation. Returns null if not
+     * yet mined.
      */
     public CompletableFuture<JsonNode> getUserOperationReceipt(String userOpHash) {
         return send("eth_getUserOperationReceipt", List.of(userOpHash))
-                .thenApply(r -> { checkError(r); return r.result; });
+                .thenApply(
+                        r -> {
+                            checkError(r);
+                            return r.result;
+                        });
     }
 
-    /**
-     * Poll for the UserOperation receipt until mined (or timeout).
-     */
+    /** Poll for the UserOperation receipt until mined (or timeout). */
     public CompletableFuture<JsonNode> waitForUserOperationReceipt(String userOpHash) {
         return waitForUserOperationReceipt(userOpHash, 60_000, 2_000);
     }
@@ -116,53 +122,60 @@ public class BundlerClient {
     }
 
     private CompletableFuture<JsonNode> poll(String hash, long deadline, long intervalMs) {
-        return getUserOperationReceipt(hash).thenCompose(result -> {
-            if (result != null && !result.isNull()) {
-                return CompletableFuture.completedFuture(result);
-            }
-            if (System.currentTimeMillis() > deadline) {
-                return CompletableFuture.failedFuture(
-                    new EthException("Timeout waiting for UserOperation receipt: " + hash));
-            }
-            return CompletableFuture.supplyAsync(
-                    () -> null,
-                    CompletableFuture.delayedExecutor(intervalMs, TimeUnit.MILLISECONDS))
-                .thenCompose(__ -> poll(hash, deadline, intervalMs));
-        });
+        return getUserOperationReceipt(hash)
+                .thenCompose(
+                        result -> {
+                            if (result != null && !result.isNull()) {
+                                return CompletableFuture.completedFuture(result);
+                            }
+                            if (System.currentTimeMillis() > deadline) {
+                                return CompletableFuture.failedFuture(
+                                        new EthException(
+                                                "Timeout waiting for UserOperation receipt: "
+                                                        + hash));
+                            }
+                            return CompletableFuture.supplyAsync(
+                                            () -> null,
+                                            CompletableFuture.delayedExecutor(
+                                                    intervalMs, TimeUnit.MILLISECONDS))
+                                    .thenCompose(__ -> poll(hash, deadline, intervalMs));
+                        });
     }
 
-    /**
-     * eth_supportedEntryPoints — which EntryPoint versions the bundler supports.
-     */
+    /** eth_supportedEntryPoints — which EntryPoint versions the bundler supports. */
     public CompletableFuture<List<String>> getSupportedEntryPoints() {
-        return send("eth_supportedEntryPoints", List.of()).thenApply(r -> {
-            checkError(r);
-            var list = new ArrayList<String>();
-            if (r.result != null && r.result.isArray()) {
-                r.result.forEach(n -> list.add(n.asText()));
-            }
-            return list;
-        });
+        return send("eth_supportedEntryPoints", List.of())
+                .thenApply(
+                        r -> {
+                            checkError(r);
+                            var list = new ArrayList<String>();
+                            if (r.result != null && r.result.isArray()) {
+                                r.result.forEach(n -> list.add(n.asText()));
+                            }
+                            return list;
+                        });
     }
 
     /**
      * pm_sponsorUserOperation — request paymaster sponsorship (Pimlico/Stackup format).
+     *
      * @param policyId Paymaster policy ID from your paymaster provider
      */
     public CompletableFuture<PaymasterData> sponsorUserOperation(
             UserOperation op, String entryPoint, String policyId) {
-        return send("pm_sponsorUserOperation", List.of(op.toMap(), entryPoint,
-                Map.of("sponsorshipPolicyId", policyId)))
-                .thenApply(r -> {
-                    checkError(r);
-                    JsonNode res = r.result;
-                    return new PaymasterData(
-                        res.path("paymasterAndData").asText(),
-                        hexToBigInt(res, "callGasLimit"),
-                        hexToBigInt(res, "verificationGasLimit"),
-                        hexToBigInt(res, "preVerificationGas")
-                    );
-                });
+        return send(
+                        "pm_sponsorUserOperation",
+                        List.of(op.toMap(), entryPoint, Map.of("sponsorshipPolicyId", policyId)))
+                .thenApply(
+                        r -> {
+                            checkError(r);
+                            JsonNode res = r.result;
+                            return new PaymasterData(
+                                    res.path("paymasterAndData").asText(),
+                                    hexToBigInt(res, "callGasLimit"),
+                                    hexToBigInt(res, "verificationGasLimit"),
+                                    hexToBigInt(res, "preVerificationGas"));
+                        });
     }
 
     public CompletableFuture<RpcModels.RpcResponse> send(String method, List<?> params) {
@@ -181,15 +194,13 @@ public class BundlerClient {
     // ─── DTOs ─────────────────────────────────────────────────────────────────
 
     public record GasEstimate(
-        BigInteger callGasLimit,
-        BigInteger verificationGasLimit,
-        BigInteger preVerificationGas
-    ) {}
+            BigInteger callGasLimit,
+            BigInteger verificationGasLimit,
+            BigInteger preVerificationGas) {}
 
     public record PaymasterData(
-        String paymasterAndData,
-        BigInteger callGasLimit,
-        BigInteger verificationGasLimit,
-        BigInteger preVerificationGas
-    ) {}
+            String paymasterAndData,
+            BigInteger callGasLimit,
+            BigInteger verificationGasLimit,
+            BigInteger preVerificationGas) {}
 }
