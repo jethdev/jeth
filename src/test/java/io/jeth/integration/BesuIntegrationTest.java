@@ -19,7 +19,6 @@ import io.jeth.util.Hex;
 import io.jeth.util.Units;
 import java.math.BigInteger;
 import java.util.List;
-
 import org.junit.jupiter.api.*;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;

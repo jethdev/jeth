@@ -66,7 +66,9 @@ public class ERC20 {
         fnTransfer = contract.fn("transfer(address,uint256)").returns("bool");
         fnApprove = contract.fn("approve(address,uint256)").returns("bool");
         fnTransferFrom = contract.fn("transferFrom(address,address,uint256)").returns("bool");
-        fnPermit = contract.fn("permit(address,address,uint256,uint256,uint8,bytes32,bytes32)").build();
+        fnPermit =
+                contract.fn("permit(address,address,uint256,uint256,uint8,bytes32,bytes32)")
+                        .build();
     }
 
     // ─── Read ─────────────────────────────────────────────────────────────────

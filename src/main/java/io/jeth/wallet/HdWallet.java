@@ -5,7 +5,6 @@
 package io.jeth.wallet;
 
 import io.jeth.crypto.Wallet;
-
 import java.io.IOException;
 import java.math.BigInteger;
 import java.nio.ByteBuffer;
