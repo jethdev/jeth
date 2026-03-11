@@ -62,7 +62,7 @@ public class BundleKzgSetup {
             KzgTrustedSetup setup = KzgTrustedSetup.loadFromFile(tmpFile);
             System.out.println(
                     "Parsed "
-                            + setup.g1.length
+                            + setup.g1Lagrange.length
                             + " G1 points, "
                             + setup.g2Raw.length
                             + " G2 points.");

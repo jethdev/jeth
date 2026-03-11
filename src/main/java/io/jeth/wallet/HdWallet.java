@@ -5,6 +5,8 @@
 package io.jeth.wallet;
 
 import io.jeth.crypto.Wallet;
+
+import java.io.IOException;
 import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
@@ -163,6 +165,8 @@ public class HdWallet {
         }
     }
 
+    private static final String[] WORDLIST = loadWordlist();
+
     // Reverse index: word → BIP-39 index (lazy-built)
     private static final Map<String, Integer> WORD_INDEX;
 
@@ -209,7 +213,7 @@ public class HdWallet {
             if (hardened) index += 0x80000000;
             key = key.deriveChild(index);
         }
-        return Wallet.fromPrivateKey(key.privateKey);
+        return Wallet.fromPrivateKey(key.privateKey.toByteArray());
     }
 
     public String getMnemonic() {
@@ -252,8 +256,6 @@ public class HdWallet {
         }
         return Bip39Words.WORDS;
     }
-
-    private static final String[] WORDLIST = loadWordlist();
 
     private static String entropyToMnemonic(byte[] entropy) {
         // Checksum: first (entropy_bits / 32) bits of SHA256(entropy)

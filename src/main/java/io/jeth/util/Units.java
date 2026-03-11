@@ -74,7 +74,7 @@ public final class Units {
 
     /** Format wei as a full-precision ETH string. e.g. "1.234567890123456789" */
     public static String formatEther(BigInteger wei) {
-        return toEther(wei).toPlainString();
+        return toEther(wei).stripTrailingZeros().toPlainString();
     }
 
     /**
@@ -181,10 +181,5 @@ public final class Units {
     /** Alias for {@link #toWei(String)} — parseUnits with 18 decimals. */
     public static BigInteger parseEther(String ethAmount) {
         return toWei(ethAmount);
-    }
-
-    /** Alias for {@link #formatEther(BigInteger)} — formatUnits with 18 decimals. */
-    public static String formatEther(BigInteger wei) {
-        return toEther(wei).stripTrailingZeros().toPlainString();
     }
 }

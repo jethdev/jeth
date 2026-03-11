@@ -330,7 +330,7 @@ public class AbiCodec {
         return out;
     }
 
-    static BigInteger toBigInteger(Object value) {
+    public static BigInteger toBigInteger(Object value) {
         if (value instanceof BigInteger bi) return bi;
         if (value instanceof Long l) return BigInteger.valueOf(l);
         if (value instanceof Integer i) return BigInteger.valueOf(i);

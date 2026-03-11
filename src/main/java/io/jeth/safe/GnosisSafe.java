@@ -75,7 +75,7 @@ public class GnosisSafe {
         this.fnIsOwner = safe.fn("isOwner(address)").returns("bool");
         this.fnExecTransaction =
                 safe.fn(
-                        "execTransaction(address,uint256,bytes,uint8,uint256,uint256,uint256,address,address,bytes)");
+                        "execTransaction(address,uint256,bytes,uint8,uint256,uint256,uint256,address,address,bytes)").build();
     }
 
     // ─── Read ─────────────────────────────────────────────────────────────────

@@ -34,8 +34,8 @@ public class ERC1155 {
         this.fnBalanceOf = fn("balanceOf(address,uint256)").returns("uint256");
         this.fnUri = fn("uri(uint256)").returns("string");
         this.fnIsApproved = fn("isApprovedForAll(address,address)").returns("bool");
-        this.fnSetApproval = fn("setApprovalForAll(address,bool)");
-        this.fnSafeTransfer = fn("safeTransferFrom(address,address,uint256,uint256,bytes)");
+        this.fnSetApproval = fn("setApprovalForAll(address,bool)").build();
+        this.fnSafeTransfer = fn("safeTransferFrom(address,address,uint256,uint256,bytes)").build();
     }
 
     private Contract.FunctionBuilder fn(String sig) {

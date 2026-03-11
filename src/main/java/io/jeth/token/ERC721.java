@@ -48,10 +48,10 @@ public class ERC721 {
         this.fnTotalSupply = fn("totalSupply()").returns("uint256");
         this.fnIsApprovedForAll = fn("isApprovedForAll(address,address)").returns("bool");
         this.fnGetApproved = fn("getApproved(uint256)").returns("address");
-        this.fnTransferFrom = fn("transferFrom(address,address,uint256)");
-        this.fnSafeTransferFrom = fn("safeTransferFrom(address,address,uint256)");
-        this.fnApprove = fn("approve(address,uint256)");
-        this.fnSetApprovalForAll = fn("setApprovalForAll(address,bool)");
+        this.fnTransferFrom = fn("transferFrom(address,address,uint256)").build();
+        this.fnSafeTransferFrom = fn("safeTransferFrom(address,address,uint256)").build();
+        this.fnApprove = fn("approve(address,uint256)").build();
+        this.fnSetApprovalForAll = fn("setApprovalForAll(address,bool)").build();
     }
 
     private Contract.FunctionBuilder fn(String sig) {

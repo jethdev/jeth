@@ -55,8 +55,8 @@ public class AaveV3 {
 
     public AaveV3(EthClient client, String poolAddress) {
         this.pool = new Contract(poolAddress, client);
-        this.fnSupply = pool.fn("supply(address,uint256,address,uint16)");
-        this.fnBorrow = pool.fn("borrow(address,uint256,uint256,uint16,address)");
+        this.fnSupply = pool.fn("supply(address,uint256,address,uint16)").build();
+        this.fnBorrow = pool.fn("borrow(address,uint256,uint256,uint16,address)").build();
         this.fnRepay = pool.fn("repay(address,uint256,uint256,address)").returns("uint256");
         this.fnWithdraw = pool.fn("withdraw(address,uint256,address)").returns("uint256");
         this.fnUserData =
