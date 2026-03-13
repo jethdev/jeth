@@ -100,8 +100,19 @@ public class BatchProvider implements Provider {
 
     private synchronized void flush() {
         if (queue.isEmpty()) return;
-        List<RpcModels.RpcRequest> batch = new ArrayList<>(queue);
-        queue.clear();
+
+        List<RpcModels.RpcRequest> batch = new ArrayList<>();
+        synchronized (queue) {
+            while (batch.size() < maxBatchSize && !queue.isEmpty()) {
+                batch.add(queue.remove(0));
+            }
+        }
+
+        if (!queue.isEmpty()) {
+            if (flushTask == null || flushTask.isDone()) {
+                flushTask = scheduler.schedule(this::flush, windowMs, TimeUnit.MILLISECONDS);
+            }
+        }
 
         try {
             byte[] body = mapper.writeValueAsBytes(batch);

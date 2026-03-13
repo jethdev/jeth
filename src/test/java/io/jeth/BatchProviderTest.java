@@ -54,4 +54,23 @@ class BatchProviderTest {
             }
         }
     }
+
+    @Test
+    @DisplayName("large batch is split correctly")
+    void large_batch_split() throws Exception {
+        try (var rpc = new RpcMock()) {
+            rpc.enqueueHex(1L);
+            rpc.enqueueHex(2L);
+            rpc.enqueueHex(3L);
+            try (var provider = BatchProvider.of(rpc.url()).maxBatchSize(2).windowMs(5).build()) {
+                var r1 = provider.send(new RpcModels.RpcRequest("m1", List.of()));
+                var r2 = provider.send(new RpcModels.RpcRequest("m2", List.of()));
+                var r3 = provider.send(new RpcModels.RpcRequest("m3", List.of()));
+                assertNotNull(r1.join());
+                assertNotNull(r2.join());
+                assertNotNull(r3.join());
+                assertEquals(2, rpc.requestCount());
+            }
+        }
+    }
 }
