@@ -65,15 +65,19 @@ public class AbiCodec {
             }
         }
 
-        // Step 2: compute tail offsets
-        int headSize = types.length * 32;
+        // Step 2: compute head size and tail offsets
+        int headSize = 0;
+        for (AbiType t : types) headSize += t.fixedSize();
+
         int[] tailOffsets = new int[types.length];
         int tailSize = 0;
+        int currentHeadPos = 0;
         for (int i = 0; i < types.length; i++) {
             if (isDynamic[i]) {
                 tailOffsets[i] = headSize + tailSize;
                 tailSize += encodedTails[i].length;
             }
+            currentHeadPos += types[i].fixedSize();
         }
 
         // Step 3: assemble output
@@ -87,12 +91,13 @@ public class AbiCodec {
                 System.arraycopy(offsetBytes, 0, result, pos, 32);
             } else {
                 byte[] head = encodeValue(types[i], values[i]);
-                System.arraycopy(head, 0, result, pos, 32);
+                System.arraycopy(head, 0, result, pos, head.length);
             }
-            pos += 32;
+            pos += types[i].fixedSize();
         }
 
-        // Write tails
+        // Write tails at the end of head part
+        pos = headSize;
         for (int i = 0; i < types.length; i++) {
             if (isDynamic[i]) {
                 System.arraycopy(encodedTails[i], 0, result, pos, encodedTails[i].length);
@@ -253,12 +258,13 @@ public class AbiCodec {
         for (int i = 0; i < types.length; i++) {
             AbiType type = types[i];
             if (type.isDynamic()) {
-                int offset = (int) decodeBigInt(data, headPos).longValue();
+                BigInteger offsetVal = decodeBigInt(data, headPos);
+                int offset = offsetVal.intValueExact();
                 results[i] = decodeValue(type, data, baseOffset + offset);
             } else {
                 results[i] = decodeValue(type, data, headPos);
             }
-            headPos += 32;
+            headPos += type.fixedSize();
         }
         return results;
     }
@@ -271,7 +277,10 @@ public class AbiCodec {
             case "uint" -> decodeBigInt(data, offset);
             case "int" -> decodeSignedInt(data, offset, type.size());
             case "address" -> decodeAddress(data, offset);
-            case "bool" -> data[offset + 31] != 0;
+            case "bool" -> {
+                byte[] b = safeSlice(data, offset, 32);
+                yield b[31] != 0;
+            }
             case "bytes" -> decodeDynamicBytes(data, offset);
             case "string" -> decodeString(data, offset);
             default -> {
@@ -293,7 +302,8 @@ public class AbiCodec {
         int dataStart;
 
         if (arrayType.isDynamicArray()) {
-            length = (int) decodeBigInt(data, offset).longValue();
+            BigInteger lengthVal = decodeBigInt(data, offset);
+            length = lengthVal.intValueExact();
             dataStart = offset + 32;
         } else {
             length = arrayType.getArraySize();
@@ -312,10 +322,12 @@ public class AbiCodec {
 
     public static BigInteger decodeSignedInt(byte[] data, int offset, int bits) {
         byte[] slice = safeSlice(data, offset, 32);
-        BigInteger value = new BigInteger(1, slice);
-        BigInteger max = BigInteger.ONE.shiftLeft(bits - 1);
-        if (value.compareTo(max) >= 0) {
-            value = value.subtract(BigInteger.ONE.shiftLeft(bits));
+        BigInteger value = new BigInteger(slice);
+        if (bits < 256) {
+            BigInteger max = BigInteger.ONE.shiftLeft(bits - 1).subtract(BigInteger.ONE);
+            if (value.compareTo(max) > 0) {
+                value = value.subtract(BigInteger.ONE.shiftLeft(bits));
+            }
         }
         return value;
     }
@@ -330,7 +342,8 @@ public class AbiCodec {
     }
 
     public static byte[] decodeDynamicBytes(byte[] data, int offset) {
-        int length = (int) decodeBigInt(data, offset).longValue();
+        BigInteger lengthVal = decodeBigInt(data, offset);
+        int length = lengthVal.intValueExact();
         return safeSlice(data, offset + 32, length);
     }
 
@@ -341,11 +354,17 @@ public class AbiCodec {
     // ─── Helpers ─────────────────────────────────────────────────────────────
 
     static byte[] safeSlice(byte[] data, int offset, int length) {
+        if (offset < 0) {
+            throw new AbiException("Negative offset: " + offset);
+        }
+        if (offset >= data.length) {
+            return new byte[length];
+        }
         if (offset + length > data.length) {
-            // Pad with zeros if data is shorter (some nodes return truncated data)
             byte[] padded = new byte[length];
-            int available = Math.max(0, data.length - offset);
-            System.arraycopy(data, offset, padded, 0, Math.min(available, length));
+            int available = data.length - offset;
+            int toCopy = Math.min(available, length);
+            System.arraycopy(data, offset, padded, 0, toCopy);
             return padded;
         }
         return Arrays.copyOfRange(data, offset, offset + length);
@@ -363,7 +382,7 @@ public class AbiCodec {
         if (value instanceof Long l) return BigInteger.valueOf(l);
         if (value instanceof Integer i) return BigInteger.valueOf(i);
         if (value instanceof Short s) return BigInteger.valueOf(s);
-        if (value instanceof Byte b) return BigInteger.valueOf(b & 0xFF);
+        if (value instanceof Byte b) return BigInteger.valueOf(b);
         if (value instanceof Boolean bool) return bool ? BigInteger.ONE : BigInteger.ZERO;
         if (value instanceof String s) {
             if (s.startsWith("0x")) return new BigInteger(s.substring(2), 16);

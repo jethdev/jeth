@@ -276,6 +276,20 @@ public class AbiType {
         return arraySize;
     }
 
+    /**
+     * @return encoded size in bytes if static; 32 if dynamic (the pointer).
+     */
+    public int fixedSize() {
+        if (isDynamic()) return 32;
+        if (isArray()) return arraySize * arrayElementType.fixedSize();
+        if (isTuple()) {
+            int sum = 0;
+            for (AbiType t : tupleTypes) sum += t.fixedSize();
+            return sum;
+        }
+        return 32; // uint, int, address, bool, bytesN are all 32 bytes in head
+    }
+
     public AbiType[] getTupleTypes() {
         return tupleTypes != null ? Arrays.copyOf(tupleTypes, tupleTypes.length) : null;
     }

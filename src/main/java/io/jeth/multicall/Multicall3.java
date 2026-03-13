@@ -268,9 +268,7 @@ public class Multicall3 {
 
         @Override
         public String toString() {
-            return success
-                    ? "TryResult{ok=" + value + "}"
-                    : "TryResult{failed=" + revertReason + "}";
+            return "TryResult{" + (success ? "ok=" + value : "failed=" + revertReason) + "}";
         }
     }
 
