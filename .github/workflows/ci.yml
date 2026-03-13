@@ -33,7 +33,7 @@ jobs:
     needs: style
     strategy:
       matrix:
-        java: [ '17', '25' ]
+        java: [ '21', '25' ]
     steps:
       - uses: actions/checkout@v4
 
