@@ -11,7 +11,6 @@ import io.jeth.contract.ContractEvents;
 import io.jeth.core.EthClient;
 import io.jeth.crypto.Wallet;
 import io.jeth.event.EventDef;
-import io.jeth.subscribe.EventSubscriber;
 import io.jeth.util.Units;
 import io.jeth.ws.WsProvider;
 import java.math.BigInteger;
@@ -31,7 +30,7 @@ import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
 /**
- * Integration tests for {@link EventSubscriber} and {@link ContractEvents} — subscribe to real
+ * Integration tests for {@code EventSubscriber} and {@link ContractEvents} — subscribe to real
  * contract logs over WebSocket.
  *
  * <p>Uses TestCounter (simpler, fewer setup dependencies) for increment/event tests and TestToken
@@ -258,11 +257,10 @@ class EventSubscriberIntegrationTest {
         CountDownLatch latch = new CountDownLatch(1);
         AtomicReference<BigInteger> receivedAmount = new AtomicReference<>();
 
-        // EventSubscriber is the deprecated API — still must work
-        EventSubscriber subscriber = EventSubscriber.of(ws);
-        subscriber.on(
+        // EventSubscriber is the deprecated API — replaced by ContractEvents
+        var events = new ContractEvents(tokenAddr, ws);
+        events.on(
                 Transfer,
-                tokenAddr,
                 decoded -> {
                     receivedAmount.set(decoded.uint("value"));
                     latch.countDown();
@@ -295,12 +293,10 @@ class EventSubscriberIntegrationTest {
         var fireCount = new java.util.concurrent.atomic.AtomicInteger(0);
         CountDownLatch firstFire = new CountDownLatch(1);
 
-        EventSubscriber subscriber = EventSubscriber.of(ws);
+        var events = new ContractEvents(null, ws); // null address for any emitter
         String subId =
-                subscriber
-                        .on(
+                events.on(
                                 Incremented,
-                                null,
                                 decoded -> {
                                     fireCount.incrementAndGet();
                                     firstFire.countDown();
@@ -313,7 +309,7 @@ class EventSubscriberIntegrationTest {
         assertTrue(firstFire.await(20, TimeUnit.SECONDS), "Should fire before unsubscribe");
 
         // Unsubscribe
-        subscriber.off(subId).join();
+        events.off(subId).join();
         int countAfterOff = fireCount.get();
 
         // Trigger again — should NOT fire

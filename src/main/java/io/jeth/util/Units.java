@@ -58,6 +58,7 @@ public final class Units {
         return BigInteger.valueOf(gwei).multiply(WEI_PER_GWEI);
     }
 
+    @SuppressWarnings("unused")
     public static BigInteger gweiToWei(BigInteger gwei) {
         return gwei.multiply(WEI_PER_GWEI);
     }
@@ -81,6 +82,7 @@ public final class Units {
      * Format wei as a trimmed ETH string with up to 6 significant decimal digits. e.g.
      * 1_234_500_000_000_000_000 → "1.2345"
      */
+    @SuppressWarnings("unused")
     public static String formatEtherTrimmed(BigInteger wei) {
         return formatEtherTrimmed(wei, 6);
     }
@@ -103,8 +105,9 @@ public final class Units {
     }
 
     /**
-     * Convert a raw token amount to a human-readable BigDecimal. e.g. fromWei(100_500_000, 6) →
-     * 100.500000
+     * @param rawAmount raw amount in wei or units
+     * @param decimals decimals (e.g. 18 for ETH, 6 for USDC)
+     * @return BigDecimal amount
      */
     public static BigDecimal fromWei(BigInteger rawAmount, int decimals) {
         BigDecimal factor = BigDecimal.TEN.pow(decimals);
@@ -115,6 +118,7 @@ public final class Units {
      * Format a raw token amount as a human-readable string with given decimal places. e.g.
      * formatToken(100_500_000, 6, 2) → "100.50"
      */
+    @SuppressWarnings("unused")
     public static String formatToken(BigInteger rawAmount, int decimals, int displayDecimals) {
         BigDecimal value = fromWei(rawAmount, decimals);
         return value.setScale(displayDecimals, RoundingMode.DOWN).toPlainString();

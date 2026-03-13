@@ -34,7 +34,7 @@ import java.util.concurrent.CompletableFuture;
  * int i1 = mc.add("0xUSDC", balanceOf, "0xUser2");
  * int i2 = mc.add("0xUSDC", symbol);
  *
- * List<Object> results = mc.execute().join();
+ * List&lt;Object&gt; results = mc.execute().join();
  * BigInteger bal1 = (BigInteger) results.get(i0);
  * String sym      = (String)     results.get(i2);
  * </pre>
@@ -42,7 +42,7 @@ import java.util.concurrent.CompletableFuture;
  * Fluent builder API:
  *
  * <pre>
- * List<BigInteger> balances = Multicall3.builder(client)
+ * List&lt;BigInteger&gt; balances = Multicall3.builder(client)
  *     .call("0xUSDC", balanceOf, "0xAddr1")
  *     .call("0xUSDC", balanceOf, "0xAddr2")
  *     .executeAs(BigInteger.class).join();
@@ -107,14 +107,6 @@ public class Multicall3 {
         int idx = calls.size();
         calls.add(new Call(contractAddress, function, args, false));
         return idx;
-    }
-
-    /**
-     * @deprecated Use addOptional
-     */
-    @Deprecated
-    public int addAllowFailure(String contractAddress, Function fn, Object... args) {
-        return addOptional(contractAddress, fn, args);
     }
 
     public void clear() {
@@ -231,7 +223,7 @@ public class Multicall3 {
                 byte[] ret = Arrays.copyOfRange(data, elemOff + 64, elemOff + 64 + bytesLen);
                 try {
                     AbiType[] types = snap.get(i).function().getOutputTypes();
-                    Object value = null;
+                    Object value;
                     if (types != null && types.length > 0) {
                         Object[] dec = AbiCodec.decode(types, ret);
                         value = dec.length == 1 ? dec[0] : dec;
@@ -253,15 +245,19 @@ public class Multicall3 {
         return out;
     }
 
-    /** Per-call result from {@link #tryExecute()}. */
+    /**
+     * Optional call result.
+     *
+     * @param success whether the call succeeded
+     * @param value decoded result (if success)
+     * @param revertReason revert reason (if failed)
+     */
     public record TryResult(boolean success, Object value, String revertReason) {
-        @SuppressWarnings("unchecked")
         public <T> T as(Class<T> t) {
             if (!success) throw new IllegalStateException("Call failed: " + revertReason);
             return t.cast(value);
         }
 
-        @SuppressWarnings("unchecked")
         public <T> Optional<T> opt(Class<T> t) {
             return success && value != null ? Optional.of(t.cast(value)) : Optional.empty();
         }
@@ -342,12 +338,13 @@ public class Multicall3 {
             return this;
         }
 
+        @SuppressWarnings("unused")
         public CompletableFuture<List<Object>> execute() {
             return mc.execute();
         }
 
-        @SuppressWarnings("unchecked")
-        public <T> CompletableFuture<List<T>> executeAs(Class<T> type) {
+        @SuppressWarnings({"unchecked", "unused"})
+        public <T> CompletableFuture<List<T>> executeAs(@SuppressWarnings("unused") Class<T> type) {
             return mc.execute().thenApply(r -> r.stream().map(v -> (T) v).toList());
         }
 
@@ -478,7 +475,6 @@ public class Multicall3 {
     private record Call(String address, Function function, Object[] args, boolean requireSuccess) {}
 
     public record Result(int index, Object value, boolean success) {
-        @SuppressWarnings("unchecked")
         public <T> T as(Class<T> t) {
             return t.cast(value);
         }

@@ -238,6 +238,39 @@ public class TypedData {
     // ─── ERC-2612 Permit helper ───────────────────────────────────────────────
 
     /**
+     * @deprecated Use {@link #signPermit(String, String, String, long, String, String, BigInteger,
+     *     BigInteger, BigInteger, Wallet)}
+     */
+    @Deprecated
+    public static Signature signPermit(
+            Domain domain,
+            String owner,
+            String spender,
+            BigInteger value,
+            BigInteger nonce,
+            BigInteger deadline,
+            Wallet wallet) {
+        Map<String, List<Field>> types =
+                Map.of(
+                        "Permit",
+                        List.of(
+                                new Field("owner", "address"),
+                                new Field("spender", "address"),
+                                new Field("value", "uint256"),
+                                new Field("nonce", "uint256"),
+                                new Field("deadline", "uint256")));
+
+        Map<String, Object> message = new LinkedHashMap<>();
+        message.put("owner", owner);
+        message.put("spender", spender);
+        message.put("value", value);
+        message.put("nonce", nonce);
+        message.put("deadline", deadline);
+
+        return sign(domain, "Permit", types, message, wallet);
+    }
+
+    /**
      * Sign an ERC-2612 Permit (gasless ERC-20 approval). Compatible with USDC, DAI, Uniswap LP
      * tokens, and any ERC-2612 token.
      *
@@ -270,30 +303,22 @@ public class TypedData {
                         .verifyingContract(tokenAddress)
                         .build();
 
-        Map<String, List<Field>> types =
-                Map.of(
-                        "Permit",
-                        List.of(
-                                new Field("owner", "address"),
-                                new Field("spender", "address"),
-                                new Field("value", "uint256"),
-                                new Field("nonce", "uint256"),
-                                new Field("deadline", "uint256")));
-
-        Map<String, Object> message = new LinkedHashMap<>();
-        message.put("owner", owner);
-        message.put("spender", spender);
-        message.put("value", value);
-        message.put("nonce", nonce);
-        message.put("deadline", deadline);
-
-        return sign(domain, "Permit", types, message, wallet);
+        return signPermit(domain, owner, spender, value, nonce, deadline, wallet);
     }
 
     // ─── Domain ───────────────────────────────────────────────────────────────
 
-    /** A named field in a struct type definition. */
-    public record Field(String name, String type) {}
+    /**
+     * EIP-712 field definition.
+     *
+     * @param name field name
+     * @param type field type (e.g. "uint256", "address")
+     */
+    public record Field(String name, String type) {
+        public static Field of(String name, String type) {
+            return new Field(name, type);
+        }
+    }
 
     /** EIP-712 domain separator definition. */
     public static final class Domain {
@@ -323,7 +348,6 @@ public class TypedData {
             boolean first = true;
 
             if (name != null) {
-                if (!first) typeStr.append(',');
                 first = false;
                 typeStr.append("string name");
                 abiTypes.add(AbiType.BYTES32);
@@ -395,6 +419,7 @@ public class TypedData {
                 return this;
             }
 
+            @SuppressWarnings("unused")
             public Builder salt(byte[] v) {
                 this.salt = v;
                 return this;

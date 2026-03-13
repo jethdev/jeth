@@ -13,7 +13,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.atomic.AtomicLong;
 import java.util.logging.Logger;
 
 /**
@@ -61,17 +60,13 @@ public class BlockScanner {
     private static final Logger LOG = Logger.getLogger(BlockScanner.class.getName());
 
     private static final int DEFAULT_CHUNK_SIZE = 2_000;
-    private static final int DEFAULT_CONCURRENCY =
-            1; // sequential by default (safe for rate limits)
 
     private final EthClient client;
     private final int chunkSize;
-    private final int concurrency;
 
-    private BlockScanner(EthClient client, int chunkSize, int concurrency) {
+    private BlockScanner(EthClient client, int chunkSize) {
         this.client = client;
         this.chunkSize = chunkSize;
-        this.concurrency = concurrency;
     }
 
     /**
@@ -79,7 +74,7 @@ public class BlockScanner {
      * is the right starting point for most use cases.
      */
     public static BlockScanner of(EthClient client) {
-        return new BlockScanner(client, DEFAULT_CHUNK_SIZE, DEFAULT_CONCURRENCY);
+        return new BlockScanner(client, DEFAULT_CHUNK_SIZE);
     }
 
     /**
@@ -92,7 +87,7 @@ public class BlockScanner {
      * @param chunkSize number of blocks per {@code eth_getLogs} call
      */
     public static BlockScanner of(EthClient client, int chunkSize) {
-        return new BlockScanner(client, chunkSize, DEFAULT_CONCURRENCY);
+        return new BlockScanner(client, chunkSize);
     }
 
     /**
@@ -107,8 +102,9 @@ public class BlockScanner {
      * @deprecated Use {@link #of(EthClient, int)} until concurrent fetching is implemented
      */
     @Deprecated
+    @SuppressWarnings("unused")
     public static BlockScanner of(EthClient client, int chunkSize, int concurrency) {
-        return new BlockScanner(client, chunkSize, concurrency);
+        return new BlockScanner(client, chunkSize);
     }
 
     // ─── Single contract, single event ───────────────────────────────────────
@@ -154,27 +150,25 @@ public class BlockScanner {
                     while (current <= toBlock) {
                         long chunkEnd = Math.min(current + chunkSize - 1, toBlock);
 
-                        final long from = current;
-                        final long to = chunkEnd;
-
                         // Fetch and decode this chunk
                         List<EventDef.DecodedEvent> decoded;
                         try {
-                            var filter = buildFilter(contractAddress, event, from, to);
+                            var filter = buildFilter(contractAddress, event, current, chunkEnd);
                             List<EthModels.Log> logs = client.getLogs(filter).join();
                             decoded = event.decodeAll(logs);
                         } catch (Exception e) {
                             throw new ScanException(
-                                    "Failed to fetch logs for blocks " + from + "-" + to, e);
+                                    "Failed to fetch logs for blocks " + current + "-" + chunkEnd,
+                                    e);
                         }
 
                         processed += (chunkEnd - current + 1);
                         eventsFound += decoded.size();
 
-                        double pct = totalBlocks > 0 ? (double) processed / totalBlocks * 100 : 100;
+                        double pct = (double) processed / totalBlocks * 100;
                         ScanProgress progress =
                                 new ScanProgress(
-                                        from,
+                                        current,
                                         chunkEnd,
                                         toBlock,
                                         processed,
@@ -228,8 +222,6 @@ public class BlockScanner {
 
                     while (current <= toBlock) {
                         long chunkEnd = Math.min(current + chunkSize - 1, toBlock);
-                        final long from = current;
-                        final long to = chunkEnd;
 
                         // Build one filter per (contract × event) pair — or merge topics
                         List<EventDef.DecodedEvent> allDecoded = new ArrayList<>();
@@ -240,15 +232,15 @@ public class BlockScanner {
                             var filter = new LinkedHashMap<String, Object>();
                             filter.put("address", contracts);
                             filter.put("topics", List.of(topic0s));
-                            filter.put("fromBlock", "0x" + Long.toHexString(from));
-                            filter.put("toBlock", "0x" + Long.toHexString(to));
+                            filter.put("fromBlock", "0x" + Long.toHexString(current));
+                            filter.put("toBlock", "0x" + Long.toHexString(chunkEnd));
 
                             List<EthModels.Log> logs = client.getLogsRaw(filter).join();
 
                             // Decode each log against the matching event
                             for (EthModels.Log log : logs) {
                                 if (log.topics == null || log.topics.isEmpty()) continue;
-                                String logTopic0 = log.topics.get(0);
+                                String logTopic0 = log.topics.getFirst();
                                 for (EventDef ev : events) {
                                     if (ev.topic0Hex().equalsIgnoreCase(logTopic0)) {
                                         try {
@@ -263,16 +255,17 @@ public class BlockScanner {
                             }
                         } catch (Exception e) {
                             throw new ScanException(
-                                    "Failed to fetch logs for blocks " + from + "-" + to, e);
+                                    "Failed to fetch logs for block chunk starting at " + current,
+                                    e);
                         }
 
                         processed += (chunkEnd - current + 1);
                         eventsFound += allDecoded.size();
 
-                        double pct = totalBlocks > 0 ? (double) processed / totalBlocks * 100 : 100;
+                        double pct = (double) processed / totalBlocks * 100;
                         ScanProgress progress =
                                 new ScanProgress(
-                                        from,
+                                        current,
                                         chunkEnd,
                                         toBlock,
                                         processed,
@@ -324,17 +317,8 @@ public class BlockScanner {
      */
     public CompletableFuture<Long> count(
             String contractAddress, EventDef event, long fromBlock, long toBlock) {
-        AtomicLong counter = new AtomicLong(0);
-        return scan(
-                        contractAddress,
-                        event,
-                        fromBlock,
-                        toBlock,
-                        (batch, __) -> {
-                            counter.addAndGet(batch.size());
-                            return true;
-                        })
-                .thenApply(result -> result.totalEvents());
+        return scan(contractAddress, event, fromBlock, toBlock, (batch, __) -> true)
+                .thenApply(ScanResult::totalEvents);
     }
 
     // ─── Helpers ─────────────────────────────────────────────────────────────
@@ -351,13 +335,14 @@ public class BlockScanner {
 
     // ─── Types ───────────────────────────────────────────────────────────────
 
-    /**
-     * Callback invoked for each chunk of decoded events.
-     *
-     * @return {@code true} to continue scanning, {@code false} to stop early
-     */
+    /** Callback invoked for each chunk of decoded events. */
     @FunctionalInterface
     public interface ScanHandler {
+        /**
+         * @param events decoded events in this batch
+         * @param progress current scan progress
+         * @return {@code true} to continue scanning, {@code false} to stop early
+         */
         boolean onBatch(List<EventDef.DecodedEvent> events, ScanProgress progress);
     }
 
@@ -382,6 +367,7 @@ public class BlockScanner {
             long eventsFound) {
 
         /** Cursor to resume from the next block after this chunk. */
+        @SuppressWarnings("unused")
         public ScanCursor cursor() {
             return ScanCursor.at(chunkTo + 1);
         }
@@ -397,6 +383,8 @@ public class BlockScanner {
     /**
      * Resumable cursor — saves the next block to scan. Serialize {@link #nextBlock()} to persist
      * between runs.
+     *
+     * @param nextBlock the next block number to scan
      */
     public record ScanCursor(long nextBlock) {
         public static ScanCursor at(long block) {
@@ -417,15 +405,18 @@ public class BlockScanner {
      * @param reason why the scan ended: COMPLETE or EARLY_EXIT
      */
     public record ScanResult(long totalEvents, long blocksScanned, long lastBlock, Reason reason) {
+        @SuppressWarnings("unused")
         public boolean isComplete() {
             return reason == Reason.COMPLETE;
         }
 
+        @SuppressWarnings("unused")
         public boolean isEarlyExit() {
             return reason == Reason.EARLY_EXIT;
         }
 
         /** Resume cursor for the next run. */
+        @SuppressWarnings("unused")
         public ScanCursor cursor() {
             return ScanCursor.at(lastBlock + 1);
         }

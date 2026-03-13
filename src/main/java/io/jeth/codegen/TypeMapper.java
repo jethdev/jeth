@@ -42,7 +42,7 @@ public class TypeMapper {
         };
     }
 
-    /** Boxed version for generics (List<Integer> not List<int>) */
+    /** Boxed version for generics (e.g. {@code List<Integer>} not {@code List<int>}) */
     public static String toJavaTypeBoxed(String solidityType) {
         return switch (toJavaType(solidityType)) {
             case "boolean" -> "Boolean";

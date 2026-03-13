@@ -28,15 +28,20 @@ import java.util.Map;
  * <p>No DTOs needed. Multi-return values are mapped to auto-generated records at runtime. Single
  * returns are cast directly to the declared return type.
  *
- * <p>The interface convention: - View functions: CompletableFuture<ReturnType> methodName(args...)
- * - Write functions: CompletableFuture<String> methodName(Wallet wallet, args...) - Payable:
- * CompletableFuture<String> methodName(Wallet wallet, BigInteger ethValue, args...)
+ * <p>The interface convention:
+ *
+ * <ul>
+ *   <li>View functions: {@code CompletableFuture<ReturnType> methodName(args...)}
+ *   <li>Write functions: {@code CompletableFuture<String> methodName(Wallet wallet, args...)}
+ *   <li>Payable: {@code CompletableFuture<String> methodName(Wallet wallet, BigInteger ethValue,
+ *       args...)}
+ * </ul>
  *
  * <pre>
  * interface Greeter {
- *     CompletableFuture<String>     getGreeting();
- *     CompletableFuture<String>     setGreeting(Wallet wallet, String greeting);
- *     CompletableFuture<BigInteger> greetCount();
+ *     CompletableFuture&lt;String&gt;     getGreeting();
+ *     CompletableFuture&lt;String&gt;     setGreeting(Wallet wallet, String greeting);
+ *     CompletableFuture&lt;BigInteger&gt; greetCount();
  * }
  *
  * Greeter greeter = ContractProxy.load(Greeter.class, "0xAddress", abiJson, client);
@@ -55,7 +60,7 @@ import java.util.Map;
  * }
  *
  * interface Token {
- *     CompletableFuture<TokenInfo> getInfo();
+ *     CompletableFuture&lt;TokenInfo&gt; getInfo();
  * }
  *
  * Token token = ContractProxy.load(Token.class, "0xAddress", abiJson, client);

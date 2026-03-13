@@ -45,7 +45,12 @@ public final class AbiDecodeError {
 
     private AbiDecodeError() {}
 
-    /** Decode a revert reason from raw hex revert data. Returns a human-readable string. */
+    /**
+     * Decode a revert reason from raw hex revert data. Returns a human-readable string.
+     *
+     * @param hexData the hex-encoded revert data
+     * @return a human-readable reason
+     */
     public static String decode(String hexData) {
         if (hexData == null || hexData.isEmpty() || hexData.equals("0x"))
             return "execution reverted (no reason)";
@@ -92,8 +97,10 @@ public final class AbiDecodeError {
     }
 
     /**
-     * Compute the 4-byte selector for a custom error signature. e.g.
-     * errorSelector("InsufficientBalance(address,uint256)")
+     * Compute the 4-byte selector for a custom error signature.
+     *
+     * @param errorSignature the error signature, e.g. "InsufficientBalance(address,uint256)"
+     * @return the 4-byte hex selector
      */
     public static String errorSelector(String errorSignature) {
         byte[] hash = Keccak.hash(errorSignature.getBytes(StandardCharsets.UTF_8));

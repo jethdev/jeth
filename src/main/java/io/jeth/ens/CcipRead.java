@@ -41,7 +41,7 @@ public final class CcipRead {
      * OffchainLookup(address sender, string[] urls, bytes callData, bytes4 callbackFunction, bytes
      * extraData) Selector = keccak256("OffchainLookup(address,string[],bytes,bytes4,bytes)")[0..4]
      */
-    static final String OFFCHAIN_LOOKUP_SELECTOR = "0x556f1830";
+    public static final String OFFCHAIN_LOOKUP_SELECTOR = "0x556f1830";
 
     private static final HttpClient HTTP =
             HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(10)).build();
@@ -208,7 +208,7 @@ public final class CcipRead {
      * <p>ABI encoding of: OffchainLookup(address sender, string[] urls, bytes callData, bytes4
      * callbackFunction, bytes extraData) after stripping the 4-byte selector.
      */
-    static OffchainLookup parseOffchainLookup(String revertHex) {
+    public static OffchainLookup parseOffchainLookup(String revertHex) {
         byte[] data = Hex.decode(revertHex.substring(10)); // skip "0x" + 4-byte selector
 
         // Decode sender (address, slot 0)
@@ -259,7 +259,7 @@ public final class CcipRead {
     }
 
     /** Build the callback calldata: callbackFunction(bytes response, bytes extraData) */
-    static String buildCallbackCalldata(
+    public static String buildCallbackCalldata(
             String callbackFunction, String gatewayResponse, String extraData) {
         // callbackFunction is bytes4 (4 bytes)
         // ABI encode: (bytes response, bytes extraData) — two dynamic bytes params
@@ -309,7 +309,8 @@ public final class CcipRead {
 
     // ─── Data class ───────────────────────────────────────────────────────────
 
-    record OffchainLookup(
+    /** CCIP-Read OffchainLookup definition. */
+    public record OffchainLookup(
             String sender,
             String[] urls,
             String callData,

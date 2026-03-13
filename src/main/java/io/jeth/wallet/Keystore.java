@@ -73,6 +73,7 @@ public final class Keystore {
      *
      * @return Keystore V3 JSON string
      */
+    @SuppressWarnings("unused")
     public static String encrypt(Wallet wallet, String password) {
         return encrypt(wallet, password, SCRYPT_N_STANDARD);
     }
@@ -219,8 +220,9 @@ public final class Keystore {
     // ─── Helpers ─────────────────────────────────────────────────────────────
 
     /** AES-128-CTR encrypt/decrypt (symmetric — CTR mode is self-inverse). */
-    static byte[] aesCtr(byte[] key, byte[] iv, byte[] input) {
-        SICBlockCipher ctr = new SICBlockCipher(new AESEngine());
+    public static byte[] aesCtr(byte[] key, byte[] iv, byte[] input) {
+        org.bouncycastle.crypto.modes.CTRModeCipher ctr =
+                SICBlockCipher.newInstance(AESEngine.newInstance());
         ctr.init(true, new ParametersWithIV(new KeyParameter(key), iv));
         byte[] output = new byte[input.length];
         ctr.processBytes(input, 0, input.length, output, 0);

@@ -9,6 +9,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import io.jeth.crypto.Eip7702Signer;
 import io.jeth.crypto.Wallet;
 import io.jeth.model.EthModels;
+import io.jeth.util.Hex;
 import java.math.BigInteger;
 import java.util.List;
 import org.junit.jupiter.api.DisplayName;

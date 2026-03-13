@@ -21,6 +21,11 @@ public class RpcModels {
         @JsonProperty("jsonrpc")
         public final String jsonrpc = "2.0";
 
+        @SuppressWarnings("unused")
+        public String getJsonrpc() {
+            return jsonrpc;
+        }
+
         @JsonProperty("id")
         public final long id = ID_GEN.getAndIncrement();
 
@@ -46,6 +51,25 @@ public class RpcModels {
 
         @JsonProperty("error")
         public JsonNode error;
+
+        public RpcResponse() {}
+
+        @SuppressWarnings("unused")
+        public RpcResponse(long id, JsonNode result, JsonNode error) {
+            this.id = id;
+            this.result = result;
+            this.error = error;
+        }
+
+        public RpcResponse(long id, String resultText, JsonNode error) {
+            this.id = id;
+            this.result =
+                    resultText == null
+                            ? null
+                            : com.fasterxml.jackson.databind.node.JsonNodeFactory.instance.textNode(
+                                    resultText.replace("\"", ""));
+            this.error = error;
+        }
 
         public boolean hasError() {
             return error != null && !error.isNull();

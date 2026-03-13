@@ -12,7 +12,7 @@ import java.util.concurrent.CompletableFuture;
  * Transport abstraction. Implement this to use any RPC transport (HTTP, WebSocket, IPC, batching
  * proxies, test mocks, etc.).
  */
-public interface Provider {
+public interface Provider extends AutoCloseable {
 
     /** Send a JSON-RPC request and return the response. */
     CompletableFuture<RpcModels.RpcResponse> send(RpcModels.RpcRequest request);

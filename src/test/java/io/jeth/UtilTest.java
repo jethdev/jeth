@@ -91,7 +91,7 @@ class UtilTest {
     @Test
     void testUnitsFromWei() {
         BigInteger wei = new BigInteger("1500000000000000000"); // 1.5 ETH
-        assertEquals("1.5", Units.fromWei(wei).stripTrailingZeros().toPlainString());
+        assertEquals("1.5", Units.fromWei(wei, 18).stripTrailingZeros().toPlainString());
     }
 
     @Test

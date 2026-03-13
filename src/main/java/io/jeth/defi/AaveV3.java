@@ -33,12 +33,22 @@ public class AaveV3 {
     /** Aave V3 Pool proxy addresses */
     public static final String POOL_MAINNET = "0x87870Bca3F3fD6335C3F4ce8392D69350B4fA4E2";
 
+    @SuppressWarnings("unused")
     public static final String POOL_ARBITRUM = "0x794a61358D6845594F94dc1DB02A252b5b4814aD";
+
+    @SuppressWarnings("unused")
     public static final String POOL_OPTIMISM = "0x794a61358D6845594F94dc1DB02A252b5b4814aD";
+
+    @SuppressWarnings("unused")
     public static final String POOL_BASE = "0xA238Dd80C259a72e81d7e4664a9801593F98d1c5";
+
+    @SuppressWarnings("unused")
     public static final String POOL_POLYGON = "0x794a61358D6845594F94dc1DB02A252b5b4814aD";
 
+    @SuppressWarnings("unused")
     public static final int RATE_STABLE = 1;
+
+    @SuppressWarnings("unused")
     public static final int RATE_VARIABLE = 2;
 
     private final Contract pool;
@@ -47,10 +57,14 @@ public class AaveV3 {
     private final ContractFunction fnRepay;
     private final ContractFunction fnWithdraw;
     private final ContractFunction fnUserData;
-    private final ContractFunction fnGetReserveData;
 
+    @SuppressWarnings("unused")
     public AaveV3(EthClient client) {
         this(client, POOL_MAINNET);
+    }
+
+    public AaveV3(String poolAddress, EthClient client) {
+        this(client, poolAddress);
     }
 
     public AaveV3(EthClient client, String poolAddress) {
@@ -62,12 +76,6 @@ public class AaveV3 {
         this.fnUserData =
                 pool.fn("getUserAccountData(address)")
                         .returns("uint256", "uint256", "uint256", "uint256", "uint256", "uint256");
-        this.fnGetReserveData =
-                pool.fn("getReserveData(address)")
-                        .returns(
-                                "uint256", "uint128", "uint128", "uint128", "uint128", "uint128",
-                                "uint40", "uint16", "address", "address", "address", "address",
-                                "uint128", "uint128", "uint128");
     }
 
     /** Supply (deposit) an asset as collateral. */
@@ -95,11 +103,17 @@ public class AaveV3 {
     }
 
     /** Withdraw collateral. Pass type(uint256).max to withdraw all. */
+    @SuppressWarnings("unused")
     public CompletableFuture<String> withdraw(Wallet wallet, String asset, BigInteger amount) {
         return fnWithdraw.send(wallet, asset, amount, wallet.getAddress());
     }
 
-    /** Get account health factor, collateral, debt. */
+    /**
+     * Get account health factor, collateral, debt.
+     *
+     * @param user the account address
+     * @return a future containing account data
+     */
     public CompletableFuture<AccountData> getUserAccountData(String user) {
         return fnUserData
                 .call(user)
@@ -116,14 +130,30 @@ public class AaveV3 {
                                         ));
     }
 
-    public record AccountData(
-            BigInteger totalCollateralBase,
-            BigInteger totalDebtBase,
-            BigInteger availableBorrowsBase,
-            BigInteger currentLiquidationThreshold,
-            BigInteger ltv,
-            BigInteger healthFactor) {
-        /** Health factor as human-readable decimal (< 1.0 = liquidatable). */
+    public static class AccountData {
+        public final BigInteger totalCollateralBase;
+        public final BigInteger totalDebtBase;
+        public final BigInteger availableBorrowsBase;
+        public final BigInteger currentLiquidationThreshold;
+        public final BigInteger ltv;
+        public final BigInteger healthFactor;
+
+        public AccountData(
+                BigInteger totalCollateralBase,
+                BigInteger totalDebtBase,
+                BigInteger availableBorrowsBase,
+                BigInteger currentLiquidationThreshold,
+                BigInteger ltv,
+                BigInteger healthFactor) {
+            this.totalCollateralBase = totalCollateralBase;
+            this.totalDebtBase = totalDebtBase;
+            this.availableBorrowsBase = availableBorrowsBase;
+            this.currentLiquidationThreshold = currentLiquidationThreshold;
+            this.ltv = ltv;
+            this.healthFactor = healthFactor;
+        }
+
+        /** Health factor as human-readable decimal (&lt; 1.0 = liquidatable). */
         public double healthFactorEther() {
             return healthFactor.doubleValue() / 1e18;
         }
@@ -133,6 +163,7 @@ public class AaveV3 {
         }
     }
 
+    @SuppressWarnings("unused")
     public String getPoolAddress() {
         return pool.getAddress();
     }

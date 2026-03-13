@@ -23,7 +23,7 @@ import java.util.Map;
  *
  * for (EthModels.Log log : receipt.logs) {
  *     if (transferEvent.matches(log)) {
- *         Map<String, Object> data = transferEvent.decode(log);
+ *         Map&lt;String, Object&gt; data = transferEvent.decode(log);
  *         String from     = (String)     data.get("from");
  *         String to       = (String)     data.get("to");
  *         BigInteger val  = (BigInteger) data.get("value");
@@ -65,7 +65,7 @@ public class EventDecoder {
     public boolean matches(EthModels.Log log) {
         return log.topics != null
                 && !log.topics.isEmpty()
-                && topic0.equalsIgnoreCase(log.topics.get(0));
+                && topic0.equalsIgnoreCase(log.topics.getFirst());
     }
 
     public Map<String, Object> decode(EthModels.Log log) {

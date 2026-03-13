@@ -37,7 +37,7 @@ import java.util.concurrent.CompletableFuture;
  * </pre>
  *
  * @see io.jeth.util.Units#parseToken
- * @see io.jeth.util.Units#fromWei
+ * @see io.jeth.util.Units#fromWei(BigInteger, int)
  */
 public class ERC20 {
 
@@ -77,10 +77,12 @@ public class ERC20 {
         return fnBalanceOf.call(account).as(BigInteger.class);
     }
 
+    @SuppressWarnings("unused")
     public CompletableFuture<BigInteger> totalSupply() {
         return fnTotalSupply.call().as(BigInteger.class);
     }
 
+    @SuppressWarnings("unused")
     public CompletableFuture<BigInteger> allowance(String owner, String spender) {
         return fnAllowance.call(owner, spender).as(BigInteger.class);
     }
@@ -125,6 +127,7 @@ public class ERC20 {
         return fnApprove.send(wallet, spender, amount);
     }
 
+    @SuppressWarnings("unused")
     public CompletableFuture<String> transferFrom(
             Wallet wallet, String from, String to, BigInteger amount) {
         return fnTransferFrom.send(wallet, from, to, amount);
@@ -133,16 +136,6 @@ public class ERC20 {
     // ─── EIP-2612 Permit ──────────────────────────────────────────────────────
 
     /**
-     * Executes a gasless ERC-2612 Permit approval in a single transaction.
-     *
-     * <p>Internally: fetches {@code name()}, {@code nonces(owner)}, and {@code chainId}, constructs
-     * and signs the EIP-712 Permit digest, then calls {@code permit(owner, spender, value,
-     * deadline, v, r, s)} on-chain.
-     *
-     * <p>This replaces the classic two-transaction {@code approve + transferFrom} pattern with a
-     * single transaction, saving ~50k gas and eliminating a user confirmation step. Compatible with
-     * USDC, DAI, UNI, AAVE, and any EIP-2612 token.
-     *
      * @param owner wallet that owns the tokens (signs the permit)
      * @param spender contract being approved to spend
      * @param value amount approved (raw, use {@link io.jeth.util.Units#parseToken})
@@ -150,18 +143,50 @@ public class ERC20 {
      *     now + 20 min)
      * @return transaction hash of the on-chain permit call
      */
+    @SuppressWarnings("unused")
     public CompletableFuture<String> permit(
             Wallet owner, String spender, BigInteger value, BigInteger deadline) {
+        return permit(owner, owner.getAddress(), spender, value, deadline, null);
+    }
+
+    /**
+     * @param wallet the wallet to send the transaction
+     * @param owner the owner of the tokens
+     * @param spender the spender
+     * @param value the amount
+     * @param deadline the deadline
+     * @param sig the signature
+     * @return transaction hash
+     */
+    public CompletableFuture<String> permit(
+            Wallet wallet,
+            String owner,
+            String spender,
+            BigInteger value,
+            BigInteger deadline,
+            Signature sig) {
+        if (sig != null) {
+            return fnPermit.send(
+                    wallet,
+                    owner,
+                    spender,
+                    value,
+                    deadline,
+                    BigInteger.valueOf(sig.v),
+                    toBe32(sig.r),
+                    toBe32(sig.s));
+        }
+
         return name().thenCompose(
                         tokenName ->
-                                nonces(owner.getAddress())
+                                nonces(owner)
                                         .thenCompose(
                                                 nonce ->
                                                         contract.getClient()
                                                                 .getChainId()
                                                                 .thenCompose(
                                                                         chainId -> {
-                                                                            Signature sig =
+                                                                            Signature s =
                                                                                     TypedData
                                                                                             .signPermit(
                                                                                                     contract
@@ -169,35 +194,28 @@ public class ERC20 {
                                                                                                     tokenName,
                                                                                                     "1",
                                                                                                     chainId,
-                                                                                                    owner
-                                                                                                            .getAddress(),
+                                                                                                    owner,
                                                                                                     spender,
                                                                                                     value,
                                                                                                     nonce,
                                                                                                     deadline,
-                                                                                                    owner);
-                                                                            BigInteger v =
-                                                                                    BigInteger
-                                                                                            .valueOf(
-                                                                                                    sig.v); // TypedData.sign already normalizes to 27 or 28
-                                                                            byte[] r =
-                                                                                    toBe32(sig.r);
-                                                                            byte[] s =
-                                                                                    toBe32(sig.s);
+                                                                                                    wallet);
                                                                             return fnPermit.send(
+                                                                                    wallet,
                                                                                     owner,
-                                                                                    owner
-                                                                                            .getAddress(),
                                                                                     spender,
                                                                                     value,
                                                                                     deadline,
-                                                                                    v,
-                                                                                    r,
-                                                                                    s);
+                                                                                    BigInteger
+                                                                                            .valueOf(
+                                                                                                    s.v),
+                                                                                    toBe32(s.r),
+                                                                                    toBe32(s.s));
                                                                         })));
     }
 
     /** Max uint256 — use for unlimited approval. */
+    @SuppressWarnings("unused")
     public static final BigInteger MAX_APPROVAL = BigInteger.TWO.pow(256).subtract(BigInteger.ONE);
 
     public String getAddress() {

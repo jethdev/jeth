@@ -44,11 +44,7 @@ public class GasEstimator {
         return new GasEstimator(client);
     }
 
-    /**
-     * Suggest EIP-1559 gas fees in three confidence tiers. Analyzes the last 10 blocks of fee
-     * history.
-     */
-    public CompletableFuture<Fees> suggest() {
+    public CompletableFuture<FeeEstimates> suggest() {
         return client.getFeeHistory(10, "latest", List.of(10, 50, 90))
                 .thenCombine(
                         client.getBlock("latest"),
@@ -66,13 +62,25 @@ public class GasEstimator {
                             BigInteger tipMedium = medianTip(history, 1);
                             BigInteger tipHigh = medianTip(history, 2);
 
-                            return new Fees(
+                            return new FeeEstimates(
                                     new FeeOption(nextBase.add(tipLow), tipLow, "slow", "~60s"),
                                     new FeeOption(
                                             nextBase.add(tipMedium), tipMedium, "medium", "~15s"),
                                     new FeeOption(nextBase.add(tipHigh), tipHigh, "fast", "~6s"),
                                     nextBase);
                         });
+    }
+
+    /** Alias for {@link #suggest()}. */
+    @SuppressWarnings("unused")
+    public CompletableFuture<Fees> suggestFees() {
+        return suggest().thenApply(f -> new Fees(f.low, f.medium, f.high, f.nextBaseFee));
+    }
+
+    /** Legacy alias for {@link #suggest()}. */
+    @Deprecated
+    public CompletableFuture<FeeEstimates> suggestLegacy() {
+        return suggest();
     }
 
     /**
@@ -129,8 +137,52 @@ public class GasEstimator {
     }
 
     public record Fees(FeeOption low, FeeOption medium, FeeOption high, BigInteger nextBaseFee) {
+        @SuppressWarnings("unused")
         public double baseFeeGwei() {
             return nextBaseFee.doubleValue() / 1e9;
+        }
+    }
+
+    /** Legacy alias for {@link Fees}. */
+    public static class FeeEstimates {
+        public final FeeOption low;
+        public final FeeOption medium;
+        public final FeeOption high;
+        public final BigInteger nextBaseFee;
+
+        public FeeEstimates(
+                FeeOption low, FeeOption medium, FeeOption high, BigInteger nextBaseFee) {
+            this.low = low;
+            this.medium = medium;
+            this.high = high;
+            this.nextBaseFee = nextBaseFee;
+        }
+
+        @SuppressWarnings("unused")
+        public FeeEstimates(Fees fees) {
+            this(fees.low(), fees.medium(), fees.high(), fees.nextBaseFee());
+        }
+
+        @SuppressWarnings("unused")
+        public double baseFeeGwei() {
+            return nextBaseFee.doubleValue() / 1e9;
+        }
+
+        public FeeOption low() {
+            return low;
+        }
+
+        public FeeOption medium() {
+            return medium;
+        }
+
+        public FeeOption high() {
+            return high;
+        }
+
+        @SuppressWarnings("unused")
+        public BigInteger nextBaseFee() {
+            return nextBaseFee;
         }
     }
 }

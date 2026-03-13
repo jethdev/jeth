@@ -100,15 +100,16 @@ public class ContractEvents implements AutoCloseable {
      */
     public CompletableFuture<String> onRaw(String topic0Hex, Consumer<JsonNode> handler) {
         Map<String, Object> filter = new LinkedHashMap<>();
-        filter.put("address", address);
+        if (address != null) filter.put("address", address);
         filter.put("topics", List.of(topic0Hex));
         return subscribe(filter, handler);
     }
 
     /** Subscribe to ALL events from this contract address, regardless of event type. */
+    @SuppressWarnings("unused")
     public CompletableFuture<String> onAny(Consumer<JsonNode> handler) {
         Map<String, Object> filter = new LinkedHashMap<>();
-        filter.put("address", address);
+        if (address != null) filter.put("address", address);
         return subscribe(filter, handler);
     }
 
@@ -120,15 +121,15 @@ public class ContractEvents implements AutoCloseable {
         return ws.unsubscribe(subscriptionId);
     }
 
-    /** Remove all listeners registered through this ContractEvents instance. */
-    public CompletableFuture<Void> removeAllListeners() {
+    public void removeAllListeners() {
         List<CompletableFuture<Boolean>> futures = new ArrayList<>();
         for (String id : new ArrayList<>(subscriptionIds)) futures.add(ws.unsubscribe(id));
         subscriptionIds.clear();
-        return CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]));
+        CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]));
     }
 
     /** How many active subscriptions this instance manages. */
+    @SuppressWarnings("unused")
     public int listenerCount() {
         return subscriptionIds.size();
     }

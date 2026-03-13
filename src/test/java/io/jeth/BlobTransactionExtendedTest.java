@@ -73,7 +73,7 @@ class BlobTransactionExtendedTest {
                         .blob(blobData, blob.commitment, blob.proof)
                         .build();
 
-        byte[] txHash = tx.getBlobVersionedHashes().get(0);
+        byte[] txHash = tx.getBlobVersionedHashes().getFirst();
         byte[] blobHash = blob.versionedHash();
 
         assertArrayEquals(
@@ -138,7 +138,7 @@ class BlobTransactionExtendedTest {
         assertEquals(2, tx.getBlobVersionedHashes().size());
         assertFalse(
                 Arrays.equals(
-                        tx.getBlobVersionedHashes().get(0), tx.getBlobVersionedHashes().get(1)),
+                        tx.getBlobVersionedHashes().getFirst(), tx.getBlobVersionedHashes().get(1)),
                 "Different blobs must produce different versioned hashes");
     }
 
@@ -158,11 +158,11 @@ class BlobTransactionExtendedTest {
         for (int i = 0; i < BlobTransaction.MAX_BLOBS_PER_TX; i++) {
             byte[] data = new byte[BlobTransaction.BLOB_SIZE];
             data[0] = (byte) i;
-            b.blobRaw(data);
+            b.blob(data);
         }
         assertThrows(
                 Exception.class,
-                () -> b.blobRaw(new byte[BlobTransaction.BLOB_SIZE]),
+                () -> b.blob(new byte[BlobTransaction.BLOB_SIZE]),
                 "Should throw when adding blob beyond MAX_BLOBS_PER_TX");
     }
 
@@ -189,7 +189,7 @@ class BlobTransactionExtendedTest {
                 .maxFeePerGas(BigInteger.valueOf(30_000_000_000L))
                 .maxPriorityFeePerGas(BigInteger.valueOf(1_000_000_000L))
                 .maxFeePerBlobGas(BigInteger.valueOf(1_000_000_000L))
-                .blobRaw(new byte[BlobTransaction.BLOB_SIZE])
+                .blob(new byte[BlobTransaction.BLOB_SIZE])
                 .sign(WALLET);
     }
 }

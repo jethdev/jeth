@@ -33,7 +33,7 @@ import java.util.concurrent.TimeUnit;
  * <pre>
  * // Plain HTTP
  * var client = EthClient.of("https://mainnet.infura.io/v3/KEY");
- * var client = EthClient.of(Chain.BASE.publicRpc());
+ * var client2 = EthClient.of(Chain.BASE.publicRpc());
  *
  * // Production: retry + cache + fallback
  * var client = EthClient.of(
@@ -214,6 +214,7 @@ public class EthClient implements AutoCloseable {
         return getBlockByHash(hash, false);
     }
 
+    @SuppressWarnings("unused")
     public CompletableFuture<List<EthModels.TransactionReceipt>> getBlockReceipts(String tag) {
         return send("eth_getBlockReceipts", List.of(tag))
                 .thenApply(
@@ -324,7 +325,12 @@ public class EthClient implements AutoCloseable {
                                                 .orElse("unknown")));
     }
 
-    /** Network information returned by {@link #getNetwork()}. */
+    /**
+     * Network information.
+     *
+     * @param chainId the chain ID
+     * @param name the network name
+     */
     public record NetworkInfo(long chainId, String name) {
         @Override
         public String toString() {
@@ -582,6 +588,7 @@ public class EthClient implements AutoCloseable {
         return provider;
     }
 
+    @SuppressWarnings("unused")
     public ObjectMapper getObjectMapper() {
         return mapper;
     }

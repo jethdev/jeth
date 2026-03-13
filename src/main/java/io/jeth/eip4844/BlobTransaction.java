@@ -48,7 +48,7 @@ public class BlobTransaction {
     /** Max blobs per transaction (EIP-4844). */
     public static final int MAX_BLOBS_PER_TX = 6;
 
-    // KZG field prime (BLS12-381 scalar field order)
+    @SuppressWarnings({"unused", "RedundantSuppression"})
     private static final BigInteger BLS_MODULUS =
             new BigInteger(
                     "52435875175126190479447740508185965837690552500527637822603658699938581184513");
@@ -87,8 +87,8 @@ public class BlobTransaction {
      * Pad or truncate raw bytes to exactly BLOB_SIZE (131072 bytes). Bytes are placed at the start;
      * remainder is zero-padded.
      *
-     * <p>Note: each 32-byte chunk must be < BLS_MODULUS. For arbitrary data use a real blob encoder
-     * library; this method is suitable for small payloads.
+     * <p>Note: each 32-byte chunk must be &lt; BLS_MODULUS. For arbitrary data use a real blob
+     * encoder library; this method is suitable for small payloads.
      */
     public static byte[] padBlob(byte[] data) {
         byte[] blob = new byte[BLOB_SIZE];
@@ -175,14 +175,17 @@ public class BlobTransaction {
         return blobVersionedHashes;
     }
 
+    @SuppressWarnings("unused")
     public List<byte[]> getBlobs() {
         return blobs;
     }
 
+    @SuppressWarnings("unused")
     public List<byte[]> getCommitments() {
         return commitments;
     }
 
+    @SuppressWarnings("unused")
     public List<byte[]> getProofs() {
         return proofs;
     }
@@ -285,13 +288,17 @@ public class BlobTransaction {
             return blob(blob.data, blob.commitment, blob.proof);
         }
 
+        public Builder blob(byte[] blobData) {
+            return blob(Blob.from(blobData));
+        }
+
         /**
          * Add raw blob bytes with placeholder KZG — for local devnet / unit testing only.
          *
          * <p><b>NOT valid on Sepolia, Holesky, or Mainnet.</b> Use {@link #blob(Blob)} which calls
          * {@link Blob#from(byte[])} to compute real KZG automatically.
          *
-         * @deprecated Prefer {@code builder.blob(Blob.from(data))} for real networks.
+         * @deprecated Prefer {@code builder.blob(data)} for real networks.
          */
         @Deprecated
         public Builder blobRaw(byte[] blob) {

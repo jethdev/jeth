@@ -4,6 +4,8 @@
  */
 package io.jeth;
 
+import static io.jeth.eip4844.Blob.BYTES_COMMITMENT;
+import static io.jeth.eip4844.Blob.BYTES_PROOF;
 import static org.junit.jupiter.api.Assertions.*;
 
 import io.jeth.aa.BundlerClient;
@@ -53,6 +55,7 @@ class FinalCoverageTest {
                 + "\"";
     }
 
+    @SuppressWarnings("unused")
     static String encodeTxHash() {
         return "\"0x" + "a".repeat(64) + "\"";
     }
@@ -109,7 +112,7 @@ class FinalCoverageTest {
         }
 
         @Test
-        @DisplayName("isView true for view functions only")
+        @DisplayName("is_view() correctly identifies view/pure/constant")
         void is_view() {
             List<AbiJson.Entry> entries = AbiJson.parse(ERC20_ABI);
             long viewCount = entries.stream().filter(AbiJson.Entry::isView).count();
@@ -135,7 +138,7 @@ class FinalCoverageTest {
                     [{"type":"function","name":"deposit","inputs":[],"outputs":[],"stateMutability":"payable"}]
                     """;
             List<AbiJson.Entry> entries = AbiJson.parse(abi);
-            assertTrue(entries.get(0).isPayable());
+            assertTrue(entries.getFirst().isPayable());
         }
 
         @Test
@@ -145,9 +148,9 @@ class FinalCoverageTest {
                     """
                     [{"type":"function","name":"test","inputs":[{"name":"x","type":"uint"},{"name":"y","type":"int"}],"outputs":[],"stateMutability":"nonpayable"}]
                     """;
-            AbiJson.Entry entry = AbiJson.parse(abi).get(0);
-            assertEquals("uint256", entry.inputs().get(0).canonicalType());
-            assertEquals("int256", entry.inputs().get(1).canonicalType());
+            AbiJson.Entry entry = AbiJson.parse(abi).getFirst();
+            assertEquals("uint256", entry.inputs.get(0).canonicalType());
+            assertEquals("int256", entry.inputs.get(1).canonicalType());
         }
 
         @Test
@@ -157,7 +160,8 @@ class FinalCoverageTest {
                     """
                     [{"type":"function","name":"f","inputs":[{"name":"a","type":"address"}],"outputs":[],"stateMutability":"nonpayable"}]
                     """;
-            assertEquals("address", AbiJson.parse(abi).get(0).inputs().get(0).canonicalType());
+            assertEquals(
+                    "address", AbiJson.parse(abi).getFirst().inputs.getFirst().canonicalType());
         }
 
         @Test
@@ -167,7 +171,7 @@ class FinalCoverageTest {
                     """
                     [{"type":"function","name":"f","inputs":[{"name":"recipient","type":"address"}],"outputs":[],"stateMutability":"nonpayable"}]
                     """;
-            assertEquals("recipient", AbiJson.parse(abi).get(0).inputs().get(0).safeName(0));
+            assertEquals("recipient", AbiJson.parse(abi).getFirst().inputs.getFirst().safeName(0));
         }
 
         @Test
@@ -177,7 +181,7 @@ class FinalCoverageTest {
                     """
                     [{"type":"function","name":"f","inputs":[{"name":"","type":"address"}],"outputs":[],"stateMutability":"nonpayable"}]
                     """;
-            String name = AbiJson.parse(abi).get(0).inputs().get(0).safeName(0);
+            String name = AbiJson.parse(abi).getFirst().inputs.getFirst().safeName(0);
             assertEquals("arg0", name, "Empty name should fall back to 'arg0'");
         }
     }
@@ -325,8 +329,8 @@ class FinalCoverageTest {
                             .nonce(0)
                             .chainId(1)
                             .build();
-            List<Map<String, Object>> accessList = List.of();
-            String signed = TransactionSigner.signEip2930(tx, DEV, accessList);
+            String signed =
+                    TransactionSigner.signEip2930(tx, DEV, (List<EthModels.AccessListEntry>) null);
             assertNotNull(signed);
             assertTrue(signed.startsWith("0x"), "Signed tx must be 0x-prefixed");
         }
@@ -344,7 +348,8 @@ class FinalCoverageTest {
                             .nonce(0)
                             .chainId(1)
                             .build();
-            String signed = TransactionSigner.signEip2930(tx, DEV, List.of());
+            String signed =
+                    TransactionSigner.signEip2930(tx, DEV, (List<EthModels.AccessListEntry>) null);
             // Type 1 tx: 0x + 01 + RLP
             assertEquals(
                     "01", signed.substring(2, 4), "EIP-2930 type 1 tx must have type prefix 0x01");
@@ -363,8 +368,10 @@ class FinalCoverageTest {
                             .nonce(5)
                             .chainId(137)
                             .build();
-            String s1 = TransactionSigner.signEip2930(tx, DEV, List.of());
-            String s2 = TransactionSigner.signEip2930(tx, DEV, List.of());
+            String s1 =
+                    TransactionSigner.signEip2930(tx, DEV, (List<EthModels.AccessListEntry>) null);
+            String s2 =
+                    TransactionSigner.signEip2930(tx, DEV, (List<EthModels.AccessListEntry>) null);
             assertEquals(s1, s2, "signEip2930 must be deterministic");
         }
 
@@ -381,7 +388,8 @@ class FinalCoverageTest {
                             .nonce(0)
                             .chainId(1)
                             .build();
-            String noAccess = TransactionSigner.signEip2930(tx, DEV, List.of());
+            String noAccess =
+                    TransactionSigner.signEip2930(tx, DEV, (List<EthModels.AccessListEntry>) null);
             List<Map<String, Object>> al =
                     List.of(
                             Map.of(
@@ -466,11 +474,12 @@ class FinalCoverageTest {
     @DisplayName("Blob hex helpers")
     class BlobHelpers {
 
+        @SuppressWarnings("unused")
         static Blob makeBlob() {
             // Create a minimal valid blob (128KB of zeros + field element constraints)
             // Blob.of() takes field element data
             byte[] data = new byte[32]; // minimal non-empty blob data
-            return Blob.of(data);
+            return Blob.of(data, new byte[BYTES_COMMITMENT], new byte[BYTES_PROOF]);
         }
 
         @Test
@@ -602,8 +611,6 @@ class FinalCoverageTest {
     @Nested
     @DisplayName("UniswapV3.swapExactInputSingle")
     class UniswapV3SwapTests {
-
-        static final String ROUTER = "0xE592427A0AEce92De3Edee1F18E0157C05861564";
         static final String WETH = "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2";
         static final String USDC = "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48";
 
@@ -717,7 +724,6 @@ class FinalCoverageTest {
         void nested_mapping_unique_slots() {
             String owner1 = "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266";
             String owner2 = "0x70997970C51812dc3A010C7d01b50e0d17dc79C8";
-            String spender = "0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045";
 
             BigInteger slot1 = StorageLayout.mappingSlot(2L, owner1); // inner slot for owner1
             BigInteger slot2 = StorageLayout.mappingSlot(2L, owner2); // inner slot for owner2
@@ -889,6 +895,7 @@ class FinalCoverageTest {
                                 .chainId(1L)
                                 .verifyingContract(TOKEN)
                                 .build();
+                @SuppressWarnings("deprecation")
                 Signature permitSig =
                         io.jeth.eip712.TypedData.signPermit(
                                 domain,

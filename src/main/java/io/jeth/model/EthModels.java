@@ -13,6 +13,7 @@ import java.math.BigInteger;
 import java.util.List;
 
 /** Core Ethereum domain models. All hex fields auto-decoded via Jackson deserializers. */
+@SuppressWarnings("unused")
 public class EthModels {
 
     @JsonIgnoreProperties(ignoreUnknown = true)
@@ -290,7 +291,9 @@ public class EthModels {
 
         /** True if this log's topic0 matches the given event signature hash. */
         public boolean matchesTopic0(String topic0Hex) {
-            return topics != null && !topics.isEmpty() && topic0Hex.equalsIgnoreCase(topics.get(0));
+            return topics != null
+                    && !topics.isEmpty()
+                    && topic0Hex.equalsIgnoreCase(topics.getFirst());
         }
     }
 
@@ -404,6 +407,12 @@ public class EthModels {
                 return this;
             }
 
+            public Builder gasPrice(BigInteger v) {
+                tx.maxFeePerGas = v;
+                tx.maxPriorityFeePerGas = BigInteger.ZERO;
+                return this;
+            }
+
             public Builder maxFeePerGas(BigInteger v) {
                 tx.maxFeePerGas = v;
                 return this;
@@ -435,6 +444,11 @@ public class EthModels {
         }
     }
 
-    /** EIP-2930 access list entry. */
+    /**
+     * EIP-2930 Access List entry.
+     *
+     * @param address the contract or account address
+     * @param storageKeys list of storage slots to warm up
+     */
     public record AccessListEntry(String address, List<String> storageKeys) {}
 }

@@ -153,8 +153,9 @@ public class ContractFunction {
 
     /**
      * Simulate a transaction with eth_call to check for reverts before sending. Returns true if it
-     * would succeed, throws with revert reason if not.
+     * succeeds, throws with revert reason if not.
      */
+    @SuppressWarnings("unused")
     public CompletableFuture<Boolean> simulate(Wallet wallet, Object... args) {
         return simulate(wallet, BigInteger.ZERO, args);
     }
@@ -182,7 +183,12 @@ public class ContractFunction {
         return function;
     }
 
-    public String getSelector() {
+    public byte[] getSelector() {
+        return function.getSelector();
+    }
+
+    @SuppressWarnings("unused")
+    public String getSelectorHex() {
         return function.getSelectorHex();
     }
 
@@ -199,7 +205,10 @@ public class ContractFunction {
     public static class CallResult {
         private final CompletableFuture<Object[]> future;
 
-        CallResult(CompletableFuture<Object[]> future) {
+        /**
+         * @param future the future results
+         */
+        public CallResult(CompletableFuture<Object[]> future) {
             this.future = future;
         }
 

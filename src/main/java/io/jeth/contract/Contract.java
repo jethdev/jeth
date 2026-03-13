@@ -14,6 +14,7 @@ import io.jeth.crypto.Wallet;
 import io.jeth.event.EventDef;
 import io.jeth.model.EthModels;
 import io.jeth.util.Hex;
+import io.jeth.util.Units;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -85,6 +86,20 @@ public class Contract {
      */
     public ContractFunction fn(Function function) {
         return new ContractFunction(address, client, function);
+    }
+
+    /**
+     * Send ETH.
+     *
+     * @param client the client
+     * @param wallet the wallet
+     * @param to recipient
+     * @param value amount in ETH
+     * @return transaction hash
+     */
+    public static CompletableFuture<String> sendEth(
+            EthClient client, Wallet wallet, String to, java.math.BigDecimal value) {
+        return sendEth(client, wallet, to, Units.toWei(value.toPlainString()));
     }
 
     /** Send raw ETH — no contract call. */
@@ -263,6 +278,7 @@ public class Contract {
     }
 
     /** Deploy without constructor args. */
+    @SuppressWarnings("unused")
     public static CompletableFuture<String> deploy(
             EthClient client, Wallet wallet, String bytecodeHex) {
         return deploy(client, wallet, bytecodeHex, null, null);

@@ -31,7 +31,7 @@ import java.util.concurrent.CompletableFuture;
  *
  * // Get Safe state
  * int threshold = safe.getThreshold().join();
- * List<String> owners = safe.getOwners().join();
+ * List&lt;String&gt; owners = safe.getOwners().join();
  * BigInteger nonce = safe.getNonce().join();
  *
  * // Build and sign a transaction
@@ -54,7 +54,7 @@ import java.util.concurrent.CompletableFuture;
  */
 public class GnosisSafe {
 
-    // Safe domain type hash (EIP-712)
+    @SuppressWarnings({"unused", "RedundantSuppression"})
     private static final String SAFE_TX_TYPEHASH_STR =
             "SafeTx(address to,uint256 value,bytes data,uint8 operation,uint256 safeTxGas,uint256 baseGas,uint256 gasPrice,address gasToken,address refundReceiver,uint256 nonce)";
 
@@ -63,7 +63,6 @@ public class GnosisSafe {
     private final ContractFunction fnThreshold;
     private final ContractFunction fnGetOwners;
     private final ContractFunction fnExecTransaction;
-    private final ContractFunction fnDomainSeparator;
     private final ContractFunction fnIsOwner;
 
     public GnosisSafe(String safeAddress, EthClient client) {
@@ -71,7 +70,6 @@ public class GnosisSafe {
         this.fnNonce = safe.fn("nonce()").returns("uint256");
         this.fnThreshold = safe.fn("getThreshold()").returns("uint256");
         this.fnGetOwners = safe.fn("getOwners()").returns("address[]");
-        this.fnDomainSeparator = safe.fn("domainSeparator()").returns("bytes32");
         this.fnIsOwner = safe.fn("isOwner(address)").returns("bool");
         this.fnExecTransaction =
                 safe.fn(
@@ -93,7 +91,6 @@ public class GnosisSafe {
         return fnIsOwner.call(addr).as(Boolean.class);
     }
 
-    @SuppressWarnings("unchecked")
     public CompletableFuture<List<String>> getOwners() {
         return fnGetOwners
                 .call()
@@ -101,9 +98,9 @@ public class GnosisSafe {
                 .thenApply(
                         arr -> {
                             Object raw = arr[0];
-                            if (raw instanceof Object[] oa)
-                                return Arrays.asList(
-                                        (String[]) Arrays.copyOf(oa, oa.length, String[].class));
+                            if (raw instanceof Object[] oa) {
+                                return Arrays.asList(Arrays.copyOf(oa, oa.length, String[].class));
+                            }
                             return List.of();
                         });
     }
@@ -168,11 +165,18 @@ public class GnosisSafe {
      *
      * <p><strong>IMPORTANT:</strong> {@code signatures} MUST be sorted by signer address in
      * ascending order. The Safe contract will revert if signatures are not sorted. Use {@link
-     * #packSignaturesFor(List)} to sort automatically when you have (address, signature) pairs, or
-     * sort manually before calling this method.
+     * #packSorted(Map)} to sort automatically when you have (address, signature) pairs, or sort
+     * manually before calling this method.
      */
+    @SuppressWarnings("unused")
     public CompletableFuture<String> executeTransaction(
             SafeTx tx, List<Signature> signatures, Wallet executor) {
+        return executeTransaction(executor, tx, signatures);
+    }
+
+    /** Legacy support for executeTransaction with executor wallet at first position. */
+    public CompletableFuture<String> executeTransaction(
+            Wallet executor, SafeTx tx, List<Signature> signatures) {
         byte[] packedSigs = packSignatures(signatures);
         return fnExecTransaction.send(
                 executor,
@@ -188,11 +192,23 @@ public class GnosisSafe {
                 packedSigs);
     }
 
+    @SuppressWarnings("unused")
+    public CompletableFuture<String> executeTransaction(
+            SafeTx tx, Map<String, Signature> signatures, Wallet executor) {
+        return executeTransaction(tx, signatures.values().stream().toList(), executor);
+    }
+
+    /** Legacy support for executeTransaction with executor wallet at first position and Map. */
+    @SuppressWarnings("unused")
+    public CompletableFuture<String> executeTransaction(
+            Wallet executor, SafeTx tx, Map<String, Signature> signatures) {
+        return executeTransaction(executor, tx, signatures.values().stream().toList());
+    }
+
     /**
      * Sort and pack (address, signature) pairs into Safe's packed signature format. The Safe
      * contract requires signatures sorted by signer address ascending. Pass the result to {@link
-     * #executeTransaction} as pre-packed bytes via the low-level exec, or use {@link
-     * #executeTransactionSorted} for convenience.
+     * #executeTransaction} as pre-packed bytes via the low-level exec.
      */
     public static byte[] packSorted(Map<String, Signature> sigsByAddress) {
         List<Map.Entry<String, Signature>> sorted = new ArrayList<>(sigsByAddress.entrySet());
@@ -300,6 +316,26 @@ public class GnosisSafe {
 
             public Builder safeTxGas(BigInteger v) {
                 this.safeTxGas = v;
+                return this;
+            }
+
+            public Builder baseGas(BigInteger v) {
+                this.baseGas = v;
+                return this;
+            }
+
+            public Builder gasPrice(BigInteger v) {
+                this.gasPrice = v;
+                return this;
+            }
+
+            public Builder gasToken(String v) {
+                this.gasToken = v;
+                return this;
+            }
+
+            public Builder refundReceiver(String v) {
+                this.refundReceiver = v;
                 return this;
             }
 

@@ -111,8 +111,8 @@ public class UserOperation {
         Signature sig = wallet.sign(Keccak.hash(toSign));
         int v = sig.v + 27; // Ethereum convention
         byte[] sigBytes = new byte[65];
-        byte[] rBytes = toFixedBytes(sig.r, 32);
-        byte[] sBytes = toFixedBytes(sig.s, 32);
+        byte[] rBytes = toFixedBytes(sig.r);
+        byte[] sBytes = toFixedBytes(sig.s);
         System.arraycopy(rBytes, 0, sigBytes, 0, 32);
         System.arraycopy(sBytes, 0, sigBytes, 32, 32);
         sigBytes[64] = (byte) v;
@@ -187,13 +187,13 @@ public class UserOperation {
                 });
     }
 
-    private static byte[] toFixedBytes(BigInteger n, int len) {
+    private static byte[] toFixedBytes(BigInteger n) {
         byte[] raw = n.toByteArray();
-        byte[] out = new byte[len];
-        if (raw.length >= len) {
-            System.arraycopy(raw, raw.length - len, out, 0, len);
+        byte[] out = new byte[32];
+        if (raw.length >= 32) {
+            System.arraycopy(raw, raw.length - 32, out, 0, 32);
         } else {
-            System.arraycopy(raw, 0, out, len - raw.length, raw.length);
+            System.arraycopy(raw, 0, out, 32 - raw.length, raw.length);
         }
         return out;
     }
@@ -213,6 +213,7 @@ public class UserOperation {
         BigInteger maxFeePerGas = BigInteger.ZERO;
         BigInteger maxPriorityFeePerGas = BigInteger.ZERO;
         String paymasterAndData;
+        String signature;
 
         public Builder sender(String v) {
             this.sender = v;
@@ -269,9 +270,14 @@ public class UserOperation {
             return this;
         }
 
+        public Builder signature(String v) {
+            this.signature = v;
+            return this;
+        }
+
         public UserOperation build() {
             if (sender == null) throw new EthException("UserOperation.sender is required");
-            return new UserOperation(this, null);
+            return new UserOperation(this, signature);
         }
     }
 }

@@ -41,23 +41,28 @@ public class UniswapV3 {
     public static final String SWAP_ROUTER_02_ADDRESS =
             "0x68b3465833fb72A70ecDF485E0e4C7bD8665Fc45";
 
+    @SuppressWarnings("unused")
     public static final int FEE_LOWEST = 100; // 0.01%
+
+    @SuppressWarnings("unused")
     public static final int FEE_LOW = 500; // 0.05%
+
+    @SuppressWarnings("unused")
     public static final int FEE_MEDIUM = 3000; // 0.30%
+
+    @SuppressWarnings("unused")
     public static final int FEE_HIGH = 10000; // 1.00%
 
     private final EthClient client;
-    private final Contract quoter;
     private final Contract router;
-    private final Contract factory;
     private final ContractFunction fnQuoteExactInputSingle;
     private final ContractFunction fnGetPool;
 
     public UniswapV3(EthClient client) {
         this.client = client;
-        this.quoter = new Contract(QUOTER_V2_ADDRESS, client);
         this.router = new Contract(SWAP_ROUTER_02_ADDRESS, client);
-        this.factory = new Contract(FACTORY_ADDRESS, client);
+        Contract quoter = new Contract(QUOTER_V2_ADDRESS, client);
+        Contract factory = new Contract(FACTORY_ADDRESS, client);
         this.fnQuoteExactInputSingle =
                 quoter.fn("quoteExactInputSingle((address,address,uint256,uint24,uint160))")
                         .returns("uint256", "uint160", "uint32", "uint256");
@@ -124,7 +129,8 @@ public class UniswapV3 {
             String tokenOut,
             int fee,
             BigInteger amountIn,
-            BigInteger amountOutMinimum) {
+            BigInteger amountOutMinimum,
+            int sqrtPriceLimitX96) {
         Object[] params = {
             tokenIn,
             tokenOut,
@@ -132,11 +138,23 @@ public class UniswapV3 {
             wallet.getAddress(),
             amountIn,
             amountOutMinimum,
-            BigInteger.ZERO
+            BigInteger.valueOf(sqrtPriceLimitX96)
         };
         return router.fn(
                         "exactInputSingle((address,address,uint24,address,uint256,uint256,uint160))")
                 .send(wallet, params);
+    }
+
+    /** Execute exact-input single swap. */
+    @SuppressWarnings("unused")
+    public CompletableFuture<String> swapExactInputSingle(
+            Wallet wallet,
+            String tokenIn,
+            String tokenOut,
+            int fee,
+            BigInteger amountIn,
+            BigInteger amountOutMinimum) {
+        return swapExactInputSingle(wallet, tokenIn, tokenOut, fee, amountIn, amountOutMinimum, 0);
     }
 
     /** Batch-quote many pools in one eth_call via Multicall3. */
@@ -155,7 +173,7 @@ public class UniswapV3 {
                 BigInteger.valueOf(q.fee()),
                 BigInteger.ZERO
             };
-            mc.addAllowFailure(QUOTER_V2_ADDRESS, qFn, new Object[] {tuple});
+            mc.addOptional(QUOTER_V2_ADDRESS, qFn, new Object[] {tuple});
         }
         return mc.execute()
                 .thenApply(
@@ -168,6 +186,7 @@ public class UniswapV3 {
     public record PoolState(
             String address, BigInteger sqrtPriceX96, int tick, BigInteger liquidity) {
         /** Approximate price of token0/token1 (not adjusted for decimals). */
+        @SuppressWarnings("unused")
         public double price() {
             double sq = sqrtPriceX96.doubleValue() / Math.pow(2, 96);
             return sq * sq;

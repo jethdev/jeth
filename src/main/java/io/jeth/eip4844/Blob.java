@@ -71,8 +71,8 @@ public final class Blob {
      * Create a blob from arbitrary bytes, computing real KZG commitment and proof.
      *
      * <p>Data is zero-padded to {@link #BYTES_PER_BLOB} (131072) bytes. Each 32-byte chunk must be
-     * a valid BLS12-381 scalar field element (< 2^255). For raw binary data this is almost always
-     * satisfied; if not, use {@link BlobEncoder#encode} to wrap data in a field-element-safe
+     * a valid BLS12-381 scalar field element (&lt; 2^255). For raw binary data this is almost
+     * always satisfied; if not, use {@link BlobEncoder#encode} to wrap data in a field-element-safe
      * encoding.
      *
      * <p>This operation loads the Ethereum trusted setup on first call (~300ms JVM warmup) and then

@@ -87,6 +87,16 @@ public class Wallet {
         return new Wallet(priv);
     }
 
+    /** Alias for {@link #create()}. */
+    public static Wallet generate() {
+        return create();
+    }
+
+    /** Create a wallet from a private key. */
+    public static Wallet fromPrivateKey(BigInteger privateKey) {
+        return new Wallet(privateKey);
+    }
+
     /**
      * Restores a wallet from a hex-encoded private key.
      *
@@ -96,6 +106,7 @@ public class Wallet {
         return new Wallet(Hex.toBigInteger(hex));
     }
 
+    /** Create a wallet from a 32-byte private key. */
     public static Wallet fromPrivateKey(byte[] bytes) {
         return new Wallet(new BigInteger(1, bytes));
     }
@@ -181,6 +192,7 @@ public class Wallet {
         return recoverAddress(hash, sig);
     }
 
+    @SuppressWarnings("unused")
     public static String recoverPersonalMessage(String message, String sigHex) {
         return recoverPersonalMessage(message, parseSignature(sigHex));
     }
@@ -209,7 +221,7 @@ public class Wallet {
     private static ECPoint recoverPublicKey(int recId, BigInteger r, BigInteger s, byte[] hash) {
         BigInteger n = CURVE.getN();
         BigInteger prime = CURVE_PARAMS.getCurve().getField().getCharacteristic();
-        BigInteger x = r.add(BigInteger.valueOf((long) (recId / 2)).multiply(n));
+        BigInteger x = r.add(BigInteger.valueOf(recId / 2).multiply(n));
         if (x.compareTo(prime) >= 0) return null;
 
         byte[] xBytes = to32Bytes(x);
@@ -323,12 +335,13 @@ public class Wallet {
             return buildAndSend(to, valueWei, null);
         }
 
-        /** Send a contract call (with calldata). Gas estimated automatically. Returns tx hash. */
+        @SuppressWarnings("unused")
         public CompletableFuture<String> sendTransaction(String to, String calldata) {
             return buildAndSend(to, BigInteger.ZERO, calldata);
         }
 
         /** Send a payable contract call. Returns tx hash. */
+        @SuppressWarnings("unused")
         public CompletableFuture<String> sendTransaction(
                 String to, BigInteger value, String calldata) {
             return buildAndSend(to, value, calldata);

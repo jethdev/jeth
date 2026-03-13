@@ -231,6 +231,7 @@ public class FlashbotsClient {
      * @param bundleHash the hash returned by {@link #sendBundle}
      * @param blockNumber the target block the bundle was sent for
      */
+    @SuppressWarnings("unused")
     public CompletableFuture<JsonNode> getBundleStats(String bundleHash, long blockNumber) {
         return send(
                         "flashbots_getBundleStatsV2",
@@ -248,6 +249,7 @@ public class FlashbotsClient {
     }
 
     /** Get the user's stats on the Flashbots relay (total bundles, inclusion rate, etc.). */
+    @SuppressWarnings("unused")
     public CompletableFuture<JsonNode> getUserStats() {
         return send("flashbots_getUserStatsV2", List.of())
                 .thenApply(
@@ -301,7 +303,7 @@ public class FlashbotsClient {
      * Sign the request body for the X-Flashbots-Signature header. Signature = sign(keccak256(body))
      * using EIP-191 personal_sign prefix.
      */
-    String sign(String body) {
+    public String sign(String body) {
         byte[] bodyBytes = body.getBytes(StandardCharsets.UTF_8);
         byte[] hash = Keccak.hash(bodyBytes);
         // EIP-191 prefix: "\x19Ethereum Signed Message:\n32"
@@ -319,7 +321,7 @@ public class FlashbotsClient {
     private void checkError(JsonNode node) {
         JsonNode err = node.path("error");
         if (!err.isMissingNode() && !err.isNull())
-            throw new FlashbotsException("Relay error: " + err.toString());
+            throw new FlashbotsException("Relay error: " + err.asText());
     }
 
     private FlashbotsSimResult parseSimResult(JsonNode result) {

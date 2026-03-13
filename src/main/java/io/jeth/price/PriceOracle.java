@@ -77,10 +77,10 @@ public class PriceOracle {
     /** WBTC/USD — 8 decimals. Heartbeat: 1h. */
     public static final String WBTC_USD = "0xfdFD9C85aD200c506Cf9e21F1FD8dd01932FBB23";
 
-    /** SOL/USD — 8 decimals. Heartbeat: 1h. */
+    @SuppressWarnings("unused")
     public static final String SOL_USD = "0x4ffC43a60e009B551865A93d232E33Fce9f01507";
 
-    /** MATIC/USD — 8 decimals. Heartbeat: 1h. */
+    @SuppressWarnings("unused")
     public static final String MATIC_USD = "0x7bAC85A8a13A4BcD8abb3eB7d6b4d632c895a1c0";
 
     // ─── Known ERC-20 addresses (Mainnet) ────────────────────────────────────
@@ -393,10 +393,13 @@ public class PriceOracle {
     // ─── Math helpers (package-private for testing) ──────────────────────────
 
     /**
-     * Convert sqrtPriceX96 to a human-readable price. price_raw = (sqrtPriceX96 / 2^96)^2, adjusted
-     * for token ordering and decimals.
+     * @param sqrtPriceX96 the raw sqrt price
+     * @param baseToken base token address
+     * @param quoteToken quote token address
+     * @param token0 token0 address of the pool
+     * @return human-readable price
      */
-    static BigDecimal sqrtPriceX96ToPrice(
+    public static BigDecimal sqrtPriceX96ToPrice(
             BigInteger sqrtPriceX96, String baseToken, String quoteToken, String token0) {
         // price = sqrtPriceX96^2 / 2^192
         BigDecimal sqrt = new BigDecimal(sqrtPriceX96);
@@ -411,10 +414,14 @@ public class PriceOracle {
     }
 
     /**
-     * Convert a Uniswap V3 tick to a price. price = 1.0001^tick, adjusted for ordering and
-     * decimals.
+     * @param tick the raw tick
+     * @param baseToken base token address
+     * @param quoteToken quote token address
+     * @param token0 token0 address of the pool
+     * @return human-readable price
      */
-    static BigDecimal tickToPrice(double tick, String baseToken, String quoteToken, String token0) {
+    public static BigDecimal tickToPrice(
+            double tick, String baseToken, String quoteToken, String token0) {
         double rawPrice = Math.pow(1.0001, tick);
         boolean baseIsToken0 = baseToken.equalsIgnoreCase(token0);
         if (!baseIsToken0) rawPrice = 1.0 / rawPrice;
@@ -436,7 +443,10 @@ public class PriceOracle {
         return rawPrice.setScale(6, RoundingMode.HALF_UP);
     }
 
-    static int knownDecimals(String token) {
+    /**
+     * @return decimal places for known tokens (USDC=6, WBTC=8, etc), else 18.
+     */
+    public static int knownDecimals(String token) {
         String t = token.toLowerCase();
         if (t.equals(USDC.toLowerCase()) || t.equals(USDT.toLowerCase())) return 6;
         if (t.equals(WBTC.toLowerCase())) return 8;
@@ -462,6 +472,13 @@ public class PriceOracle {
             long updatedAt,
             int decimals,
             String feed) {
+
+        /**
+         * @return the raw unadjusted price from the feed
+         */
+        public BigInteger rawAnswer() {
+            return price.multiply(BigDecimal.TEN.pow(decimals)).toBigInteger();
+        }
 
         /** Age of the price data in seconds. */
         public long ageSeconds() {

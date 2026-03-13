@@ -5,7 +5,6 @@
 package io.jeth.aa;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import io.jeth.core.EthException;
 import io.jeth.model.RpcModels;
 import io.jeth.provider.HttpProvider;
@@ -23,28 +22,16 @@ import java.util.concurrent.TimeUnit;
  * <p>Compatible with any ERC-4337 bundler: Pimlico, Stackup, Alchemy, Biconomy, etc. The bundler
  * exposes the same JSON-RPC port with additional methods.
  *
- * <pre>
+ * <pre>{@code
  * var bundler = BundlerClient.of("https://api.pimlico.io/v1/sepolia/rpc?apikey=KEY");
- *
- * // Estimate gas for a UserOperation
- * var gas = bundler.estimateUserOperationGas(userOp, EntryPoint.V06).join();
- *
- * // Send
- * String userOpHash = bundler.sendUserOperation(userOp, EntryPoint.V06).join();
- *
- * // Wait for receipt
- * var receipt = bundler.waitForUserOperationReceipt(userOpHash).join();
- * System.out.println("Tx hash: " + receipt.get("receipt").get("transactionHash").asText());
- * </pre>
+ * }</pre>
  */
 public class BundlerClient {
 
     private final Provider provider;
-    private final ObjectMapper mapper;
 
     private BundlerClient(Provider provider) {
         this.provider = provider;
-        this.mapper = provider.getObjectMapper();
     }
 
     public static BundlerClient of(String bundlerUrl) {
@@ -150,7 +137,9 @@ public class BundlerClient {
                             checkError(r);
                             var list = new ArrayList<String>();
                             if (r.result != null && r.result.isArray()) {
-                                r.result.forEach(n -> list.add(n.asText()));
+                                for (JsonNode n : r.result) {
+                                    list.add(n.asText());
+                                }
                             }
                             return list;
                         });
@@ -161,11 +150,16 @@ public class BundlerClient {
      *
      * @param policyId Paymaster policy ID from your paymaster provider
      */
+    @SuppressWarnings("unused")
     public CompletableFuture<PaymasterData> sponsorUserOperation(
             UserOperation op, String entryPoint, String policyId) {
-        return send(
-                        "pm_sponsorUserOperation",
-                        List.of(op.toMap(), entryPoint, Map.of("sponsorshipPolicyId", policyId)))
+        return sponsorUserOperationFull(op, entryPoint, Map.of("sponsorshipPolicyId", policyId));
+    }
+
+    /** Legacy support for sponsorUserOperation returning String (just the paymasterAndData). */
+    public CompletableFuture<PaymasterData> sponsorUserOperation(
+            UserOperation op, String entryPoint, Map<String, Object> context) {
+        return send("pm_sponsorUserOperation", List.of(op.toMap(), entryPoint, context))
                 .thenApply(
                         r -> {
                             checkError(r);
@@ -176,6 +170,11 @@ public class BundlerClient {
                                     hexToBigInt(res, "verificationGasLimit"),
                                     hexToBigInt(res, "preVerificationGas"));
                         });
+    }
+
+    public CompletableFuture<PaymasterData> sponsorUserOperationFull(
+            UserOperation op, String entryPoint, Map<String, Object> context) {
+        return sponsorUserOperation(op, entryPoint, context);
     }
 
     public CompletableFuture<RpcModels.RpcResponse> send(String method, List<?> params) {

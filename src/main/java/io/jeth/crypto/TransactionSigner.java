@@ -90,7 +90,7 @@ public class TransactionSigner {
         byte[] hash = Keccak.hash(Rlp.encode(unsigned));
         Signature sig = wallet.sign(hash);
 
-        BigInteger v = BigInteger.valueOf((long) tx.chainId * 2 + 35 + sig.v);
+        BigInteger v = BigInteger.valueOf(tx.chainId * 2L + 35 + sig.v);
 
         List<Object> signed =
                 List.of(BigInteger.valueOf(tx.nonce), gp, gas, to, val, data, v, sig.r, sig.s);
@@ -106,6 +106,7 @@ public class TransactionSigner {
             EthModels.TransactionRequest tx,
             Wallet wallet,
             List<EthModels.AccessListEntry> accessList) {
+        if (accessList == null) accessList = List.of();
         byte[] to = tx.to != null ? Hex.decode(tx.to) : new byte[0];
         byte[] data = tx.data != null ? Hex.decode(tx.data) : new byte[0];
         BigInteger val = tx.value != null ? tx.value : BigInteger.ZERO;
@@ -124,6 +125,49 @@ public class TransactionSigner {
                                                                 .toList()))
                         .toList();
 
+        return signEip2930Internal(tx, wallet, to, data, val, gas, gp, encodedAccessList);
+    }
+
+    /** Legacy support for signEip2930 with List of Maps. */
+    @SuppressWarnings("unchecked")
+    public static String signEip2930(
+            EthModels.TransactionRequest tx,
+            Wallet wallet,
+            java.util.Collection<java.util.Map<String, Object>> accessList) {
+        if (accessList == null || accessList.isEmpty()) {
+            return signEip2930(tx, wallet, (List<EthModels.AccessListEntry>) null);
+        }
+        byte[] to = tx.to != null ? Hex.decode(tx.to) : new byte[0];
+        byte[] data = tx.data != null ? Hex.decode(tx.data) : new byte[0];
+        BigInteger val = tx.value != null ? tx.value : BigInteger.ZERO;
+        BigInteger gas = tx.gas != null ? tx.gas : BigInteger.valueOf(21000);
+        BigInteger gp = tx.maxFeePerGas != null ? tx.maxFeePerGas : BigInteger.ZERO;
+
+        List<Object> encodedAccessList =
+                accessList.stream()
+                        .map(
+                                m -> {
+                                    String addr = (String) m.get("address");
+                                    List<String> keys = (List<String>) m.get("storageKeys");
+                                    return (Object)
+                                            List.of(
+                                                    Hex.decode(addr),
+                                                    keys.stream().map(Hex::decode).toList());
+                                })
+                        .toList();
+
+        return signEip2930Internal(tx, wallet, to, data, val, gas, gp, encodedAccessList);
+    }
+
+    private static String signEip2930Internal(
+            EthModels.TransactionRequest tx,
+            Wallet wallet,
+            byte[] to,
+            byte[] data,
+            BigInteger val,
+            BigInteger gas,
+            BigInteger gp,
+            List<Object> encodedAccessList) {
         List<Object> unsigned =
                 List.of(
                         BigInteger.valueOf(tx.chainId),
@@ -181,7 +225,7 @@ public class TransactionSigner {
      * Recover the signer address from a signed raw transaction hex. Supports EIP-1559 (type 0x02)
      * and legacy transactions.
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({"unchecked", "RedundantSuppression"})
     public static String recoverSigner(String rawTxHex) {
         byte[] raw = Hex.decode(rawTxHex);
         if (raw.length == 0) throw new IllegalArgumentException("Empty transaction");

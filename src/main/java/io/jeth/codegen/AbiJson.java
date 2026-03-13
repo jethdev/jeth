@@ -17,8 +17,10 @@ public class AbiJson {
     private static final ObjectMapper MAPPER = new ObjectMapper();
 
     /**
-     * Parse an ABI JSON string. Accepts both raw array {@code [...]} and Hardhat/Foundry artifact
-     * {@code {"abi":[...]}}.
+     * Parse an ABI JSON string.
+     *
+     * @param json the JSON string to parse
+     * @return the list of ABI entries
      */
     public static List<Entry> parse(String json) {
         try {
@@ -33,69 +35,145 @@ public class AbiJson {
         }
     }
 
+    /** ABI entry definition. */
     @JsonIgnoreProperties(ignoreUnknown = true)
     public static class Entry {
+        /** type (e.g. "function", "event", "constructor", "error") */
         @JsonProperty("type")
         public String type;
 
+        /** name */
         @JsonProperty("name")
         public String name;
 
+        /** inputs */
         @JsonProperty("inputs")
         public List<Param> inputs;
 
+        /** outputs */
         @JsonProperty("outputs")
         public List<Param> outputs;
 
+        /** stateMutability (e.g. "pure", "view", "nonpayable", "payable") */
         @JsonProperty("stateMutability")
         public String stateMutability;
 
+        /** legacy constant flag */
         @JsonProperty("constant")
         public Boolean constant;
 
+        /** legacy payable flag */
         @JsonProperty("payable")
         public Boolean payable;
 
+        /**
+         * @return inputs
+         */
+        public List<Param> inputs() {
+            return inputs;
+        }
+
+        /**
+         * @return outputs
+         */
+        @SuppressWarnings("unused")
+        public List<Param> outputs() {
+            return outputs;
+        }
+
+        /**
+         * @return true if function
+         */
         public boolean isFunction() {
             return "function".equals(type);
         }
 
+        /**
+         * @return true if constructor
+         */
         public boolean isConstructor() {
             return "constructor".equals(type);
         }
 
+        /**
+         * @return true if event
+         */
         public boolean isEvent() {
             return "event".equals(type);
         }
 
+        /**
+         * @return true if error
+         */
         public boolean isError() {
             return "error".equals(type);
         }
 
+        /**
+         * @return true if view or pure
+         */
         public boolean isView() {
             return "view".equals(stateMutability)
                     || "pure".equals(stateMutability)
                     || Boolean.TRUE.equals(constant);
         }
 
+        /**
+         * @return true if payable
+         */
         public boolean isPayable() {
             return "payable".equals(stateMutability) || Boolean.TRUE.equals(payable);
         }
     }
 
+    /** ABI parameter definition. */
     @JsonIgnoreProperties(ignoreUnknown = true)
     public static class Param {
+        /** name */
         @JsonProperty("name")
         public String name;
 
+        /**
+         * @return name
+         */
+        public String name() {
+            return name;
+        }
+
+        /** type */
         @JsonProperty("type")
         public String type;
 
+        /**
+         * @return type
+         */
+        public String type() {
+            return type;
+        }
+
+        /** internalType (from compiler) */
         @JsonProperty("internalType")
         public String internalType;
 
+        /**
+         * @return internalType
+         */
+        @SuppressWarnings("unused")
+        public String internalType() {
+            return internalType;
+        }
+
+        /** components (for tuples) */
         @JsonProperty("components")
         public List<Param> components;
+
+        /**
+         * @return components
+         */
+        @SuppressWarnings("unused")
+        public List<Param> components() {
+            return components;
+        }
 
         public String canonicalType() {
             if (type != null && type.startsWith("tuple")) {

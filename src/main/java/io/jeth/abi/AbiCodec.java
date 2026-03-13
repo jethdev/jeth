@@ -18,7 +18,8 @@ import java.util.List;
  * string - Arrays: T[], T[N] (including nested arrays) - Tuples: (T1,T2,...), (T1,T2,...)[],
  * (T1,T2,...)[N]
  *
- * <p>Follows the ABI spec: https://docs.soliditylang.org/en/latest/abi-spec.html
+ * <p>Follows the ABI spec: <a
+ * href="https://docs.soliditylang.org/en/latest/abi-spec.html">https://docs.soliditylang.org/en/latest/abi-spec.html</a>
  */
 public class AbiCodec {
 
@@ -27,22 +28,32 @@ public class AbiCodec {
     /**
      * Encode a list of typed values into ABI bytes. This is the top-level encoding — the "calldata"
      * minus the function selector.
+     *
+     * @param types the types of the values
+     * @param values the values to encode
+     * @return the encoded bytes
      */
     public static byte[] encode(AbiType[] types, Object[] values) {
         if (types.length != values.length)
             throw new AbiException(
                     "types/values length mismatch: " + types.length + " vs " + values.length);
-        return encodeSequence(types, values, 0);
+        return encodeSequence(types, values);
     }
 
-    /** Encode a single tuple (struct) — same as encode() but takes a single AbiType.TUPLE. */
+    /**
+     * Encode a single tuple (struct) — same as encode() but takes a single AbiType.TUPLE.
+     *
+     * @param tupleType the tuple type
+     * @param values the values within the tuple
+     * @return the encoded bytes
+     */
     public static byte[] encodeTuple(AbiType tupleType, Object[] values) {
         if (!tupleType.isTuple()) throw new AbiException("Type is not a tuple: " + tupleType);
-        return encodeSequence(tupleType.getTupleTypes(), values, 0);
+        return encodeSequence(tupleType.getTupleTypes(), values);
     }
 
     /** Core encoding: handles head/tail layout for any sequence of typed values. */
-    static byte[] encodeSequence(AbiType[] types, Object[] values, int tailBaseOffset) {
+    static byte[] encodeSequence(AbiType[] types, Object[] values) {
         // Step 1: encode each value and decide head (32-byte slot or offset pointer)
         byte[][] encodedTails = new byte[types.length][];
         boolean[] isDynamic = new boolean[types.length];
@@ -60,7 +71,7 @@ public class AbiCodec {
         int tailSize = 0;
         for (int i = 0; i < types.length; i++) {
             if (isDynamic[i]) {
-                tailOffsets[i] = tailBaseOffset + headSize + tailSize;
+                tailOffsets[i] = headSize + tailSize;
                 tailSize += encodedTails[i].length;
             }
         }
@@ -94,6 +105,10 @@ public class AbiCodec {
     /**
      * Encode a single value of a given type. Returns 32 bytes for static types, variable length for
      * dynamic.
+     *
+     * @param type the type of the value
+     * @param value the value to encode
+     * @return the encoded bytes
      */
     public static byte[] encodeValue(AbiType type, Object value) {
         if (type.isArray()) return encodeArray(type, value);
@@ -125,7 +140,7 @@ public class AbiCodec {
             throw new AbiException(
                     "Tuple value must be Object[] or List, got: " + value.getClass());
         }
-        return encodeSequence(components, values, 0);
+        return encodeSequence(components, values);
     }
 
     private static byte[] encodeArray(AbiType arrayType, Object value) {
@@ -153,7 +168,7 @@ public class AbiCodec {
         // Elements themselves form a sub-sequence
         AbiType[] types = new AbiType[elements.length];
         Arrays.fill(types, elemType);
-        return encodeSequence(types, elements, 0);
+        return encodeSequence(types, elements);
     }
 
     public static byte[] encodeUint256(BigInteger value) {
@@ -213,9 +228,23 @@ public class AbiCodec {
 
     // ─── Decode ──────────────────────────────────────────────────────────────
 
-    /** Decode ABI-encoded bytes into typed Java objects. */
+    /**
+     * Decode ABI-encoded bytes into typed Java objects.
+     *
+     * @param types the types to decode
+     * @param data the encoded data
+     * @return the decoded values
+     */
     public static Object[] decode(AbiType[] types, byte[] data) {
         return decodeSequence(types, data, 0);
+    }
+
+    public static BigInteger decodeUint(byte[] data, int offset) {
+        return decodeBigInt(data, offset);
+    }
+
+    public static boolean decodeBool(byte[] data, int offset) {
+        return toBoolean(decodeValue(AbiType.BOOL, data, offset));
     }
 
     static Object[] decodeSequence(AbiType[] types, byte[] data, int baseOffset) {
@@ -273,8 +302,7 @@ public class AbiCodec {
 
         AbiType[] elemTypes = new AbiType[length];
         Arrays.fill(elemTypes, elemType);
-        Object[] decoded = decodeSequence(elemTypes, data, dataStart);
-        return decoded; // return as Object[]
+        return decodeSequence(elemTypes, data, dataStart);
     }
 
     public static BigInteger decodeBigInt(byte[] data, int offset) {
@@ -367,7 +395,7 @@ public class AbiCodec {
                         + ")");
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({"unchecked", "RedundantSuppression"})
     private static Object[] toObjectArray(Object value) {
         if (value instanceof Object[] arr) return arr;
         if (value instanceof List<?> list) return list.toArray();

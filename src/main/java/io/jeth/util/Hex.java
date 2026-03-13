@@ -13,7 +13,12 @@ public final class Hex {
 
     private static final char[] HEX = "0123456789abcdef".toCharArray();
 
-    /** Encode bytes to 0x-prefixed lowercase hex. */
+    /**
+     * Encode bytes to 0x-prefixed lowercase hex.
+     *
+     * @param bytes the bytes to encode
+     * @return the hex string
+     */
     public static String encode(byte[] bytes) {
         if (bytes == null || bytes.length == 0) return "0x";
         char[] c = new char[bytes.length * 2 + 2];
@@ -26,7 +31,12 @@ public final class Hex {
         return new String(c);
     }
 
-    /** Encode bytes to lowercase hex WITHOUT 0x prefix. */
+    /**
+     * Encode bytes to lowercase hex WITHOUT 0x prefix.
+     *
+     * @param bytes the bytes to encode
+     * @return the hex string
+     */
     public static String encodeNoPrefx(byte[] bytes) {
         if (bytes == null || bytes.length == 0) return "";
         char[] c = new char[bytes.length * 2];
@@ -37,7 +47,12 @@ public final class Hex {
         return new String(c);
     }
 
-    /** Decode a hex string (with or without 0x prefix) to bytes. */
+    /**
+     * Decode a hex string (with or without 0x prefix) to bytes.
+     *
+     * @param hex the hex string to decode
+     * @return the decoded bytes
+     */
     public static byte[] decode(String hex) {
         if (hex == null || hex.isEmpty()) return new byte[0];
         String h = hex.startsWith("0x") || hex.startsWith("0X") ? hex.substring(2) : hex;
@@ -58,7 +73,12 @@ public final class Hex {
         throw new IllegalArgumentException("Invalid hex char: " + c);
     }
 
-    /** Parse a hex string (0x-prefixed or not) to BigInteger. */
+    /**
+     * Parse a hex string (0x-prefixed or not) to BigInteger.
+     *
+     * @param hex hex string
+     * @return BigInteger
+     */
     public static BigInteger toBigInteger(String hex) {
         if (hex == null || hex.isEmpty() || hex.equals("0x") || hex.equals("0X"))
             return BigInteger.ZERO;
@@ -66,13 +86,23 @@ public final class Hex {
         return h.isEmpty() ? BigInteger.ZERO : new BigInteger(h, 16);
     }
 
-    /** Encode BigInteger to 0x-prefixed hex (no leading zeros, except "0x0" for zero). */
+    /**
+     * Encode BigInteger to 0x-prefixed hex (no leading zeros, except "0x0" for zero).
+     *
+     * @param value BigInteger
+     * @return hex string
+     */
     public static String fromBigInteger(BigInteger value) {
         if (value == null || value.signum() == 0) return "0x0";
         return "0x" + value.toString(16);
     }
 
-    /** Encode a long to 0x-prefixed hex. */
+    /**
+     * Encode a long to 0x-prefixed hex.
+     *
+     * @param value long
+     * @return hex string
+     */
     public static String fromLong(long value) {
         return value == 0 ? "0x0" : "0x" + Long.toHexString(value);
     }
@@ -93,7 +123,12 @@ public final class Hex {
     /** Zero-pad a hex string to the given byte length. */
     public static String zeroPad(String hex, int byteLen) {
         String h = hex.startsWith("0x") ? hex.substring(2) : hex;
-        while (h.length() < byteLen * 2) h = "0" + h;
-        return "0x" + h;
+        if (h.length() >= byteLen * 2) return "0x" + h;
+        return "0x" + "0".repeat(byteLen * 2 - h.length()) + h;
+    }
+
+    /** Shorthand for {@code zeroPad(hex, 32)}. */
+    public static String pad32(String hex) {
+        return zeroPad(hex, 32);
     }
 }
