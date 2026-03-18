@@ -476,9 +476,8 @@ class FinalCoverageTest {
 
         @SuppressWarnings("unused")
         static Blob makeBlob() {
-            // Create a minimal valid blob (128KB of zeros + field element constraints)
-            // Blob.of() takes field element data
-            byte[] data = new byte[32]; // minimal non-empty blob data
+            // Create a minimal valid blob (128KB of zeros)
+            byte[] data = new byte[Blob.BYTES_PER_BLOB];
             return Blob.of(data, new byte[BYTES_COMMITMENT], new byte[BYTES_PROOF]);
         }
 

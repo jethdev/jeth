@@ -223,7 +223,8 @@ public final class KzgTrustedSetup {
         throw new IOException("Section '" + section + "' not found in trusted setup file");
     }
 
-    private static KzgTrustedSetup readBinaryFormat(DataInputStream dis, boolean isGzip) throws IOException {
+    private static KzgTrustedSetup readBinaryFormat(DataInputStream dis, boolean isGzip)
+            throws IOException {
         int version = dis.readInt();
         int g1Count = dis.readInt();
         int g2Count = dis.readInt();

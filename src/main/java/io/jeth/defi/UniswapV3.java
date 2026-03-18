@@ -131,7 +131,7 @@ public class UniswapV3 {
             BigInteger amountIn,
             BigInteger amountOutMinimum,
             int sqrtPriceLimitX96) {
-        Object[] params = {
+        Object[] tuple = {
             tokenIn,
             tokenOut,
             BigInteger.valueOf(fee),
@@ -142,7 +142,7 @@ public class UniswapV3 {
         };
         return router.fn(
                         "exactInputSingle((address,address,uint24,address,uint256,uint256,uint160))")
-                .send(wallet, params);
+                .send(wallet, new Object[] {tuple});
     }
 
     /** Execute exact-input single swap. */

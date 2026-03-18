@@ -125,12 +125,12 @@ class ContractTest {
     @DisplayName("fn().send() enqueues nonce + gasPrice + sendRawTransaction")
     void send_fires_rpc() throws Exception {
         try (var rpc = new RpcMock()) {
-            // chainId, nonce, latestBlock, maxPriorityFeePerGas, estimateGas, sendRawTransaction
+            // chainId, nonce, maxPriorityFeePerGas, latestBlock, estimateGas, sendRawTransaction
             rpc.enqueueHex(1L); // getChainId
             rpc.enqueueHex(0L); // getTransactionCount
+            rpc.enqueueHex(1_000_000_000L); // getMaxPriorityFeePerGas
             rpc.enqueueJson(
                     "{\"number\":\"0xfde8\",\"baseFeePerGas\":\"0x0\"}"); // getBlock("latest")
-            rpc.enqueueHex(1_000_000_000L); // getMaxPriorityFeePerGas
             rpc.enqueueHex(65000L); // estimateGas
             rpc.enqueueStr("0xsentTxHash"); // sendRawTransaction
             var contract = new Contract(ADDR, rpc.client());
@@ -148,9 +148,9 @@ class ContractTest {
         try (var rpc = new RpcMock()) {
             rpc.enqueueHex(1L); // getChainId
             rpc.enqueueHex(0L); // getTransactionCount
+            rpc.enqueueHex(1_000_000_000L); // getMaxPriorityFeePerGas
             rpc.enqueueJson(
                     "{\"number\":\"0xfde8\",\"baseFeePerGas\":\"0x0\"}"); // getBlock("latest")
-            rpc.enqueueHex(1_000_000_000L); // getMaxPriorityFeePerGas
             rpc.enqueueStr("0xtxhash"); // sendRawTransaction (no estimateGas for simple sendEth)
             String txHash =
                     Contract.sendEth(rpc.client(), WALLET, USER, BigDecimal.valueOf(0.1)).join();

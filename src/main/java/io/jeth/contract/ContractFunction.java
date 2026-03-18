@@ -65,12 +65,13 @@ public class ContractFunction {
                                 client.getTransactionCount(wallet.getAddress())
                                         .thenCompose(
                                                 nonce ->
-                                                        client.getBlock("latest")
+                                                        client.getMaxPriorityFeePerGas()
                                                                 .thenCompose(
-                                                                        block ->
-                                                                                client.getMaxPriorityFeePerGas()
+                                                                        tip ->
+                                                                                client.getBlock(
+                                                                                                "latest")
                                                                                         .thenCompose(
-                                                                                                tip -> {
+                                                                                                block -> {
                                                                                                     BigInteger
                                                                                                             base =
                                                                                                                     block.baseFeePerGas

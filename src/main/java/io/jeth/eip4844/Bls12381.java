@@ -308,7 +308,8 @@ public final class Bls12381 {
             BigInteger rhs = fpAdd(x3, BigInteger.valueOf(4));
             BigInteger y = fpSqrt(rhs);
             if (y == null) {
-                throw new IllegalArgumentException("G1 point not on curve: x=" + x.toString(16) + ", rhs=" + rhs.toString(16));
+                throw new IllegalArgumentException(
+                        "G1 point not on curve: x=" + x.toString(16) + ", rhs=" + rhs.toString(16));
             }
 
             // Choose correct y based on sign bit

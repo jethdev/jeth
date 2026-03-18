@@ -277,10 +277,7 @@ class KzgTest {
     @Test
     void blobEncoderMultiBlob() {
         byte[] data = new byte[BlobEncoder.MAX_BYTES_PER_BLOB + 100];
-        Blob[] blobs =
-                BlobEncoder.encode(data); // should NOT throw (no KZG needed for this assertion)
-        // Actually this WILL call KZG... we only care it splits correctly
-        // Check split without KZG by testing encodeChunk directly
+        // Split manual chunks to avoid commitment calculation in test
         byte[] blob1 =
                 BlobEncoder.encodeChunk(
                         java.util.Arrays.copyOf(data, BlobEncoder.MAX_BYTES_PER_BLOB));

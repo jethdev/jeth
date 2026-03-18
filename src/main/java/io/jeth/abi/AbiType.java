@@ -121,6 +121,10 @@ public class AbiType {
     public static AbiType of(String typeName) {
         typeName = typeName.trim();
 
+        // Canonicalize uint -> uint256, int -> int256
+        if (typeName.equals("uint")) return UINT256;
+        if (typeName.equals("int")) return INT256;
+
         // Tuple
         if (typeName.startsWith("(")) {
             return parseTupleOrArray(typeName);
