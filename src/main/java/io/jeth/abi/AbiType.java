@@ -121,6 +121,22 @@ public class AbiType {
     public static AbiType of(String typeName) {
         typeName = typeName.trim();
 
+        // Array suffix: T[] or T[N]
+        if (typeName.endsWith("]")) {
+            int bracket = findArrayBracket(typeName);
+            String inner = typeName.substring(0, bracket);
+            String suffix = typeName.substring(bracket);
+
+            // Canonicalize inner uint/int
+            if (inner.equals("uint")) inner = "uint256";
+            if (inner.equals("int")) inner = "int256";
+
+            AbiType element = of(inner);
+            if (suffix.equals("[]")) return arrayOf(element);
+            int n = Integer.parseInt(suffix.substring(1, suffix.length() - 1));
+            return arrayOf(element, n);
+        }
+
         // Canonicalize uint -> uint256, int -> int256
         if (typeName.equals("uint")) return UINT256;
         if (typeName.equals("int")) return INT256;
@@ -128,17 +144,6 @@ public class AbiType {
         // Tuple
         if (typeName.startsWith("(")) {
             return parseTupleOrArray(typeName);
-        }
-
-        // Array suffix: T[] or T[N]
-        if (typeName.endsWith("]")) {
-            int bracket = findArrayBracket(typeName);
-            String inner = typeName.substring(0, bracket);
-            String suffix = typeName.substring(bracket);
-            AbiType element = of(inner);
-            if (suffix.equals("[]")) return arrayOf(element);
-            int n = Integer.parseInt(suffix.substring(1, suffix.length() - 1));
-            return arrayOf(element, n);
         }
 
         return switch (typeName) {

@@ -186,6 +186,8 @@ public class AbiJson {
                                         .orElse("");
                 return "(" + inner + ")" + type.substring("tuple".length());
             }
+            if ("uint".equals(type)) return "uint256";
+            if ("int".equals(type)) return "int256";
             return type;
         }
 
