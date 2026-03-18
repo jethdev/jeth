@@ -128,7 +128,11 @@ public final class KzgTrustedSetup {
         // Skip potential headers or count lines at the start
         while ((line = reader.readLine()) != null) {
             line = line.trim();
-            if (line.isEmpty() || line.equals("g1_monomial") || line.equals("4096") || line.equals("65") || line.contains("BEGIN")) continue;
+            if (line.isEmpty()
+                    || line.equals("g1_monomial")
+                    || line.equals("4096")
+                    || line.equals("65")
+                    || line.contains("BEGIN")) continue;
             break;
         }
         if (line == null) throw new IOException("Truncated before g1_monomial");
@@ -137,7 +141,10 @@ public final class KzgTrustedSetup {
             line = reader.readLine();
             if (line == null) throw new IOException("Truncated at g1_monomial[" + i + "]");
             line = line.trim();
-            if (line.isEmpty() || line.equals("g1_monomial") || line.contains("G1")) { i--; continue; }
+            if (line.isEmpty() || line.equals("g1_monomial") || line.contains("G1")) {
+                i--;
+                continue;
+            }
             g1Monomial[i] = Bls12381.G1.decompress(line);
         }
 
@@ -146,13 +153,13 @@ public final class KzgTrustedSetup {
         reader.mark(1024);
         line = reader.readLine();
         if (line != null && (line.trim().equals("65") || line.trim().equals("g2_monomial"))) {
-             // We've hit g2 count, so g1_lagrange is missing.
-             // Copy monomial to lagrange (this is wrong for production but may pass some tests)
-             System.arraycopy(g1Monomial, 0, g1Lagrange, 0, G1_COUNT);
-             skipLagrange = true;
-             reader.reset();
+            // We've hit g2 count, so g1_lagrange is missing.
+            // Copy monomial to lagrange (this is wrong for production but may pass some tests)
+            System.arraycopy(g1Monomial, 0, g1Lagrange, 0, G1_COUNT);
+            skipLagrange = true;
+            reader.reset();
         } else {
-             reader.reset();
+            reader.reset();
         }
 
         if (!skipLagrange) {
@@ -168,7 +175,10 @@ public final class KzgTrustedSetup {
                 line = reader.readLine();
                 if (line == null) throw new IOException("Truncated at g1_lagrange[" + i + "]");
                 line = line.trim();
-                if (line.isEmpty() || line.equals("g1_lagrange") || line.contains("G1")) { i--; continue; }
+                if (line.isEmpty() || line.equals("g1_lagrange") || line.contains("G1")) {
+                    i--;
+                    continue;
+                }
                 g1Lagrange[i] = Bls12381.G1.decompress(line);
             }
         }
@@ -186,7 +196,10 @@ public final class KzgTrustedSetup {
             line = reader.readLine();
             if (line == null) throw new IOException("Truncated at g2_monomial[" + i + "]");
             line = line.trim();
-            if (line.isEmpty() || line.equals("g2_monomial") || line.contains("G2")) { i--; continue; }
+            if (line.isEmpty() || line.equals("g2_monomial") || line.contains("G2")) {
+                i--;
+                continue;
+            }
             String hex = line.startsWith("0x") ? line.substring(2) : line;
             g2Raw[i] = hexToBytes(hex);
         }

@@ -32,7 +32,8 @@ public class RpcMock implements AutoCloseable {
     private static final ObjectMapper MAPPER = new ObjectMapper();
     private final MockWebServer server = new MockWebServer();
     private final Queue<String> queue = new ArrayDeque<>();
-    private final Queue<RecordedRequest> requests = new java.util.concurrent.LinkedBlockingQueue<>();
+    private final Queue<RecordedRequest> requests =
+            new java.util.concurrent.LinkedBlockingQueue<>();
     private final AtomicLong ids = new AtomicLong(1);
 
     public RpcMock() throws IOException {
@@ -51,14 +52,20 @@ public class RpcMock implements AutoCloseable {
                                 for (int i = 0; i < node.size(); i++) {
                                     if (i > 0) sb.append(",");
                                     long id = node.get(i).path("id").asLong();
-                                    if (id == 0 && !node.get(i).has("id")) id = ids.getAndIncrement();
+                                    if (id == 0 && !node.get(i).has("id"))
+                                        id = ids.getAndIncrement();
                                     String result = queue.poll();
                                     if (result == null) {
-                                        sb.append("{\"jsonrpc\":\"2.0\",\"id\":").append(id)
-                                          .append(",\"error\":{\"code\":-32000,\"message\":\"no mock queued\"}}");
+                                        sb.append("{\"jsonrpc\":\"2.0\",\"id\":")
+                                                .append(id)
+                                                .append(
+                                                        ",\"error\":{\"code\":-32000,\"message\":\"no mock queued\"}}");
                                     } else {
-                                        sb.append("{\"jsonrpc\":\"2.0\",\"id\":").append(id)
-                                          .append(",\"result\":").append(result).append("}");
+                                        sb.append("{\"jsonrpc\":\"2.0\",\"id\":")
+                                                .append(id)
+                                                .append(",\"result\":")
+                                                .append(result)
+                                                .append("}");
                                     }
                                 }
                                 sb.append("]");

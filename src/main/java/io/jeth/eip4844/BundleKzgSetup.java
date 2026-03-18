@@ -65,7 +65,8 @@ public class BundleKzgSetup {
                 System.out.println("Trying fallback URL: " + FALLBACK_URL);
                 download(FALLBACK_URL, tmpFile);
             }
-            System.out.println("Download complete. Parsing " + KzgTrustedSetup.G1_COUNT + " G1 points...");
+            System.out.println(
+                    "Download complete. Parsing " + KzgTrustedSetup.G1_COUNT + " G1 points...");
 
             KzgTrustedSetup setup = KzgTrustedSetup.loadFromFile(tmpFile);
             System.out.println(

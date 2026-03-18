@@ -65,7 +65,9 @@ class ContractTest {
             contract.fn("balanceOf(address)").returns("uint256").call(USER).join();
             String body = rpc.takeRequest().getBody().readUtf8();
             System.out.println("[DEBUG_LOG] body: " + body);
-            assertTrue(body.contains("70a08231"), "balanceOf selector 70a08231 must be in calldata: " + body);
+            assertTrue(
+                    body.contains("70a08231"),
+                    "balanceOf selector 70a08231 must be in calldata: " + body);
         }
     }
 
@@ -126,7 +128,8 @@ class ContractTest {
             // chainId, nonce, latestBlock, maxPriorityFeePerGas, estimateGas, sendRawTransaction
             rpc.enqueueHex(1L); // getChainId
             rpc.enqueueHex(0L); // getTransactionCount
-            rpc.enqueueJson("{\"number\":\"0xfde8\",\"baseFeePerGas\":\"0x0\"}"); // getBlock("latest")
+            rpc.enqueueJson(
+                    "{\"number\":\"0xfde8\",\"baseFeePerGas\":\"0x0\"}"); // getBlock("latest")
             rpc.enqueueHex(1_000_000_000L); // getMaxPriorityFeePerGas
             rpc.enqueueHex(65000L); // estimateGas
             rpc.enqueueStr("0xsentTxHash"); // sendRawTransaction
@@ -145,7 +148,8 @@ class ContractTest {
         try (var rpc = new RpcMock()) {
             rpc.enqueueHex(1L); // getChainId
             rpc.enqueueHex(0L); // getTransactionCount
-            rpc.enqueueJson("{\"number\":\"0xfde8\",\"baseFeePerGas\":\"0x0\"}"); // getBlock("latest")
+            rpc.enqueueJson(
+                    "{\"number\":\"0xfde8\",\"baseFeePerGas\":\"0x0\"}"); // getBlock("latest")
             rpc.enqueueHex(1_000_000_000L); // getMaxPriorityFeePerGas
             rpc.enqueueStr("0xtxhash"); // sendRawTransaction (no estimateGas for simple sendEth)
             String txHash =

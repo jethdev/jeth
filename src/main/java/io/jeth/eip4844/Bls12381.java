@@ -315,7 +315,8 @@ public final class Bls12381 {
         /** Decompress from hex string. */
         public static G1 decompress(String hex) {
             String h = hex.startsWith("0x") ? hex.substring(2) : hex;
-            // The hex string might be longer than 96 characters if it's uncompressed (96 bytes = 192 hex chars).
+            // The hex string might be longer than 96 characters if it's uncompressed (96 bytes =
+            // 192 hex chars).
             // But if it's compressed, it should be 48 bytes = 96 hex chars.
             if (h.length() == 96) {
                 byte[] bytes = new byte[48];

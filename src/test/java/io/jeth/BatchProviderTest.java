@@ -84,8 +84,10 @@ class BatchProviderTest {
             }
 
             try (var provider = BatchProvider.of(rpc.url()).maxBatchSize(10).windowMs(5).build()) {
-                java.util.List<java.util.concurrent.CompletableFuture<io.jeth.model.RpcModels.RpcResponse>> futures =
-                        new java.util.ArrayList<>();
+                java.util.List<
+                                java.util.concurrent.CompletableFuture<
+                                        io.jeth.model.RpcModels.RpcResponse>>
+                        futures = new java.util.ArrayList<>();
                 for (int i = 0; i < count; i++) {
                     futures.add(
                             provider.send(
