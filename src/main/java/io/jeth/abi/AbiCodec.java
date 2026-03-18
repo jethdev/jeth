@@ -56,11 +56,9 @@ public class AbiCodec {
     static byte[] encodeSequence(AbiType[] types, Object[] values) {
         // Step 1: encode each value and decide head (32-byte slot or offset pointer)
         byte[][] encodedTails = new byte[types.length][];
-        boolean[] isDynamic = new boolean[types.length];
 
         for (int i = 0; i < types.length; i++) {
-            isDynamic[i] = types[i].isDynamic();
-            if (isDynamic[i]) {
+            if (types[i].isDynamic()) {
                 encodedTails[i] = encodeValue(types[i], values[i]);
             }
         }
@@ -73,7 +71,7 @@ public class AbiCodec {
         int tailSize = 0;
         int currentHeadPos = 0;
         for (int i = 0; i < types.length; i++) {
-            if (isDynamic[i]) {
+            if (types[i].isDynamic()) {
                 tailOffsets[i] = headSize + tailSize;
                 tailSize += encodedTails[i].length;
             }
@@ -85,7 +83,7 @@ public class AbiCodec {
         int pos = 0;
 
         for (int i = 0; i < types.length; i++) {
-            if (isDynamic[i]) {
+            if (types[i].isDynamic()) {
                 // Write offset pointer
                 byte[] offsetBytes = encodeUint256(BigInteger.valueOf(tailOffsets[i]));
                 System.arraycopy(offsetBytes, 0, result, pos, 32);
@@ -99,7 +97,7 @@ public class AbiCodec {
         // Write tails at the end of head part
         pos = headSize;
         for (int i = 0; i < types.length; i++) {
-            if (isDynamic[i]) {
+            if (types[i].isDynamic()) {
                 System.arraycopy(encodedTails[i], 0, result, pos, encodedTails[i].length);
                 pos += encodedTails[i].length;
             }
@@ -254,17 +252,17 @@ public class AbiCodec {
 
     static Object[] decodeSequence(AbiType[] types, byte[] data, int baseOffset) {
         Object[] results = new Object[types.length];
-        int headPos = baseOffset;
+        int currentHeadOffset = 0;
         for (int i = 0; i < types.length; i++) {
             AbiType type = types[i];
             if (type.isDynamic()) {
-                BigInteger offsetVal = decodeBigInt(data, headPos);
+                BigInteger offsetVal = decodeBigInt(data, baseOffset + currentHeadOffset);
                 int offset = offsetVal.intValueExact();
                 results[i] = decodeValue(type, data, baseOffset + offset);
             } else {
-                results[i] = decodeValue(type, data, headPos);
+                results[i] = decodeValue(type, data, baseOffset + currentHeadOffset);
             }
-            headPos += type.fixedSize();
+            currentHeadOffset += type.fixedSize();
         }
         return results;
     }

@@ -112,13 +112,14 @@ public final class KzgTrustedSetup {
         try (InputStream raw = url.openStream();
                 GZIPInputStream gz = new GZIPInputStream(raw);
                 DataInputStream dis = new DataInputStream(new BufferedInputStream(gz))) {
-            return readBinaryFormat(dis);
+            return readBinaryFormat(dis, true);
         } catch (IOException e) {
             throw new KzgException("Failed to read bundled KZG setup: " + e.getMessage(), e);
         }
     }
 
     static KzgTrustedSetup parseTextFormat(BufferedReader reader) throws IOException {
+        System.out.println("[DEBUG_LOG] Starting parseTextFormat");
         Bls12381.G1[] g1Monomial = new Bls12381.G1[G1_COUNT];
         Bls12381.G1[] g1Lagrange = new Bls12381.G1[G1_COUNT];
         byte[][] g2Raw = new byte[G2_COUNT][];
@@ -136,6 +137,7 @@ public final class KzgTrustedSetup {
             break;
         }
         if (line == null) throw new IOException("Truncated before g1_monomial");
+        System.out.println("[DEBUG_LOG] First G1 monomial line: " + line);
         g1Monomial[0] = Bls12381.G1.decompress(line);
         for (int i = 1; i < G1_COUNT; i++) {
             line = reader.readLine();
@@ -145,7 +147,12 @@ public final class KzgTrustedSetup {
                 i--;
                 continue;
             }
-            g1Monomial[i] = Bls12381.G1.decompress(line);
+            try {
+                g1Monomial[i] = Bls12381.G1.decompress(line);
+            } catch (Exception e) {
+                System.out.println("[DEBUG_LOG] Failed at g1Monomial[" + i + "] line: " + line);
+                throw e;
+            }
         }
 
         // Hack for formats that don't have lagrange section
@@ -216,7 +223,7 @@ public final class KzgTrustedSetup {
         throw new IOException("Section '" + section + "' not found in trusted setup file");
     }
 
-    private static KzgTrustedSetup readBinaryFormat(DataInputStream dis) throws IOException {
+    private static KzgTrustedSetup readBinaryFormat(DataInputStream dis, boolean isGzip) throws IOException {
         int version = dis.readInt();
         int g1Count = dis.readInt();
         int g2Count = dis.readInt();
@@ -250,7 +257,8 @@ public final class KzgTrustedSetup {
      * <p>Run {@code ./gradlew bundleKzgSetup} to generate from {@code trusted_setup.txt}.
      */
     public void writeBinaryFormat(OutputStream out) throws IOException {
-        DataOutputStream dos = new DataOutputStream(new BufferedOutputStream(out));
+        GZIPOutputStream gz = new GZIPOutputStream(out);
+        DataOutputStream dos = new DataOutputStream(new BufferedOutputStream(gz));
         dos.writeInt(1);
         dos.writeInt(g1Monomial.length);
         dos.writeInt(g2Raw.length);
@@ -258,6 +266,7 @@ public final class KzgTrustedSetup {
         for (Bls12381.G1 p : g1Lagrange) dos.write(p.compress());
         for (byte[] g2 : g2Raw) dos.write(g2);
         dos.flush();
+        gz.finish();
     }
 
     private static byte[] hexToBytes(String hex) {

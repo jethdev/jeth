@@ -84,7 +84,12 @@ public final class Bls12381 {
     }
 
     static BigInteger fpSqrt(BigInteger a) {
-        return a.modPow(P.add(BigInteger.ONE).divide(BigInteger.valueOf(4)), P);
+        if (a.signum() == 0) return BigInteger.ZERO;
+        BigInteger res = a.modPow(P.add(BigInteger.ONE).divide(BigInteger.valueOf(4)), P);
+        if (res.multiply(res).mod(P).equals(a)) {
+            return res;
+        }
+        return null;
     }
 
     // ─── Fr scalar field helpers ──────────────────────────────────────────────
@@ -284,15 +289,15 @@ public final class Bls12381 {
         public static G1 decompress(byte[] bytes) {
             if (bytes.length != 48)
                 throw new IllegalArgumentException("G1 compressed point must be 48 bytes");
-            boolean compressed = (bytes[0] & 0x80) != 0;
-            boolean infinity = (bytes[0] & 0x40) != 0;
-            boolean ySign = (bytes[0] & 0x20) != 0;
+            // Strip flag bits from x
+            byte[] xBytes = bytes.clone();
+            boolean infinity = (xBytes[0] & 0x40) != 0;
+            boolean compressed = (xBytes[0] & 0x80) != 0;
+            boolean ySign = (xBytes[0] & 0x20) != 0;
 
             if (!compressed) throw new IllegalArgumentException("Expected compressed G1 point");
             if (infinity) return INFINITY;
 
-            // Strip flag bits from x
-            byte[] xBytes = bytes.clone();
             xBytes[0] &= 0x1F;
             BigInteger x = new BigInteger(1, xBytes);
             if (x.compareTo(P) >= 0)
@@ -300,10 +305,11 @@ public final class Bls12381 {
 
             // y² = x³ + 4
             BigInteger x3 = fpMul(fpMul(x, x), x);
-            BigInteger rhs = fpAdd(x3, BigInteger.valueOf(4)); // b=4 for G1 BLS12-381
+            BigInteger rhs = fpAdd(x3, BigInteger.valueOf(4));
             BigInteger y = fpSqrt(rhs);
-            if (y == null || !fpMul(y, y).equals(rhs))
-                throw new IllegalArgumentException("G1 point not on curve");
+            if (y == null) {
+                throw new IllegalArgumentException("G1 point not on curve: x=" + x.toString(16) + ", rhs=" + rhs.toString(16));
+            }
 
             // Choose correct y based on sign bit
             boolean computedSign = y.compareTo(P.shiftRight(1)) > 0;
