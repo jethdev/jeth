@@ -73,4 +73,24 @@ class BatchProviderTest {
             }
         }
     }
+
+    @Test
+    @DisplayName("reproduce_timeout handles many requests correctly")
+    void many_requests_load() throws Exception {
+        try (var rpc = new RpcMock()) {
+            int count = 50;
+            for (int i = 0; i < count; i++) {
+                rpc.enqueueHex(i);
+            }
+
+            try (var provider = BatchProvider.of(rpc.url()).maxBatchSize(10).windowMs(5).build()) {
+                java.util.List<java.util.concurrent.CompletableFuture<?>> futures = new java.util.ArrayList<>();
+                for (int i = 0; i < count; i++) {
+                    futures.add(provider.send(new io.jeth.model.RpcModels.RpcRequest("eth_blockNumber", java.util.Collections.emptyList())));
+                }
+                java.util.concurrent.CompletableFuture.allOf(futures.toArray(new java.util.concurrent.CompletableFuture[0]))
+                        .get(10, java.util.concurrent.TimeUnit.SECONDS);
+            }
+        }
+    }
 }

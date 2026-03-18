@@ -87,30 +87,37 @@ public class BatchProvider implements Provider {
         pending.put(request.id, future);
         queue.add(request);
 
-        if (queue.size() >= maxBatchSize) {
-            if (flushTask != null) flushTask.cancel(false);
-            scheduler.execute(this::flush);
-        } else {
-            if (flushTask == null || flushTask.isDone()) {
-                flushTask = scheduler.schedule(this::flush, windowMs, TimeUnit.MILLISECONDS);
-            }
-        }
+        scheduleFlush();
         return future;
     }
 
-    private synchronized void flush() {
-        if (queue.isEmpty()) return;
-
-        List<RpcModels.RpcRequest> batch = new ArrayList<>();
-        synchronized (queue) {
-            while (batch.size() < maxBatchSize && !queue.isEmpty()) {
-                batch.add(queue.remove(0));
+    private void scheduleFlush() {
+        synchronized (this) {
+            if (queue.size() >= maxBatchSize) {
+                // High pressure: immediate flush.
+                scheduler.execute(this::flush);
+            } else if (flushTask == null || flushTask.isDone()) {
+                // Only schedule a new timer if one isn't already active/waiting.
+                flushTask = scheduler.schedule(this::flush, windowMs, TimeUnit.MILLISECONDS);
             }
         }
+    }
 
-        if (!queue.isEmpty()) {
-            if (flushTask == null || flushTask.isDone()) {
-                flushTask = scheduler.schedule(this::flush, windowMs, TimeUnit.MILLISECONDS);
+    private void flush() {
+        List<RpcModels.RpcRequest> batch = new ArrayList<>();
+        synchronized (this) {
+            if (queue.isEmpty()) return;
+            synchronized (queue) {
+                while (batch.size() < maxBatchSize && !queue.isEmpty()) {
+                    batch.add(queue.remove(0));
+                }
+            }
+
+            // If there's still more in the queue, ensure another flush is scheduled.
+            if (!queue.isEmpty()) {
+                if (flushTask == null || flushTask.isDone()) {
+                    flushTask = scheduler.schedule(this::flush, windowMs, TimeUnit.MILLISECONDS);
+                }
             }
         }
 
@@ -171,6 +178,14 @@ public class BatchProvider implements Provider {
     @Override
     public void close() {
         scheduler.shutdown();
+        try {
+            if (!scheduler.awaitTermination(5, TimeUnit.SECONDS)) {
+                scheduler.shutdownNow();
+            }
+        } catch (InterruptedException e) {
+            scheduler.shutdownNow();
+            Thread.currentThread().interrupt();
+        }
     }
 
     public static class Builder {
