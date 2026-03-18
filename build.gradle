@@ -90,7 +90,7 @@ tasks.named('dokkaHtml') {
 		// "View source" links in each class point to the correct line on GitHub
 		sourceLink {
 			localDirectory.set(file('src/main/java'))
-			remoteUrl.set(java.net.URI.create('https://github.com/jeth-io/jeth/blob/main/src/main/java').toURL())
+			remoteUrl.set(java.net.URI.create('https://github.com/jethdev/jeth/blob/main/src/main/java').toURL())
 			remoteLineSuffix.set('#L')
 		}
 
@@ -137,7 +137,7 @@ publishing {
 			pom {
 				name        = 'jeth'
 				description = 'Java Ethereum library. Two dependencies.'
-				url         = 'https://github.com/jeth-io/jeth'
+				url         = 'https://github.com/jethdev/jeth'
 				licenses {
 					license {
 						name = 'MIT License'
@@ -148,13 +148,13 @@ publishing {
 					developer {
 						id   = 'jeth'
 						name = 'jeth contributors'
-						url  = 'https://github.com/jeth-io/jeth'
+						url  = 'https://github.com/jethdev/jeth'
 					}
 				}
 				scm {
-					url                 = 'https://github.com/jeth-io/jeth'
-					connection          = 'scm:git:git://github.com/jeth-io/jeth.git'
-					developerConnection = 'scm:git:ssh://git@github.com/jeth-io/jeth.git'
+					url                 = 'https://github.com/jethdev/jeth'
+					connection          = 'scm:git:git://github.com/jethdev/jeth.git'
+					developerConnection = 'scm:git:ssh://git@github.com/jethdev/jeth.git'
 				}
 			}
 		}
@@ -173,7 +173,7 @@ publishing {
 		}
 		maven {
 			name = 'GitHubPackages'
-			url  = uri('https://maven.pkg.github.com/jeth-io/jeth')
+			url  = uri('https://maven.pkg.github.com/jethdev/jeth')
 			credentials {
 				username = System.getenv('GITHUB_ACTOR') ?: 'token'
 				password = System.getenv('GITHUB_TOKEN')

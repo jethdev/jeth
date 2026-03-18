@@ -275,6 +275,8 @@ class FinalCoverageTest {
                 ContractFunction cf = contract.fn("transfer(address,uint256)").returns("bool");
                 AbiType[] types = cf.getInputTypes();
                 assertEquals(2, types.length);
+                assertEquals(AbiType.ADDRESS, types[0]);
+                assertEquals(AbiType.UINT256, types[1]);
             }
         }
 

@@ -17,7 +17,7 @@ Thanks for your interest. Contributions are welcome — bug fixes, new features,
 ## Getting started
 
 ```bash
-git clone https://github.com/jeth-io/jeth
+git clone https://github.com/jethdev/jeth
 cd jeth
 ./gradlew fetchBip39Wordlist   # one-time: downloads the BIP-39 word list
 ./gradlew build                # compiles + runs all unit tests

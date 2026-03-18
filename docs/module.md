@@ -29,4 +29,4 @@ implementation("io.jeth:jeth:1.2.0")
 // <dependency><groupId>io.jeth</groupId><artifactId>jeth</artifactId><version>1.2.0</version></dependency>
 ```
 
-Full usage examples and guides: [README on GitHub](https://github.com/jeth-io/jeth#readme)
+Full usage examples and guides: [README on GitHub](https://github.com/jethdev/jeth#readme)

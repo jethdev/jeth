@@ -2,9 +2,9 @@
 
 A Java Ethereum library. Two runtime dependencies.
 
-[![CI](https://github.com/jeth-io/jeth/actions/workflows/ci.yml/badge.svg)](https://github.com/jeth-io/jeth/actions)
+[![CI](https://github.com/jethdev/jeth/actions/workflows/ci.yml/badge.svg)](https://github.com/jethdev/jeth/actions)
 [![Maven Central](https://img.shields.io/maven-central/v/io.jeth/jeth.svg)](https://central.sonatype.com/artifact/io.jeth/jeth)
-[![Javadoc](https://img.shields.io/badge/docs-jeth--io.github.io-6366f1)](https://jeth-io.github.io/jeth/)
+[![Javadoc](https://img.shields.io/badge/docs-jethdev.github.io-6366f1)](https://jethdev.github.io/jeth/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Java 17+](https://img.shields.io/badge/Java-17%2B-blue.svg)](https://openjdk.org/)
 
