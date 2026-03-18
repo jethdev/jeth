@@ -64,7 +64,8 @@ class ContractTest {
             var contract = new Contract(ADDR, rpc.client());
             contract.fn("balanceOf(address)").returns("uint256").call(USER).join();
             String body = rpc.takeRequest().getBody().readUtf8();
-            assertTrue(body.contains("70a08231"), "balanceOf selector must be in calldata");
+            System.out.println("[DEBUG_LOG] body: " + body);
+            assertTrue(body.contains("70a08231"), "balanceOf selector 70a08231 must be in calldata: " + body);
         }
     }
 
@@ -122,9 +123,11 @@ class ContractTest {
     @DisplayName("fn().send() enqueues nonce + gasPrice + sendRawTransaction")
     void send_fires_rpc() throws Exception {
         try (var rpc = new RpcMock()) {
-            // nonce, gasPrice, estimateGas, sendRawTransaction
+            // chainId, nonce, latestBlock, maxPriorityFeePerGas, estimateGas, sendRawTransaction
+            rpc.enqueueHex(1L); // getChainId
             rpc.enqueueHex(0L); // getTransactionCount
-            rpc.enqueueHex(BigInteger.valueOf(30_000_000_000L)); // getGasPrice fallback
+            rpc.enqueueJson("{\"number\":\"0xfde8\",\"baseFeePerGas\":\"0x0\"}"); // getBlock("latest")
+            rpc.enqueueHex(1_000_000_000L); // getMaxPriorityFeePerGas
             rpc.enqueueHex(65000L); // estimateGas
             rpc.enqueueStr("0xsentTxHash"); // sendRawTransaction
             var contract = new Contract(ADDR, rpc.client());
@@ -140,10 +143,11 @@ class ContractTest {
     @DisplayName("sendEth() sends ETH to address")
     void send_eth() throws Exception {
         try (var rpc = new RpcMock()) {
-            rpc.enqueueHex(0L);
-            rpc.enqueueHex(BigInteger.valueOf(30_000_000_000L));
-            rpc.enqueueHex(21000L);
-            rpc.enqueueStr("0xtxhash");
+            rpc.enqueueHex(1L); // getChainId
+            rpc.enqueueHex(0L); // getTransactionCount
+            rpc.enqueueJson("{\"number\":\"0xfde8\",\"baseFeePerGas\":\"0x0\"}"); // getBlock("latest")
+            rpc.enqueueHex(1_000_000_000L); // getMaxPriorityFeePerGas
+            rpc.enqueueStr("0xtxhash"); // sendRawTransaction (no estimateGas for simple sendEth)
             String txHash =
                     Contract.sendEth(rpc.client(), WALLET, USER, BigDecimal.valueOf(0.1)).join();
             assertNotNull(txHash);

@@ -40,7 +40,10 @@ public class BundleKzgSetup {
 
     /** URL of the trusted setup in ethereum/consensus-spec-tests. */
     private static final String SETUP_URL =
-            "https://raw.githubusercontent.com/ethereum/consensus-spec-tests/master/tests/general/deneb/kzg-utils/trusted_setup.txt";
+            "https://raw.githubusercontent.com/ethereum/consensus-specs/v1.4.0/presets/mainnet/trusted_setup.txt";
+
+    private static final String FALLBACK_URL =
+            "https://raw.githubusercontent.com/ethereum/c-kzg-4844/main/src/trusted_setup.txt";
 
     /** SHA256 of the official trusted_setup.txt (from ethereum/c-kzg-4844). */
     private static final String EXPECTED_SHA256 =
@@ -50,14 +53,19 @@ public class BundleKzgSetup {
         String outputPath =
                 args.length > 0 ? args[0] : "src/main/resources/io/jeth/eip4844/kzg-setup.bin";
 
-        System.out.println("Downloading KZG trusted setup from:");
-        System.out.println("  " + SETUP_URL);
+        System.out.println("Downloading KZG trusted setup...");
 
         Path tmpFile = Files.createTempFile("trusted_setup", ".txt");
         try {
-            download(SETUP_URL, tmpFile);
-            System.out.println(
-                    "Download complete. Parsing " + KzgTrustedSetup.G1_COUNT + " G1 points...");
+            try {
+                System.out.println("Trying primary URL: " + SETUP_URL);
+                download(SETUP_URL, tmpFile);
+            } catch (IOException e) {
+                System.out.println("Primary URL failed: " + e.getMessage());
+                System.out.println("Trying fallback URL: " + FALLBACK_URL);
+                download(FALLBACK_URL, tmpFile);
+            }
+            System.out.println("Download complete. Parsing " + KzgTrustedSetup.G1_COUNT + " G1 points...");
 
             KzgTrustedSetup setup = KzgTrustedSetup.loadFromFile(tmpFile);
             System.out.println(

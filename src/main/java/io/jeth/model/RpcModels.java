@@ -27,7 +27,7 @@ public class RpcModels {
         }
 
         @JsonProperty("id")
-        public final long id = ID_GEN.getAndIncrement();
+        public final long id;
 
         @JsonProperty("method")
         public final String method;
@@ -35,7 +35,14 @@ public class RpcModels {
         @JsonProperty("params")
         public final List<?> params;
 
-        public RpcRequest(String method, List<?> params) {
+        public RpcRequest(@JsonProperty("method") String method, @JsonProperty("params") List<?> params) {
+            this.id = ID_GEN.getAndIncrement();
+            this.method = method;
+            this.params = params;
+        }
+
+        public RpcRequest(@JsonProperty("id") long id, @JsonProperty("method") String method, @JsonProperty("params") List<?> params) {
+            this.id = id;
             this.method = method;
             this.params = params;
         }

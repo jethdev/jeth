@@ -32,6 +32,7 @@ public class RpcMock implements AutoCloseable {
     private static final ObjectMapper MAPPER = new ObjectMapper();
     private final MockWebServer server = new MockWebServer();
     private final Queue<String> queue = new ArrayDeque<>();
+    private final Queue<RecordedRequest> requests = new java.util.concurrent.LinkedBlockingQueue<>();
     private final AtomicLong ids = new AtomicLong(1);
 
     public RpcMock() throws IOException {
@@ -40,23 +41,44 @@ public class RpcMock implements AutoCloseable {
                 new Dispatcher() {
                     @Override
                     public MockResponse dispatch(RecordedRequest req) {
+                        requests.add(req);
                         try {
-                            long id =
-                                    MAPPER.readTree(req.getBody().readUtf8())
-                                            .path("id")
-                                            .asLong(ids.getAndIncrement());
-                            String result = queue.poll();
-                            if (result == null)
+                            String body = req.getBody().clone().readUtf8();
+                            com.fasterxml.jackson.databind.JsonNode node = MAPPER.readTree(body);
+
+                            if (node.isArray()) {
+                                StringBuilder sb = new StringBuilder("[");
+                                for (int i = 0; i < node.size(); i++) {
+                                    if (i > 0) sb.append(",");
+                                    long id = node.get(i).path("id").asLong();
+                                    if (id == 0 && !node.get(i).has("id")) id = ids.getAndIncrement();
+                                    String result = queue.poll();
+                                    if (result == null) {
+                                        sb.append("{\"jsonrpc\":\"2.0\",\"id\":").append(id)
+                                          .append(",\"error\":{\"code\":-32000,\"message\":\"no mock queued\"}}");
+                                    } else {
+                                        sb.append("{\"jsonrpc\":\"2.0\",\"id\":").append(id)
+                                          .append(",\"result\":").append(result).append("}");
+                                    }
+                                }
+                                sb.append("]");
+                                return json(sb.toString());
+                            } else {
+                                long id = node.path("id").asLong();
+                                if (id == 0 && !node.has("id")) id = ids.getAndIncrement();
+                                String result = queue.poll();
+                                if (result == null)
+                                    return json(
+                                            "{\"jsonrpc\":\"2.0\",\"id\":"
+                                                    + id
+                                                    + ",\"error\":{\"code\":-32000,\"message\":\"no mock queued\"}}");
                                 return json(
                                         "{\"jsonrpc\":\"2.0\",\"id\":"
                                                 + id
-                                                + ",\"error\":{\"code\":-32000,\"message\":\"no mock queued\"}}");
-                            return json(
-                                    "{\"jsonrpc\":\"2.0\",\"id\":"
-                                            + id
-                                            + ",\"result\":"
-                                            + result
-                                            + "}");
+                                                + ",\"result\":"
+                                                + result
+                                                + "}");
+                            }
                         } catch (Exception e) {
                             return new MockResponse().setResponseCode(500);
                         }
@@ -113,7 +135,8 @@ public class RpcMock implements AutoCloseable {
     }
 
     public RecordedRequest takeRequest() throws InterruptedException {
-        return server.takeRequest();
+        return ((java.util.concurrent.BlockingQueue<RecordedRequest>) requests)
+                .poll(5, java.util.concurrent.TimeUnit.SECONDS);
     }
 
     @Override

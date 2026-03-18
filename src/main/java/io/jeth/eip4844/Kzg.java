@@ -143,14 +143,11 @@ public final class Kzg {
         // DST (16 bytes)
         sha.update(FIAT_SHAMIR_PROTOCOL_DOMAIN, 0, FIAT_SHAMIR_PROTOCOL_DOMAIN.length);
 
-        // degree_poly: FIELD_ELEMENTS_PER_BLOB as 32-byte little-endian
-        // Per Ethereum consensus spec int_to_bytes(n, BYTES_PER_FIELD_ELEMENT) where
-        // BYTES_PER_FIELD_ELEMENT=32
-        // 4096 = 0x1000 → LE: [0x00, 0x10, 0x00, 0x00, ..., 0x00] (32 bytes)
-        byte[] degree = new byte[32];
-        degree[0] = (byte) (FIELD_ELEMENTS_PER_BLOB & 0xFF); // low byte
-        degree[1] = (byte) ((FIELD_ELEMENTS_PER_BLOB >> 8) & 0xFF); // high byte
-        sha.update(degree, 0, 32);
+        // degree_poly: FIELD_ELEMENTS_PER_BLOB as 8-byte big-endian uint64
+        byte[] degree = new byte[8];
+        degree[6] = (byte) ((FIELD_ELEMENTS_PER_BLOB >> 8) & 0xFF);
+        degree[7] = (byte) (FIELD_ELEMENTS_PER_BLOB & 0xFF);
+        sha.update(degree, 0, 8);
 
         sha.update(blob, 0, blob.length);
         sha.update(commitment, 0, commitment.length);

@@ -281,7 +281,10 @@ public class AbiType {
      */
     public int fixedSize() {
         if (isDynamic()) return 32;
-        if (isArray()) return arraySize * arrayElementType.fixedSize();
+        if (isArray()) {
+            if (arraySize == 0) return 0;
+            return arraySize * arrayElementType.fixedSize();
+        }
         if (isTuple()) {
             int sum = 0;
             for (AbiType t : tupleTypes) sum += t.fixedSize();

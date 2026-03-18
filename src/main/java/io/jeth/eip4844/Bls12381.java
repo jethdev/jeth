@@ -315,11 +315,21 @@ public final class Bls12381 {
         /** Decompress from hex string. */
         public static G1 decompress(String hex) {
             String h = hex.startsWith("0x") ? hex.substring(2) : hex;
-            byte[] bytes = new byte[48];
-            for (int i = 0; i < 48; i++) {
-                bytes[i] = (byte) Integer.parseInt(h.substring(i * 2, i * 2 + 2), 16);
+            // The hex string might be longer than 96 characters if it's uncompressed (96 bytes = 192 hex chars).
+            // But if it's compressed, it should be 48 bytes = 96 hex chars.
+            if (h.length() == 96) {
+                byte[] bytes = new byte[48];
+                for (int i = 0; i < 48; i++) {
+                    bytes[i] = (byte) Integer.parseInt(h.substring(i * 2, i * 2 + 2), 16);
+                }
+                return decompress(bytes);
+            } else if (h.length() == 192) {
+                // Uncompressed format (x, y) - 48 bytes each
+                BigInteger x = new BigInteger(h.substring(0, 96), 16);
+                BigInteger y = new BigInteger(h.substring(96, 192), 16);
+                return new G1(x, y);
             }
-            return decompress(bytes);
+            throw new IllegalArgumentException("Invalid hex length for G1 point: " + h.length());
         }
 
         @Override

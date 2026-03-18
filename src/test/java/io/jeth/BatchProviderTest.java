@@ -84,7 +84,7 @@ class BatchProviderTest {
             }
 
             try (var provider = BatchProvider.of(rpc.url()).maxBatchSize(10).windowMs(5).build()) {
-                java.util.List<java.util.concurrent.CompletableFuture<?>> futures =
+                java.util.List<java.util.concurrent.CompletableFuture<io.jeth.model.RpcModels.RpcResponse>> futures =
                         new java.util.ArrayList<>();
                 for (int i = 0; i < count; i++) {
                     futures.add(
@@ -95,6 +95,11 @@ class BatchProviderTest {
                 java.util.concurrent.CompletableFuture.allOf(
                                 futures.toArray(new java.util.concurrent.CompletableFuture[0]))
                         .get(10, java.util.concurrent.TimeUnit.SECONDS);
+
+                for (int i = 0; i < count; i++) {
+                    var resp = futures.get(i).join();
+                    assertNotNull(resp);
+                }
             }
         }
     }
