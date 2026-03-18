@@ -84,11 +84,16 @@ class BatchProviderTest {
             }
 
             try (var provider = BatchProvider.of(rpc.url()).maxBatchSize(10).windowMs(5).build()) {
-                java.util.List<java.util.concurrent.CompletableFuture<?>> futures = new java.util.ArrayList<>();
+                java.util.List<java.util.concurrent.CompletableFuture<?>> futures =
+                        new java.util.ArrayList<>();
                 for (int i = 0; i < count; i++) {
-                    futures.add(provider.send(new io.jeth.model.RpcModels.RpcRequest("eth_blockNumber", java.util.Collections.emptyList())));
+                    futures.add(
+                            provider.send(
+                                    new io.jeth.model.RpcModels.RpcRequest(
+                                            "eth_blockNumber", java.util.Collections.emptyList())));
                 }
-                java.util.concurrent.CompletableFuture.allOf(futures.toArray(new java.util.concurrent.CompletableFuture[0]))
+                java.util.concurrent.CompletableFuture.allOf(
+                                futures.toArray(new java.util.concurrent.CompletableFuture[0]))
                         .get(10, java.util.concurrent.TimeUnit.SECONDS);
             }
         }
