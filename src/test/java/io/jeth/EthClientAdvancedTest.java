@@ -187,7 +187,10 @@ class EthClientAdvancedTest {
         try (var rpc = new RpcMock()) {
             rpc.enqueueJson(
                     "{\"accessList\":[{\"address\":\"0xToken\",\"storageKeys\":[\"0x01\"]}],\"gasUsed\":\"0x5208\"}");
-            var req = EthModels.CallRequest.builder().to("0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266").build();
+            var req =
+                    EthModels.CallRequest.builder()
+                            .to("0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266")
+                            .build();
             var result = rpc.client().createAccessList(req, "latest").join();
             assertNotNull(result);
             assertTrue(

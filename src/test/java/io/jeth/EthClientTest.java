@@ -261,7 +261,11 @@ class EthClientTest {
     void estimateGas() throws Exception {
         try (var rpc = new RpcMock()) {
             rpc.enqueueHex(65000L);
-            var req = EthModels.CallRequest.builder().to("0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266").data("0xa9059cbb").build();
+            var req =
+                    EthModels.CallRequest.builder()
+                            .to("0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266")
+                            .data("0xa9059cbb")
+                            .build();
             assertEquals(BigInteger.valueOf(65000), rpc.client().estimateGas(req).join());
         }
     }
@@ -279,7 +283,14 @@ class EthClientTest {
                             + "\",\"0x0\",\"0x0\"],"
                             + "\"data\":\"0x00000000000000000000000000000000000000000000000000000000000f4240\","
                             + "\"blockNumber\":\"0x1\",\"transactionHash\":\"0xtx\",\"logIndex\":\"0x0\",\"transactionIndex\":\"0x0\"}]");
-            var logs = rpc.client().getLogs("0x0", "latest", "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266", null).join();
+            var logs =
+                    rpc.client()
+                            .getLogs(
+                                    "0x0",
+                                    "latest",
+                                    "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
+                                    null)
+                            .join();
             assertEquals(1, logs.size());
             assertTrue(logs.get(0).matchesTopic0(topic0));
         }
@@ -290,7 +301,15 @@ class EthClientTest {
     void getLogsEmpty() throws Exception {
         try (var rpc = new RpcMock()) {
             rpc.enqueue("[]");
-            assertTrue(rpc.client().getLogs("0x0", "latest", "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266", null).join().isEmpty());
+            assertTrue(
+                    rpc.client()
+                            .getLogs(
+                                    "0x0",
+                                    "latest",
+                                    "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
+                                    null)
+                            .join()
+                            .isEmpty());
         }
     }
 

@@ -41,9 +41,15 @@ class MulticallTest {
             var mc = new Multicall3(rpc.client());
             Function fn = Function.of("balanceOf", AbiType.ADDRESS).withReturns(AbiType.UINT256);
             assertEquals(0, mc.size());
-            mc.add("0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266", fn, "0x70997970C51812e339D9B73b0245ad59FA2A9A2d");
+            mc.add(
+                    "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
+                    fn,
+                    "0x70997970C51812e339D9B73b0245ad59FA2A9A2d");
             assertEquals(1, mc.size());
-            mc.add("0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266", fn, "0x3C44CdDdB6a900c6C2B6a2c30B1AAAbCF7B49D57");
+            mc.add(
+                    "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
+                    fn,
+                    "0x3C44CdDdB6a900c6C2B6a2c30B1AAAbCF7B49D57");
             assertEquals(2, mc.size());
             mc.clear();
             assertEquals(0, mc.size());
@@ -71,7 +77,10 @@ class MulticallTest {
                     buildAggregate3Response(new byte[][] {padUint256(1)}, new boolean[] {true}));
             var mc = new Multicall3(rpc.client());
             Function fn = Function.of("balanceOf", AbiType.ADDRESS).withReturns(AbiType.UINT256);
-            mc.add("0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266", fn, "0x70997970C51812e339D9B73b0245ad59FA2A9A2d");
+            mc.add(
+                    "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
+                    fn,
+                    "0x70997970C51812e339D9B73b0245ad59FA2A9A2d");
             mc.execute().join();
             String body = rpc.takeRequest().getBody().readUtf8();
             assertTrue(body.contains("82ad56cb"), "aggregate3 selector must appear in calldata");
@@ -86,7 +95,10 @@ class MulticallTest {
                     buildAggregate3Response(new byte[][] {padUint256(42)}, new boolean[] {true}));
             var mc = new Multicall3(rpc.client());
             Function fn = Function.of("balanceOf", AbiType.ADDRESS).withReturns(AbiType.UINT256);
-            mc.add("0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266", fn, "0x70997970C51812e339D9B73b0245ad59FA2A9A2d");
+            mc.add(
+                    "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
+                    fn,
+                    "0x70997970C51812e339D9B73b0245ad59FA2A9A2d");
             List<Object> results = mc.execute().join();
             assertEquals(1, results.size());
             assertEquals(BigInteger.valueOf(42), results.get(0));
@@ -100,7 +112,10 @@ class MulticallTest {
             rpc.enqueue(buildAggregate3Response(new byte[][] {new byte[0]}, new boolean[] {false}));
             var mc = new Multicall3(rpc.client());
             Function fn = Function.of("balanceOf", AbiType.ADDRESS).withReturns(AbiType.UINT256);
-            mc.addOptional("0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266", fn, "0x70997970C51812e339D9B73b0245ad59FA2A9A2d");
+            mc.addOptional(
+                    "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
+                    fn,
+                    "0x70997970C51812e339D9B73b0245ad59FA2A9A2d");
             List<Object> results = mc.execute().join();
             assertEquals(1, results.size());
             assertNull(results.get(0));

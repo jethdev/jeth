@@ -332,7 +332,10 @@ class Multicall3ExtendedTest {
 
             List<BigInteger> results =
                     Multicall3.builder(rpc.client())
-                            .optional("0x90F79bf6EB2c4f870365E785982E1f101E93b906", BALANCE_OF, ADDR_A)
+                            .optional(
+                                    "0x90F79bf6EB2c4f870365E785982E1f101E93b906",
+                                    BALANCE_OF,
+                                    ADDR_A)
                             .executeAs(BigInteger.class)
                             .join();
 

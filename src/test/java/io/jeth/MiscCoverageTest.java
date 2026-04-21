@@ -256,7 +256,9 @@ class MiscCoverageTest {
                 rpc.enqueue("\"0x" + Hex.encodeNoPrefx(encoded) + "\"");
 
                 AaveV3 aave = new AaveV3(POOL, rpc.client());
-                AaveV3.AccountData data = aave.getUserAccountData("0x70997970C51812e339D9B73b0245ad59FA2A9A2d").join();
+                AaveV3.AccountData data =
+                        aave.getUserAccountData("0x70997970C51812e339D9B73b0245ad59FA2A9A2d")
+                                .join();
 
                 assertNotNull(data);
                 assertEquals(collateral, data.totalCollateralBase);
@@ -287,7 +289,9 @@ class MiscCoverageTest {
                 rpc.enqueue("\"0x" + Hex.encodeNoPrefx(enc) + "\"");
 
                 AaveV3 aave = new AaveV3(POOL, rpc.client());
-                AaveV3.AccountData data = aave.getUserAccountData("0x70997970C51812e339D9B73b0245ad59FA2A9A2d").join();
+                AaveV3.AccountData data =
+                        aave.getUserAccountData("0x70997970C51812e339D9B73b0245ad59FA2A9A2d")
+                                .join();
 
                 assertEquals(1.5, data.healthFactorEther(), 0.001, "HF must be 1.5");
             }
@@ -315,7 +319,9 @@ class MiscCoverageTest {
                 rpc.enqueue("\"0x" + Hex.encodeNoPrefx(enc) + "\"");
 
                 AaveV3.AccountData data =
-                        new AaveV3(POOL, rpc.client()).getUserAccountData("0x70997970C51812e339D9B73b0245ad59FA2A9A2d").join();
+                        new AaveV3(POOL, rpc.client())
+                                .getUserAccountData("0x70997970C51812e339D9B73b0245ad59FA2A9A2d")
+                                .join();
                 assertTrue(data.isLiquidatable(), "HF < 1.0 must be liquidatable");
             }
         }
@@ -342,7 +348,9 @@ class MiscCoverageTest {
                 rpc.enqueue("\"0x" + Hex.encodeNoPrefx(enc) + "\"");
 
                 AaveV3.AccountData data =
-                        new AaveV3(POOL, rpc.client()).getUserAccountData("0x70997970C51812e339D9B73b0245ad59FA2A9A2d").join();
+                        new AaveV3(POOL, rpc.client())
+                                .getUserAccountData("0x70997970C51812e339D9B73b0245ad59FA2A9A2d")
+                                .join();
                 assertFalse(data.isLiquidatable(), "HF > 1.0 must not be liquidatable");
             }
         }
@@ -515,7 +523,9 @@ class MiscCoverageTest {
                 rpc.enqueue(encodeUint(BigInteger.valueOf(5_000_000)));
 
                 ERC20 usdc = new ERC20(USDC, rpc.client());
-                BigDecimal bal = usdc.balanceOfFormatted("0x70997970C51812e339D9B73b0245ad59FA2A9A2d").join();
+                BigDecimal bal =
+                        usdc.balanceOfFormatted("0x70997970C51812e339D9B73b0245ad59FA2A9A2d")
+                                .join();
                 assertEquals(
                         new BigDecimal("5"),
                         bal.stripTrailingZeros(),
@@ -531,7 +541,9 @@ class MiscCoverageTest {
                 rpc.enqueue(encodeUint(BigInteger.valueOf(1_000_000))); // 1 USDC
 
                 ERC20 usdc = new ERC20(USDC, rpc.client());
-                BigDecimal bal = usdc.balanceOfFormatted("0x70997970C51812e339D9B73b0245ad59FA2A9A2d").join();
+                BigDecimal bal =
+                        usdc.balanceOfFormatted("0x70997970C51812e339D9B73b0245ad59FA2A9A2d")
+                                .join();
                 assertEquals(
                         0,
                         new BigDecimal("1").compareTo(bal.stripTrailingZeros()),
