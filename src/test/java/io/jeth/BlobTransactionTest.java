@@ -37,7 +37,7 @@ class BlobTransactionTest {
         // First bytes must match input
         assertArrayEquals(input, Arrays.copyOf(padded, input.length));
         // Rest must be zero
-        for (int i = input.length; i < 10; i++) assertEquals(0, padded[i]);
+        for (int i = input.length; i < padded.length; i++) assertEquals(0, padded[i]);
     }
 
     @Test

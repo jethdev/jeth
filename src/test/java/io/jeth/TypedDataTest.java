@@ -155,7 +155,7 @@ class TypedDataTest {
     void sign_permit_deterministic() {
         var args =
                 new Object[] {
-                    "0xToken",
+                    "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
                     "Token",
                     "1",
                     1L,

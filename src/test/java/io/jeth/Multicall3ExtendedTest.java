@@ -63,7 +63,7 @@ class Multicall3ExtendedTest {
                                                     new Object[] {bal})))));
 
             Multicall3 mc = new Multicall3(rpc.client());
-            mc.add("0xToken", BALANCE_OF, ADDR_A);
+            mc.add("0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266", BALANCE_OF, ADDR_A);
 
             List<Multicall3.Result> results = mc.executeWithResults().join();
             assertEquals(1, results.size());
@@ -115,7 +115,7 @@ class Multicall3ExtendedTest {
                                     )));
 
             Multicall3 mc = new Multicall3(rpc.client());
-            mc.addOptional("0xBadContract", BALANCE_OF, ADDR_A);
+            mc.addOptional("0x90F79bf6EB2c4f870365E785982E1f101E93b906", BALANCE_OF, ADDR_A);
 
             List<Multicall3.Result> results = mc.executeWithResults().join();
             assertEquals(1, results.size());
@@ -139,7 +139,7 @@ class Multicall3ExtendedTest {
                                                     new Object[] {bal})))));
 
             Multicall3 mc = new Multicall3(rpc.client());
-            mc.add("0xToken", BALANCE_OF, ADDR_A);
+            mc.add("0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266", BALANCE_OF, ADDR_A);
 
             List<Multicall3.Result> results = mc.executeWithResults("0x1000").join();
             assertEquals(1, results.size());
@@ -332,7 +332,7 @@ class Multicall3ExtendedTest {
 
             List<BigInteger> results =
                     Multicall3.builder(rpc.client())
-                            .optional("0xBadContract", BALANCE_OF, ADDR_A)
+                            .optional("0x90F79bf6EB2c4f870365E785982E1f101E93b906", BALANCE_OF, ADDR_A)
                             .executeAs(BigInteger.class)
                             .join();
 
@@ -356,7 +356,7 @@ class Multicall3ExtendedTest {
 
             List<Multicall3.Result> results =
                     Multicall3.builder(rpc.client())
-                            .call("0xToken", BALANCE_OF, ADDR_A)
+                            .call("0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266", BALANCE_OF, ADDR_A)
                             .executeWithResults()
                             .join();
 

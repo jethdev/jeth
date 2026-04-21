@@ -1,0 +1,2640 @@
+
+Welcome to Gradle 9.4.0!
+
+Here are the highlights of this release:
+ - Java 26 support
+ - Non-class-based JVM tests
+ - Enhanced console progress bar
+
+For more details see https://docs.gradle.org/9.4.0/release-notes.html
+
+To honour the JVM settings for this build a single-use Daemon process will be forked. For more on this, please refer to https://docs.gradle.org/9.4.0/userguide/gradle_daemon.html#sec:disabling_the_daemon in the Gradle documentation.
+Daemon will be stopped at the end of the build 
+
+> Task :compileJava
+Note: /workspaces/jeth/src/main/java/io/jeth/eip4844/BundleKzgSetup.java uses or overrides a deprecated API.
+Note: Recompile with -Xlint:deprecation for details.
+
+> Task :processResources
+> Task :classes
+
+> Task :compileTestJava
+Note: /workspaces/jeth/src/test/java/io/jeth/FinalCoverageTest.java uses or overrides a deprecated API.
+Note: Recompile with -Xlint:deprecation for details.
+
+> Task :processTestResources
+> Task :testClasses
+
+> Task :test
+
+AbiCodecExtendedTest > Mixed type roundtrips > (address, int256, bool, bytes32, string) full roundtrip PASSED
+
+AbiCodecExtendedTest > Mixed type roundtrips > (uint256, uint256[]) mixed static+dynamic PASSED
+
+AbiCodecExtendedTest > Low-level decode helpers > decodeFixedBytes at non-zero offset PASSED
+
+AbiCodecExtendedTest > Low-level decode helpers > decodeBigInt handles max uint256 PASSED
+
+AbiCodecExtendedTest > Low-level decode helpers > decodeAddress result is EIP-55 checksummed PASSED
+
+AbiCodecExtendedTest > Low-level decode helpers > decodeAddress extracts checksummed address from 32-byte slot PASSED
+
+AbiCodecExtendedTest > Low-level decode helpers > decodeBigInt handles zero PASSED
+
+AbiCodecExtendedTest > Low-level decode helpers > decodeValue dispatches correctly for address type PASSED
+
+AbiCodecExtendedTest > Low-level decode helpers > decodeValue dispatches correctly for bool type PASSED
+
+AbiCodecExtendedTest > Low-level decode helpers > decodeValue dispatches correctly for uint type PASSED
+
+AbiCodecExtendedTest > Arrays > fixed uint256[3] roundtrip PASSED
+
+AbiCodecExtendedTest > Arrays > dynamic uint256[] roundtrip PASSED
+
+AbiCodecExtendedTest > Arrays > address[] roundtrip PASSED
+
+AbiCodecExtendedTest > Arrays > empty dynamic array encodes/decodes correctly PASSED
+
+AbiCodecExtendedTest > Tuples > encodeTuple: (address, uint256) roundtrip PASSED
+
+AbiCodecExtendedTest > Tuples > nested tuple: ((uint256,bool), address) PASSED
+
+AbiCodecExtendedTest > Tuples > tuple with dynamic string member PASSED
+
+AbiCodecExtendedTest > Tuples > Uniswap-style QuoteParams tuple: (address,address,uint256,uint24,uint160) PASSED
+
+AbiCodecExtendedTest > Fixed bytes > bytes4 roundtrip via AbiType PASSED
+
+AbiCodecExtendedTest > Fixed bytes > encodeFixedBytes left-pads to 32 bytes PASSED
+
+AbiCodecExtendedTest > Fixed bytes > bytes32 full slot roundtrip PASSED
+
+AbiCodecExtendedTest > Fixed bytes > bytes1 roundtrip PASSED
+
+AbiCodecExtendedTest > Fixed bytes > decodeFixedBytes recovers original bytes PASSED
+
+AbiCodecExtendedTest > Signed integers > encodeInt then decodeSignedInt roundtrip: positive PASSED
+
+AbiCodecExtendedTest > Signed integers > encodeInt then decodeSignedInt roundtrip: negative PASSED
+
+AbiCodecExtendedTest > Signed integers > encodeInt: -1 as int256 = 0xff...ff (all ones) PASSED
+
+AbiCodecExtendedTest > Signed integers > decodeSignedInt: int8 max positive = 127 PASSED
+
+AbiCodecExtendedTest > Signed integers > decodeSignedInt: int8 min negative = -128 (0x80 in MSB) PASSED
+
+AbiCodecExtendedTest > Signed integers > encode/decode int8 negative roundtrip PASSED
+
+AbiCodecExtendedTest > Signed integers > encode/decode int128 max/min roundtrip PASSED
+
+AbiCodecExtendedTest > Signed integers > encode/decode int256 via AbiType roundtrip PASSED
+
+AbiCodecTest > testEncodeUint256() PASSED
+
+AbiCodecTest > testFunctionSelectorBalanceOf() PASSED
+
+AbiCodecTest > testEncodeBool() PASSED
+
+AbiCodecTest > testDecodeMultipleTypes() PASSED
+
+AbiCodecTest > testEncodeDecodeBytes() PASSED
+
+AbiCodecTest > testFunctionSelectorTransfer() PASSED
+
+AbiCodecTest > testEncodeTransferCall() PASSED
+
+AbiCodecTest > testEncodeDecodeString() PASSED
+
+AbiCodecTest > testEncodeAddress() PASSED
+
+AbiCodecTest > testAbiTypeOf() PASSED
+
+AbiDecodeErrorTest > decode empty → generic revert message PASSED
+
+AbiDecodeErrorTest > decode Panic(0x01) — assertion failed PASSED
+
+AbiDecodeErrorTest > decode Panic(0x32) — array out of bounds PASSED
+
+AbiDecodeErrorTest > decode Error(string) — standard revert PASSED
+
+AbiDecodeErrorTest > decode Panic(0x12) — division by zero PASSED
+
+AbiDecodeErrorTest > decode from hex string (RPC error format) PASSED
+
+AbiDecodeErrorTest > decode Error(string) — short message PASSED
+
+AbiDecodeErrorTest > errorSelector computes 4-byte hex selector PASSED
+
+AbiDecodeErrorTest > decode custom error — shows selector as 0xXXXXXXXX PASSED
+
+AbiDecodeErrorTest > decode Panic(0x11) — arithmetic overflow PASSED
+
+AbiDecodeErrorTest > decode 0x → generic revert message PASSED
+
+AbiDecodeErrorTest > decode null → generic revert message PASSED
+
+BatchProviderTest > single request still returns correct result PASSED
+
+BatchProviderTest > reproduce_timeout handles many requests correctly PASSED
+
+BatchProviderTest > maxBatchSize(1) sends each request individually PASSED
+
+BatchProviderTest > builder() creates provider without throwing PASSED
+
+BatchProviderTest > large batch is split correctly PASSED
+
+BlobTransactionExtendedTest > signed tx raw bytes: first byte is 0x03 FAILED
+    io.jeth.eip4844.KzgTrustedSetup$KzgException: Failed to read bundled KZG setup: Unknown kzg-setup.bin version: 529205248
+        at app//io.jeth.eip4844.KzgTrustedSetup.loadBundled(KzgTrustedSetup.java:117)
+        at app//io.jeth.eip4844.KzgTrustedSetup.getInstance(KzgTrustedSetup.java:81)
+        at app//io.jeth.eip4844.Kzg.blobToCommitment(Kzg.java:93)
+        at app//io.jeth.eip4844.Blob.from(Blob.java:89)
+        at app//io.jeth.eip4844.BlobTransaction$Builder.blob(BlobTransaction.java:292)
+        at app//io.jeth.BlobTransactionExtendedTest.buildAndSign(BlobTransactionExtendedTest.java:192)
+        at app//io.jeth.BlobTransactionExtendedTest.sign_first_byte_0x03(BlobTransactionExtendedTest.java:97)
+
+        Caused by:
+        java.io.IOException: Unknown kzg-setup.bin version: 529205248
+            at io.jeth.eip4844.KzgTrustedSetup.readBinaryFormat(KzgTrustedSetup.java:231)
+            at io.jeth.eip4844.KzgTrustedSetup.loadBundled(KzgTrustedSetup.java:115)
+            ... 6 more
+
+BlobTransactionExtendedTest > signed type-3 tx is 0x03-prefixed FAILED
+    io.jeth.eip4844.KzgTrustedSetup$KzgException: Failed to read bundled KZG setup: Unknown kzg-setup.bin version: 529205248
+        at app//io.jeth.eip4844.KzgTrustedSetup.loadBundled(KzgTrustedSetup.java:117)
+        at app//io.jeth.eip4844.KzgTrustedSetup.getInstance(KzgTrustedSetup.java:81)
+        at app//io.jeth.eip4844.Kzg.blobToCommitment(Kzg.java:93)
+        at app//io.jeth.eip4844.Blob.from(Blob.java:89)
+        at app//io.jeth.eip4844.BlobTransaction$Builder.blob(BlobTransaction.java:292)
+        at app//io.jeth.BlobTransactionExtendedTest.buildAndSign(BlobTransactionExtendedTest.java:192)
+        at app//io.jeth.BlobTransactionExtendedTest.sign_type3_prefix(BlobTransactionExtendedTest.java:90)
+
+        Caused by:
+        java.io.IOException: Unknown kzg-setup.bin version: 529205248
+            at io.jeth.eip4844.KzgTrustedSetup.readBinaryFormat(KzgTrustedSetup.java:231)
+            at io.jeth.eip4844.KzgTrustedSetup.loadBundled(KzgTrustedSetup.java:115)
+            ... 6 more
+
+BlobTransactionExtendedTest > signed tx encodes blobs, commitments, proofs as separate RLP list elements FAILED
+    io.jeth.eip4844.KzgTrustedSetup$KzgException: Failed to read bundled KZG setup: Unknown kzg-setup.bin version: 529205248
+        at app//io.jeth.eip4844.KzgTrustedSetup.loadBundled(KzgTrustedSetup.java:117)
+        at app//io.jeth.eip4844.KzgTrustedSetup.getInstance(KzgTrustedSetup.java:81)
+        at app//io.jeth.eip4844.Kzg.blobToCommitment(Kzg.java:93)
+        at app//io.jeth.eip4844.Blob.from(Blob.java:89)
+        at app//io.jeth.eip4844.BlobTransaction$Builder.blob(BlobTransaction.java:292)
+        at app//io.jeth.BlobTransactionExtendedTest.buildAndSign(BlobTransactionExtendedTest.java:192)
+        at app//io.jeth.BlobTransactionExtendedTest.sign_network_format_has_four_top_level_elements(BlobTransactionExtendedTest.java:107)
+
+        Caused by:
+        java.io.IOException: Unknown kzg-setup.bin version: 529205248
+            at io.jeth.eip4844.KzgTrustedSetup.readBinaryFormat(KzgTrustedSetup.java:231)
+            at io.jeth.eip4844.KzgTrustedSetup.loadBundled(KzgTrustedSetup.java:115)
+            ... 6 more
+
+BlobTransactionExtendedTest > Blob.versionedHash uses SHA-256 not Keccak FAILED
+    io.jeth.eip4844.KzgTrustedSetup$KzgException: Failed to read bundled KZG setup: Unknown kzg-setup.bin version: 529205248
+        at app//io.jeth.eip4844.KzgTrustedSetup.loadBundled(KzgTrustedSetup.java:117)
+        at app//io.jeth.eip4844.KzgTrustedSetup.getInstance(KzgTrustedSetup.java:81)
+        at app//io.jeth.eip4844.Kzg.blobToCommitment(Kzg.java:93)
+        at app//io.jeth.eip4844.Blob.from(Blob.java:89)
+        at app//io.jeth.BlobTransactionExtendedTest.versioned_hash_uses_sha256(BlobTransactionExtendedTest.java:36)
+
+        Caused by:
+        java.io.IOException: Unknown kzg-setup.bin version: 529205248
+            at io.jeth.eip4844.KzgTrustedSetup.readBinaryFormat(KzgTrustedSetup.java:231)
+            at io.jeth.eip4844.KzgTrustedSetup.loadBundled(KzgTrustedSetup.java:115)
+            ... 4 more
+
+BlobTransactionExtendedTest > two blobs → two versioned hashes in tx FAILED
+    io.jeth.eip4844.KzgTrustedSetup$KzgException: Failed to read bundled KZG setup: Unknown kzg-setup.bin version: 529205248
+        at app//io.jeth.eip4844.KzgTrustedSetup.loadBundled(KzgTrustedSetup.java:117)
+        at app//io.jeth.eip4844.KzgTrustedSetup.getInstance(KzgTrustedSetup.java:81)
+        at app//io.jeth.eip4844.Kzg.blobToCommitment(Kzg.java:93)
+        at app//io.jeth.eip4844.Blob.from(Blob.java:89)
+        at app//io.jeth.BlobTransactionExtendedTest.two_blobs_two_hashes(BlobTransactionExtendedTest.java:123)
+
+        Caused by:
+        java.io.IOException: Unknown kzg-setup.bin version: 529205248
+            at io.jeth.eip4844.KzgTrustedSetup.readBinaryFormat(KzgTrustedSetup.java:231)
+            at io.jeth.eip4844.KzgTrustedSetup.loadBundled(KzgTrustedSetup.java:115)
+            ... 4 more
+
+BlobTransactionExtendedTest > MAX_BLOBS_PER_TX enforced — 7th blob throws FAILED
+    io.jeth.eip4844.KzgTrustedSetup$KzgException: Failed to read bundled KZG setup: Unknown kzg-setup.bin version: 529205248
+        at app//io.jeth.eip4844.KzgTrustedSetup.loadBundled(KzgTrustedSetup.java:117)
+        at app//io.jeth.eip4844.KzgTrustedSetup.getInstance(KzgTrustedSetup.java:81)
+        at app//io.jeth.eip4844.Kzg.blobToCommitment(Kzg.java:93)
+        at app//io.jeth.eip4844.Blob.from(Blob.java:89)
+        at app//io.jeth.eip4844.BlobTransaction$Builder.blob(BlobTransaction.java:292)
+        at app//io.jeth.BlobTransactionExtendedTest.max_blobs_enforced(BlobTransactionExtendedTest.java:161)
+
+        Caused by:
+        java.io.IOException: Unknown kzg-setup.bin version: 529205248
+            at io.jeth.eip4844.KzgTrustedSetup.readBinaryFormat(KzgTrustedSetup.java:231)
+            at io.jeth.eip4844.KzgTrustedSetup.loadBundled(KzgTrustedSetup.java:115)
+            ... 5 more
+
+BlobTransactionExtendedTest > BlobTransaction.getBlobVersionedHashes() uses SHA-256 (matches Blob.versionedHash) FAILED
+    io.jeth.eip4844.KzgTrustedSetup$KzgException: Failed to read bundled KZG setup: Unknown kzg-setup.bin version: 529205248
+        at app//io.jeth.eip4844.KzgTrustedSetup.loadBundled(KzgTrustedSetup.java:117)
+        at app//io.jeth.eip4844.KzgTrustedSetup.getInstance(KzgTrustedSetup.java:81)
+        at app//io.jeth.eip4844.Kzg.blobToCommitment(Kzg.java:93)
+        at app//io.jeth.eip4844.Blob.from(Blob.java:89)
+        at app//io.jeth.BlobTransactionExtendedTest.blob_tx_versioned_hash_matches_blob(BlobTransactionExtendedTest.java:62)
+
+        Caused by:
+        java.io.IOException: Unknown kzg-setup.bin version: 529205248
+            at io.jeth.eip4844.KzgTrustedSetup.readBinaryFormat(KzgTrustedSetup.java:231)
+            at io.jeth.eip4844.KzgTrustedSetup.loadBundled(KzgTrustedSetup.java:115)
+            ... 4 more
+
+BlobTransactionExtendedTest > padBlob truncates oversized input PASSED
+
+BlobTransactionTest > Blob.versioned hash is 32 bytes starting with 0x01 FAILED
+    io.jeth.eip4844.KzgTrustedSetup$KzgException: Failed to read bundled KZG setup: Unknown kzg-setup.bin version: 529205248
+        at app//io.jeth.eip4844.KzgTrustedSetup.loadBundled(KzgTrustedSetup.java:117)
+        at app//io.jeth.eip4844.KzgTrustedSetup.getInstance(KzgTrustedSetup.java:81)
+        at app//io.jeth.eip4844.Kzg.blobToCommitment(Kzg.java:93)
+        at app//io.jeth.eip4844.Blob.from(Blob.java:89)
+        at app//io.jeth.BlobTransactionTest.blob_versioned_hash(BlobTransactionTest.java:55)
+
+        Caused by:
+        java.io.IOException: Unknown kzg-setup.bin version: 529205248
+            at io.jeth.eip4844.KzgTrustedSetup.readBinaryFormat(KzgTrustedSetup.java:231)
+            at io.jeth.eip4844.KzgTrustedSetup.loadBundled(KzgTrustedSetup.java:115)
+            ... 4 more
+
+BlobTransactionTest > sign() returns type-3 tx starting with 0x03 FAILED
+    io.jeth.eip4844.KzgTrustedSetup$KzgException: Failed to read bundled KZG setup: Unknown kzg-setup.bin version: 529205248
+        at app//io.jeth.eip4844.KzgTrustedSetup.loadBundled(KzgTrustedSetup.java:117)
+        at app//io.jeth.eip4844.KzgTrustedSetup.getInstance(KzgTrustedSetup.java:81)
+        at app//io.jeth.eip4844.Kzg.blobToCommitment(Kzg.java:93)
+        at app//io.jeth.eip4844.Blob.from(Blob.java:89)
+        at app//io.jeth.eip4844.BlobTransaction$Builder.blob(BlobTransaction.java:292)
+        at app//io.jeth.BlobTransactionTest.sign_type3(BlobTransactionTest.java:78)
+
+        Caused by:
+        java.io.IOException: Unknown kzg-setup.bin version: 529205248
+            at io.jeth.eip4844.KzgTrustedSetup.readBinaryFormat(KzgTrustedSetup.java:231)
+            at io.jeth.eip4844.KzgTrustedSetup.loadBundled(KzgTrustedSetup.java:115)
+            ... 5 more
+
+BlobTransactionTest > BLOB_SIZE constant = 131072 bytes PASSED
+
+BlobTransactionTest > getBlobVersionedHashes returns one hash per blob FAILED
+    io.jeth.eip4844.KzgTrustedSetup$KzgException: Failed to read bundled KZG setup: Unknown kzg-setup.bin version: 529205248
+        at app//io.jeth.eip4844.KzgTrustedSetup.loadBundled(KzgTrustedSetup.java:117)
+        at app//io.jeth.eip4844.KzgTrustedSetup.getInstance(KzgTrustedSetup.java:81)
+        at app//io.jeth.eip4844.Kzg.blobToCommitment(Kzg.java:93)
+        at app//io.jeth.eip4844.Blob.from(Blob.java:89)
+        at app//io.jeth.eip4844.BlobTransaction$Builder.blob(BlobTransaction.java:292)
+        at app//io.jeth.BlobTransactionTest.blob_versioned_hashes_count(BlobTransactionTest.java:101)
+
+        Caused by:
+        java.io.IOException: Unknown kzg-setup.bin version: 529205248
+            at io.jeth.eip4844.KzgTrustedSetup.readBinaryFormat(KzgTrustedSetup.java:231)
+            at io.jeth.eip4844.KzgTrustedSetup.loadBundled(KzgTrustedSetup.java:115)
+            ... 5 more
+
+BlobTransactionTest > padBlob pads to 131072 bytes PASSED
+
+BlobTransactionTest > MAX_BLOBS_PER_TX = 6 PASSED
+
+BlobTransactionTest > padBlob of exact blob size returns same size PASSED
+
+BlockScannerTest > BlockScanner.of(client, 500) uses custom chunk size PASSED
+
+BlockScannerTest > scan() stops early when handler returns false PASSED
+
+BlockScannerTest > scanMulti() merges events from multiple contracts PASSED
+
+BlockScannerTest > ScanResult.isEarlyExit() true when handler returned false PASSED
+
+BlockScannerTest > ScanResult.isComplete() true when fully scanned PASSED
+
+BlockScannerTest > ScanProgress.cursor() returns next block after chunk PASSED
+
+BlockScannerTest > collect() returns all events as a list PASSED
+
+BlockScannerTest > ScanResult.cursor() = lastBlock + 1 PASSED
+
+BlockScannerTest > collect() with no events returns empty list PASSED
+
+BlockScannerTest > count() with no events returns 0 PASSED
+
+BlockScannerTest > BlockScanner.of(client) uses default chunk size 2000 PASSED
+
+BlockScannerTest > scan() aggregates events across multiple chunks PASSED
+
+BlockScannerTest > scanMulti() with empty contracts/events returns COMPLETE immediately PASSED
+
+BlockScannerTest > scan() with cursor starts from cursor.nextBlock() PASSED
+
+BlockScannerTest > ScanProgress.toString() is human-readable PASSED
+
+BlockScannerTest > ScanProgress percentDone increases chunk to chunk PASSED
+
+BlockScannerTest > ScanProgress contains correct block range fields PASSED
+
+BlockScannerTest > count() returns total number of events PASSED
+
+BlockScannerTest > scan() with no matching events returns 0 events, COMPLETE PASSED
+
+BlockScannerTest > scan() returns COMPLETE for empty block range PASSED
+
+BlockScannerTest > ScanResult.toString() is human-readable PASSED
+
+BlockScannerTest > scan() decodes and delivers Transfer events to handler PASSED
+
+BundlerClientTest > estimateUserOperationGas returns GasEstimate with positive fields PASSED
+
+BundlerClientTest > waitForUserOperationReceipt times out when op never mines PASSED
+
+BundlerClientTest > sendUserOperation makes exactly one RPC call PASSED
+
+BundlerClientTest > getUserOperationReceipt returns null when not yet mined FAILED
+    org.opentest4j.AssertionFailedError: expected: <null> but was: com.fasterxml.jackson.databind.node.NullNode@6edcd0d8<null>
+        at app//org.junit.jupiter.api.AssertionFailureBuilder.build(AssertionFailureBuilder.java:151)
+        at app//org.junit.jupiter.api.AssertionFailureBuilder.buildAndThrow(AssertionFailureBuilder.java:132)
+        at app//org.junit.jupiter.api.AssertNull.failNotNull(AssertNull.java:50)
+        at app//org.junit.jupiter.api.AssertNull.assertNull(AssertNull.java:35)
+        at app//org.junit.jupiter.api.AssertNull.assertNull(AssertNull.java:30)
+        at app//org.junit.jupiter.api.Assertions.assertNull(Assertions.java:279)
+        at app//io.jeth.BundlerClientTest.get_receipt_null_when_pending(BundlerClientTest.java:129)
+
+BundlerClientTest > getSupportedEntryPoints returns empty list when bundler supports none PASSED
+
+BundlerClientTest > sendUserOperation throws on bundler RPC error PASSED
+
+BundlerClientTest > getSupportedEntryPoints returns list of addresses PASSED
+
+BundlerClientTest > waitForUserOperationReceipt eventually resolves after pending polls PASSED
+
+BundlerClientTest > waitForUserOperationReceipt returns immediately when already mined PASSED
+
+BundlerClientTest > sendUserOperation returns userOpHash string from bundler PASSED
+
+BundlerClientTest > BundlerClient.of(url) creates a client PASSED
+
+CcipReadTest > buildCallbackCalldata_lengthIsCorrect() PASSED
+
+CcipReadTest > parseOffchainLookup_extractsSender() PASSED
+
+CcipReadTest > parseOffchainLookup_extractsUrls() PASSED
+
+CcipReadTest > selectorIsCorrect() PASSED
+
+CcipReadTest > roundtrip_parseAndRebuild() PASSED
+
+CcipReadTest > parseOffchainLookup_extractsCallbackFunction() PASSED
+
+CcipReadTest > buildCallbackCalldata_hasCorrectSelector() PASSED
+
+ChainTest > All chains have valid public HTTPS RPC PASSED
+
+ChainTest > addressUrl() builds correct basescan link PASSED
+
+ChainTest > txUrl() builds correct etherscan link PASSED
+
+ChainTest > rpc(key) interpolates API key PASSED
+
+ChainTest > fromId() finds major chains PASSED
+
+ChainTest > fromId() returns empty for unknown chain PASSED
+
+ChainTest > isTestnet() identifies testnets correctly PASSED
+
+ChainTest > isL2() correct for L1 vs L2 PASSED
+
+ChainTest > All chains have an explorer URL PASSED
+
+ChainTest > requireId() throws for unknown chain PASSED
+
+ChainTest > MAINNET chainId = 1 PASSED
+
+ContractEventsTest > decodeHandlesNullLog() PASSED
+
+ContractEventsTest > decodedEventToString() PASSED
+
+ContractEventsTest > eventDefTopic0MatchesKeccakOfSignature() PASSED
+
+ContractEventsTest > decodeReturnsNullForWrongTopic0() PASSED
+
+ContractEventsTest > eventDefSignatureIsCorrect() PASSED
+
+ContractEventsTest > decodeHandlesEmptyTopics() PASSED
+
+ContractEventsTest > decodeTransferLog() PASSED
+
+ContractEventsTest > decodeAllFiltersMatching() PASSED
+
+ContractGeneratorTest > testHardhatArtifactFormat() PASSED
+
+ContractGeneratorTest > testFunctionSelectorsCorrect() PASSED
+
+ContractGeneratorTest > testGenerateERC20() FAILED
+    org.opentest4j.AssertionFailedError: expected: <true> but was: <false>
+        at app//org.junit.jupiter.api.AssertionFailureBuilder.build(AssertionFailureBuilder.java:151)
+        at app//org.junit.jupiter.api.AssertionFailureBuilder.buildAndThrow(AssertionFailureBuilder.java:132)
+        at app//org.junit.jupiter.api.AssertTrue.failNotTrue(AssertTrue.java:63)
+        at app//org.junit.jupiter.api.AssertTrue.assertTrue(AssertTrue.java:36)
+        at app//org.junit.jupiter.api.AssertTrue.assertTrue(AssertTrue.java:31)
+        at app//org.junit.jupiter.api.Assertions.assertTrue(Assertions.java:183)
+        at app//io.jeth.ContractGeneratorTest.testGenerateERC20(ContractGeneratorTest.java:117)
+
+ContractGeneratorTest > testGenerateToFile() PASSED
+
+ContractGeneratorTest > testGenerateGreeter() PASSED
+
+ContractGeneratorTest > testGenerateComplex() FAILED
+    org.opentest4j.AssertionFailedError: expected: <true> but was: <false>
+        at app//org.junit.jupiter.api.AssertionFailureBuilder.build(AssertionFailureBuilder.java:151)
+        at app//org.junit.jupiter.api.AssertionFailureBuilder.buildAndThrow(AssertionFailureBuilder.java:132)
+        at app//org.junit.jupiter.api.AssertTrue.failNotTrue(AssertTrue.java:63)
+        at app//org.junit.jupiter.api.AssertTrue.assertTrue(AssertTrue.java:36)
+        at app//org.junit.jupiter.api.AssertTrue.assertTrue(AssertTrue.java:31)
+        at app//org.junit.jupiter.api.Assertions.assertTrue(Assertions.java:183)
+        at app//io.jeth.ContractGeneratorTest.testGenerateComplex(ContractGeneratorTest.java:134)
+
+ContractProxyTest > testTokenProxyCreates() PASSED
+
+ContractProxyTest > testProxyToString() PASSED
+
+ContractProxyTest > testStructProxyMapsValues() PASSED
+
+ContractProxyTest > testNonInterfaceThrows() PASSED
+
+ContractProxyTest > testProxyCreatesWithoutError() PASSED
+
+ContractProxyTest > testUnknownMethodThrows() PASSED
+
+ContractTest > fn().send() enqueues nonce + gasPrice + sendRawTransaction PASSED
+
+ContractTest > getAddress returns correct address PASSED
+
+ContractTest > fn().returns(bool).call() decodes boolean true PASSED
+
+ContractTest > fn().returns(string).call() decodes string PASSED
+
+ContractTest > sendEth() sends ETH to address PASSED
+
+ContractTest > fn().call() targeting correct contract address PASSED
+
+ContractTest > fn().returns().call().as(BigInteger) decodes uint256 PASSED
+
+ContractTest > fn().call() encodes correct function selector in request PASSED
+
+CoreTest > ABI fixed array uint256[3] PASSED
+
+CoreTest > ABI round-trip: (address,uint256,bool,string) PASSED
+
+CoreTest > ABI encode bool true PASSED
+
+CoreTest > ABI tuple array (struct[]) PASSED
+
+CoreTest > Wallet.create() generates valid random wallet PASSED
+
+CoreTest > namehash of empty string PASSED
+
+CoreTest > ABI encode multiple params — transfer calldata PASSED
+
+CoreTest > RLP [] → 0xc0 PASSED
+
+CoreTest > EIP-55 checksum — known vectors PASSED
+
+CoreTest > RLP ['cat','dog'] → 0xc88363617483646f67 PASSED
+
+CoreTest > Function selectors match Solidity PASSED
+
+CoreTest > ABI type parsing — complex types PASSED
+
+CoreTest > EIP-55 checksum — vitalik.eth PASSED
+
+CoreTest > namehash('eth') PASSED
+
+CoreTest > ABI encode uint256[] (dynamic array) FAILED
+    org.opentest4j.AssertionFailedError: expected: <192> but was: <160>
+        at app//org.junit.jupiter.api.AssertionFailureBuilder.build(AssertionFailureBuilder.java:151)
+        at app//org.junit.jupiter.api.AssertionFailureBuilder.buildAndThrow(AssertionFailureBuilder.java:132)
+        at app//org.junit.jupiter.api.AssertEquals.failNotEqual(AssertEquals.java:197)
+        at app//org.junit.jupiter.api.AssertEquals.assertEquals(AssertEquals.java:150)
+        at app//org.junit.jupiter.api.AssertEquals.assertEquals(AssertEquals.java:145)
+        at app//org.junit.jupiter.api.Assertions.assertEquals(Assertions.java:531)
+        at app//io.jeth.CoreTest.abi_uint_dynamic_array(CoreTest.java:179)
+
+CoreTest > AbiType.of() handles all primitive types PASSED
+
+CoreTest > namehash('foo.eth') PASSED
+
+CoreTest > Units: Gwei conversions PASSED
+
+CoreTest > EIP-712 encodeType for simple struct PASSED
+
+CoreTest > Hardhat account #0 address derivation PASSED
+
+CoreTest > Hardhat account #1 address derivation PASSED
+
+CoreTest > Hardhat account #2 address derivation PASSED
+
+CoreTest > Wallet sign + verify recovery id PASSED
+
+CoreTest > RLP empty bytes → 0x80 PASSED
+
+CoreTest > keccak256 of empty bytes PASSED
+
+CoreTest > keccak256('hello') PASSED
+
+CoreTest > namehash('addr.reverse') PASSED
+
+CoreTest > personal_sign hash (eth_sign) PASSED
+
+CoreTest > ABI decode real balanceOf response PASSED
+
+CoreTest > EIP-712 ERC-2612 Permit signing PASSED
+
+CoreTest > ABI encode bytes (dynamic) PASSED
+
+CoreTest > ABI encode address PASSED
+
+CoreTest > AbiType.of() handles array types PASSED
+
+CoreTest > ABI encode int256 negative PASSED
+
+CoreTest > Address validation PASSED
+
+CoreTest > ABI encode string[] (array of dynamic) PASSED
+
+CoreTest > ABI encode bool false PASSED
+
+CoreTest > EIP-55 checksum — USDC contract PASSED
+
+CoreTest > ABI tuple with dynamic member (address,string) PASSED
+
+CoreTest > AbiType.of() handles tuple types PASSED
+
+CoreTest > RLP nested lists PASSED
+
+CoreTest > EIP-712 sign produces deterministic signature PASSED
+
+CoreTest > ABI encode uint256(42) PASSED
+
+CoreTest > Units: Wei to ETH formatting FAILED
+    org.opentest4j.AssertionFailedError: expected: <1.0> but was: <1>
+        at app//org.junit.jupiter.api.AssertionFailureBuilder.build(AssertionFailureBuilder.java:151)
+        at app//org.junit.jupiter.api.AssertionFailureBuilder.buildAndThrow(AssertionFailureBuilder.java:132)
+        at app//org.junit.jupiter.api.AssertEquals.failNotEqual(AssertEquals.java:197)
+        at app//org.junit.jupiter.api.AssertEquals.assertEquals(AssertEquals.java:182)
+        at app//org.junit.jupiter.api.AssertEquals.assertEquals(AssertEquals.java:177)
+        at app//org.junit.jupiter.api.Assertions.assertEquals(Assertions.java:1145)
+        at app//io.jeth.CoreTest.units_format_ether(CoreTest.java:665)
+
+CoreTest > EIP-712 domain typehash PASSED
+
+CoreTest > Hex: BigInteger conversions PASSED
+
+CoreTest > RLP 127 → 0x7f PASSED
+
+CoreTest > RLP 128 → 0x8180 PASSED
+
+CoreTest > RLP 'dog' → 0x83646f67 PASSED
+
+CoreTest > RLP 1 → 0x01 PASSED
+
+CoreTest > keccak256('transfer(address,uint256)') — function selector PASSED
+
+CoreTest > Units: ETH to Wei conversion PASSED
+
+CoreTest > RLP 1024 → 0x820400 PASSED
+
+CoreTest > RLP zero → 0x80 PASSED
+
+CoreTest > ABI encode string 'hello' PASSED
+
+CoreTest > Hex encode/decode round-trip PASSED
+
+CoreTest > ABI encode bytes32 PASSED
+
+CoreTest > ABI encode simple tuple (address,uint256) PASSED
+
+CoreTest > ABI decode uint256[] round-trip PASSED
+
+CoreTest > ABI encode address[] (dynamic array) PASSED
+
+CryptoTest > testRlpDecodeNestedList() PASSED
+
+CryptoTest > testRlpEncodeSmallInt() PASSED
+
+CryptoTest > testPrivateKeyRoundtrip() PASSED
+
+CryptoTest > testWalletFromPrivateKey() PASSED
+
+CryptoTest > testWalletAddressIsChecksummed() PASSED
+
+CryptoTest > testRlpDecodeRoundtripList() PASSED
+
+CryptoTest > testRlpDecodeEmptyList() PASSED
+
+CryptoTest > testRlpDecodeRoundtripBytes() PASSED
+
+CryptoTest > testWalletCreation() PASSED
+
+CryptoTest > testRlpEncodeList() PASSED
+
+CryptoTest > testRlpEncodeUint() PASSED
+
+CryptoTest > testWalletSign() PASSED
+
+Eip7702SignerTest > Authorization has correct nonce PASSED
+
+Eip7702SignerTest > signAuthorization() returns non-null Authorization PASSED
+
+Eip7702SignerTest > Same inputs produce identical authorizations (deterministic ECDSA via RFC6979) PASSED
+
+Eip7702SignerTest > Authorization.toString() is human-readable PASSED
+
+Eip7702SignerTest > Authorization has correct contract address PASSED
+
+Eip7702SignerTest > Authorization has correct chainId PASSED
+
+Eip7702SignerTest > sign() with multiple authorizations is longer than with one PASSED
+
+Eip7702SignerTest > sign() returns 0x-prefixed hex string PASSED
+
+Eip7702SignerTest > Authorization yParity is 0 or 1 PASSED
+
+Eip7702SignerTest > sign() produces type-4 transaction (first byte = 0x04) PASSED
+
+Eip7702SignerTest > Authorization r and s fit in 32 bytes PASSED
+
+Eip7702SignerTest > sign() with zero-value tx and no calldata doesn't throw PASSED
+
+Eip7702SignerTest > Authorization.selfSponsored() is equivalent to signAuthorization PASSED
+
+Eip7702SignerTest > Authorization.anyChain() has chainId = 0 PASSED
+
+Eip7702SignerTest > Authorization r and s are non-empty hex strings PASSED
+
+Eip7702SignerTest > Different chainIds produce different signatures PASSED
+
+Eip7702SignerTest > Different nonces produce different signatures PASSED
+
+EnsResolverExtendedTest > namehashHex returns 0x-prefixed 66-char string PASSED
+
+EnsResolverExtendedTest > resolve returns null when resolver returns zero address PASSED
+
+EnsResolverExtendedTest > getText returns null when no resolver set PASSED
+
+EnsResolverExtendedTest > getAvatar is shorthand for getText(name, 'avatar') PASSED
+
+EnsResolverExtendedTest > reverseLookup returns ENS name when reverse record set PASSED
+
+EnsResolverExtendedTest > namehashHex is deterministic PASSED
+
+EnsResolverExtendedTest > namehashHex('vitalik.eth') matches spec value PASSED
+
+EnsResolverExtendedTest > namehashHex('') returns 0x + 64 zeros PASSED
+
+EnsResolverExtendedTest > resolve returns null when resolver is zero address PASSED
+
+EnsResolverExtendedTest > getText returns text record value PASSED
+
+EnsResolverExtendedTest > getText returns null when record is empty string PASSED
+
+EnsResolverExtendedTest > reverseLookup makes 2 RPC calls: getResolver + name(node) PASSED
+
+EnsResolverExtendedTest > reverseLookup returns null when no reverse resolver PASSED
+
+EnsResolverExtendedTest > getAvatar returns null when not set PASSED
+
+EnsResolverExtendedTest > reverseLookup lowercases address for reverse node computation PASSED
+
+EnsResolverExtendedTest > resolve makes 2 RPC calls: getResolver + addr(node) PASSED
+
+EnsResolverExtendedTest > getContenthash returns raw bytes when set PASSED
+
+EnsResolverExtendedTest > getContenthash returns null when no resolver PASSED
+
+EnsResolverExtendedTest > namehashHex('eth') matches spec value PASSED
+
+EthClientAdvancedTest > traceTransaction returns JsonNode PASSED
+
+EthClientAdvancedTest > getStorageAt default block = 'latest' PASSED
+
+EthClientAdvancedTest > traceTransaction with opts includes opts in request PASSED
+
+EthClientAdvancedTest > traceTransaction sends debug_traceTransaction PASSED
+
+EthClientAdvancedTest > getProvider returns the HttpProvider backing the client PASSED
+
+EthClientAdvancedTest > traceCall returns JsonNode result PASSED
+
+EthClientAdvancedTest > getStorageAt with explicit block tag sends 3-param call PASSED
+
+EthClientAdvancedTest > createAccessList sends eth_createAccessList PASSED
+
+EthClientAdvancedTest > callWithOverride returns hex result string PASSED
+
+EthClientAdvancedTest > getStorageAt sends eth_getStorageAt with correct params PASSED
+
+EthClientAdvancedTest > getProvider returns non-null provider PASSED
+
+EthClientAdvancedTest > getBlobBaseFee sends eth_blobBaseFee PASSED
+
+EthClientAdvancedTest > getBlobBaseFee returns BigInteger PASSED
+
+EthClientAdvancedTest > getStorageAt returns 0x-prefixed hex string PASSED
+
+EthClientAdvancedTest > traceCall sends debug_traceCall PASSED
+
+EthClientAdvancedTest > callWithOverride sends eth_call with state override PASSED
+
+EthClientAdvancedTest > createAccessList returns JsonNode with accessList field PASSED
+
+EthClientNewMethodsTest > sendTransaction() sends eth_sendTransaction and returns tx hash PASSED
+
+EthClientNewMethodsTest > getLogs with 'latest' toBlock does NOT chunk (string block tag) PASSED
+
+EthClientNewMethodsTest > getAccounts() returns empty list for production nodes PASSED
+
+EthClientNewMethodsTest > getNetwork() returns 'unknown' for unregistered chain PASSED
+
+EthClientNewMethodsTest > NetworkInfo.toString() is human-readable PASSED
+
+EthClientNewMethodsTest > getAccounts() sends eth_accounts method PASSED
+
+EthClientNewMethodsTest > getAccounts() parses an array of addresses PASSED
+
+EthClientNewMethodsTest > getLogs with range > MAX_LOG_CHUNK makes multiple RPC calls (chunking) PASSED
+
+EthClientNewMethodsTest > getLogs with range <= MAX_LOG_CHUNK makes ONE RPC call PASSED
+
+EthClientNewMethodsTest > getNetwork() returns NetworkInfo with correct chainId PASSED
+
+EthClientNewMethodsTest > getLogsRaw bypasses chunking for large ranges PASSED
+
+EthClientNewMethodsTest > MAX_LOG_CHUNK is 2000 (reasonable default) PASSED
+
+EthClientNewMethodsTest > getNetwork() resolves known chain name for mainnet PASSED
+
+EthClientNewMethodsTest > getLogs with range exactly MAX_LOG_CHUNK makes 1 call PASSED
+
+EthClientNewMethodsTest > getLogs merges results from all chunks in order PASSED
+
+EthClientNewMethodsTest > sendTransaction() sends eth_sendTransaction method name PASSED
+
+EthClientTest > getBlockByNumber sends correct number param PASSED
+
+EthClientTest > getGasPrice parses hex PASSED
+
+EthClientTest > suggestEip1559Fees returns [maxFee, tip] both positive PASSED
+
+EthClientTest > getLogs empty array PASSED
+
+EthClientTest > getTransactionReceipt status 0 = failed PASSED
+
+EthClientTest > call returns raw hex result PASSED
+
+EthClientTest > getBalance returns wei amount PASSED
+
+EthClientTest > getCode returns hex bytecode PASSED
+
+EthClientTest > getLogs parses log array and matchesTopic0 PASSED
+
+EthClientTest > getBalance with block tag sends both params PASSED
+
+EthClientTest > sendRawTransaction returns hash PASSED
+
+EthClientTest > getTransactionCount (nonce) PASSED
+
+EthClientTest > getChainId parses hex response PASSED
+
+EthClientTest > getBlockNumber parses hex response PASSED
+
+EthClientTest > getBlock returns null for unknown block PASSED
+
+EthClientTest > getTransactionReceipt null = pending/unknown PASSED
+
+EthClientTest > getTransaction parses all EIP-1559 fields PASSED
+
+EthClientTest > isContract false for EOA (empty bytecode) PASSED
+
+EthClientTest > getFeeHistory parses reward array PASSED
+
+EthClientTest > getBlock parses all standard fields PASSED
+
+EthClientTest > estimateGas returns gas as BigInteger PASSED
+
+EthClientTest > getNetworkId returns string PASSED
+
+EthClientTest > getTransactionReceipt parses status and gasCostWei PASSED
+
+EthClientTest > isContract true when code non-empty PASSED
+
+EventDecoderTest > Static ERC20_TRANSFER constant has correct topic0 PASSED
+
+EventDecoderTest > matches() is case-insensitive for topic0 comparison PASSED
+
+EventDecoderTest > decode() extracts non-indexed uint256 value from data field PASSED
+
+EventDecoderTest > decodeAll() on empty list returns empty PASSED
+
+EventDecoderTest > matches() true when log topic0 equals event topic0 PASSED
+
+EventDecoderTest > matches() false for null topics PASSED
+
+EventDecoderTest > matches() false for log with no topics PASSED
+
+EventDecoderTest > decode() extracts indexed 'to' address PASSED
+
+EventDecoderTest > getTopic0() is 66 characters (0x + 64 hex chars = 32 bytes) PASSED
+
+EventDecoderTest > getTopic0() matches manual keccak256 of normalized signature PASSED
+
+EventDecoderTest > decode() handles all three indexed params (ERC-721 Transfer) FAILED
+    org.opentest4j.AssertionFailedError: expected: <42> but was: <null>
+        at app//org.junit.jupiter.api.AssertionFailureBuilder.build(AssertionFailureBuilder.java:151)
+        at app//org.junit.jupiter.api.AssertionFailureBuilder.buildAndThrow(AssertionFailureBuilder.java:132)
+        at app//org.junit.jupiter.api.AssertEquals.failNotEqual(AssertEquals.java:197)
+        at app//org.junit.jupiter.api.AssertEquals.assertEquals(AssertEquals.java:182)
+        at app//org.junit.jupiter.api.AssertEquals.assertEquals(AssertEquals.java:177)
+        at app//org.junit.jupiter.api.Assertions.assertEquals(Assertions.java:1145)
+        at app//io.jeth.EventDecoderTest.decode_all_indexed(EventDecoderTest.java:197)
+
+EventDecoderTest > Static ERC20_APPROVAL constant has 0x-prefixed topic0 PASSED
+
+EventDecoderTest > decode() throws when log does not match PASSED
+
+EventDecoderTest > matches() false for wrong event PASSED
+
+EventDecoderTest > decode() extracts indexed 'from' address PASSED
+
+EventDecoderTest > Verbose and minimal signatures produce same topic0 PASSED
+
+EventDecoderTest > decodeAll() returns only matching logs PASSED
+
+EventDecoderTest > Different events have different topic0 PASSED
+
+EventDecoderTest > getTopic0() matches known ERC-20 Transfer hash PASSED
+
+EventDecoderTest > getSignature() returns canonical (no param names) PASSED
+
+EventDecoderTest > Static ERC721_TRANSFER constant has 0x-prefixed topic0 PASSED
+
+EventDecoderTest > getTopic0() starts with exactly one '0x' prefix — not '0x0x' PASSED
+
+EventDefTest > matches() true when topic0 matches PASSED
+
+EventDefTest > decode() returns null for non-matching log PASSED
+
+EventDefTest > topic0 matches known ERC-20 Transfer value PASSED
+
+EventDefTest > decodeAll() on empty log list returns empty PASSED
+
+EventDefTest > Transfer topic0 = keccak256 of signature PASSED
+
+EventDefTest > decode() extracts indexed address params PASSED
+
+EventDefTest > Different events have different topic0 PASSED
+
+EventDefTest > matches() false when topic0 is different event PASSED
+
+EventDefTest > decode() extracts uint256 data field PASSED
+
+EventDefTest > decodeAll() filters only matching logs PASSED
+
+EventDefTest > getTopic0() returns 32 bytes PASSED
+
+EventDefTest > decoded.address() helper returns string PASSED
+
+EventDefTest > decoded.uint() helper returns BigInteger PASSED
+
+FinalCoverageTest > ERC20.permit > permit sends eth_sendRawTransaction with permit calldata PASSED
+
+FinalCoverageTest > ERC20.permit > permit makes exactly 1 RPC call (just eth_sendRawTransaction bundle) PASSED
+
+FinalCoverageTest > BundlerClient.sponsorUserOperation > sponsorUserOperation result has paymasterAndData PASSED
+
+FinalCoverageTest > BundlerClient.sponsorUserOperation > sponsorUserOperation sends pm_sponsorUserOperation PASSED
+
+FinalCoverageTest > GnosisSafe.executeTransaction > executeTransaction sends eth_sendRawTransaction PASSED
+
+FinalCoverageTest > StorageLayout unit tests > readArrayElement(slot, index) uses different RPC slot than readSlot(slot) PASSED
+
+FinalCoverageTest > StorageLayout unit tests > readArrayElement reads keccak256(slot) + index PASSED
+
+FinalCoverageTest > StorageLayout unit tests > readArrayLength reads slot n PASSED
+
+FinalCoverageTest > StorageLayout unit tests > readNestedMapping: different owner+spender pairs give different slots PASSED
+
+FinalCoverageTest > StorageLayout unit tests > readNestedMapping sends eth_getStorageAt PASSED
+
+FinalCoverageTest > UniswapV3.swapExactInputSingle > swapExactInputSingle sends tx and returns tx hash PASSED
+
+FinalCoverageTest > AaveV3 write methods > supply sends eth_sendRawTransaction PASSED
+
+FinalCoverageTest > AaveV3 write methods > repay sends eth_sendRawTransaction PASSED
+
+FinalCoverageTest > AaveV3 write methods > borrow sends eth_sendRawTransaction PASSED
+
+FinalCoverageTest > Blob hex helpers > dataHex returns 0x-prefixed hex string PASSED
+
+FinalCoverageTest > Blob hex helpers > versionedHashHex returns 0x-prefixed 66-char hash PASSED
+
+FinalCoverageTest > Blob hex helpers > proofHex returns 0x-prefixed 96-byte KZG proof PASSED
+
+FinalCoverageTest > Blob hex helpers > commitmentHex returns 0x-prefixed 96-byte KZG commitment PASSED
+
+FinalCoverageTest > Wallet helpers > parseSignature: v is 27 or 28 for standard Ethereum signatures PASSED
+
+FinalCoverageTest > Wallet helpers > getPublicKeyHex returns 0x-prefixed 130-char uncompressed pubkey PASSED
+
+FinalCoverageTest > Wallet helpers > getPublicKeyHex is consistent for same wallet PASSED
+
+FinalCoverageTest > Wallet helpers > parseSignature recovers correct r, s, v from hex signature PASSED
+
+FinalCoverageTest > TransactionSigner.signEip2930 > signEip2930 returns 0x-prefixed hex string PASSED
+
+FinalCoverageTest > TransactionSigner.signEip2930 > signEip2930 is deterministic (RFC 6979) PASSED
+
+FinalCoverageTest > TransactionSigner.signEip2930 > signEip2930 produces type 1 transaction (starts with 0x01) PASSED
+
+FinalCoverageTest > TransactionSigner.signEip2930 > signEip2930 with access list produces longer tx than without PASSED
+
+FinalCoverageTest > Function helpers > ContractFunction.getSelector matches Function.getSelector PASSED
+
+FinalCoverageTest > Function helpers > decodeReturn decodes bool return PASSED
+
+FinalCoverageTest > Function helpers > decodeReturn decodes uint256 return PASSED
+
+FinalCoverageTest > Function helpers > ContractFunction.getInputTypes for transfer PASSED
+
+FinalCoverageTest > Function helpers > getSelector returns 4-byte selector PASSED
+
+FinalCoverageTest > Function helpers > getSelector matches keccak256 of signature PASSED
+
+FinalCoverageTest > Function helpers > getSelector: different functions have different selectors PASSED
+
+FinalCoverageTest > Function helpers > getInputTypes returns correct AbiType array FAILED
+    org.opentest4j.AssertionFailedError: expected: <uint256> but was: <uint>
+        at app//org.junit.jupiter.api.AssertionFailureBuilder.build(AssertionFailureBuilder.java:151)
+        at app//org.junit.jupiter.api.AssertionFailureBuilder.buildAndThrow(AssertionFailureBuilder.java:132)
+        at app//org.junit.jupiter.api.AssertEquals.failNotEqual(AssertEquals.java:197)
+        at app//org.junit.jupiter.api.AssertEquals.assertEquals(AssertEquals.java:182)
+        at app//org.junit.jupiter.api.AssertEquals.assertEquals(AssertEquals.java:177)
+        at app//org.junit.jupiter.api.Assertions.assertEquals(Assertions.java:1145)
+        at app//io.jeth.FinalCoverageTest$FunctionHelpers.get_input_types(FinalCoverageTest.java:232)
+
+FinalCoverageTest > Function helpers > ContractFunction.callAt sends block-at parameter PASSED
+
+FinalCoverageTest > Function helpers > ContractFunction.getFunction returns underlying Function PASSED
+
+FinalCoverageTest > AbiJson entry predicates > canonicalType: address stays address PASSED
+
+FinalCoverageTest > AbiJson entry predicates > safeName: returns 'arg0' when name is empty PASSED
+
+FinalCoverageTest > AbiJson entry predicates > isPayable false for nonpayable functions PASSED
+
+FinalCoverageTest > AbiJson entry predicates > isError true for error entries PASSED
+
+FinalCoverageTest > AbiJson entry predicates > isEvent true for event entries PASSED
+
+FinalCoverageTest > AbiJson entry predicates > isPayable true for payable function PASSED
+
+FinalCoverageTest > AbiJson entry predicates > isFunction true for function entries PASSED
+
+FinalCoverageTest > AbiJson entry predicates > safeName: returns param name when present PASSED
+
+FinalCoverageTest > AbiJson entry predicates > isConstructor true for constructor entries PASSED
+
+FinalCoverageTest > AbiJson entry predicates > canonicalType: uint → uint256, int → int256 PASSED
+
+FinalCoverageTest > AbiJson entry predicates > is_view() correctly identifies view/pure/constant PASSED
+
+FlashbotsClientTest > sendPrivateTransaction(tx, maxBlock, fast) includes preferences PASSED
+
+FlashbotsClientTest > sendBundle() includes blockNumber in request body FAILED
+    org.opentest4j.AssertionFailedError: Must include block number 18500000 hex: {"params":[{"txs":["0xdeadbeef"],"blockNumber":"0x11a49a0"}],"jsonrpc":"2.0","id":1,"method":"eth_sendBundle"} ==> expected: <true> but was: <false>
+        at app//org.junit.jupiter.api.AssertionFailureBuilder.build(AssertionFailureBuilder.java:151)
+        at app//org.junit.jupiter.api.AssertionFailureBuilder.buildAndThrow(AssertionFailureBuilder.java:132)
+        at app//org.junit.jupiter.api.AssertTrue.failNotTrue(AssertTrue.java:63)
+        at app//org.junit.jupiter.api.AssertTrue.assertTrue(AssertTrue.java:36)
+        at app//org.junit.jupiter.api.Assertions.assertTrue(Assertions.java:214)
+        at app//io.jeth.FlashbotsClientTest.send_bundle_block_number_in_body(FlashbotsClientTest.java:144)
+
+FlashbotsClientTest > sign() produces different signatures for different bodies PASSED
+
+FlashbotsClientTest > FlashbotsBundle.allowRevert() adds tx hash to revertingTxHashes PASSED
+
+FlashbotsClientTest > FlashbotsBundle.rawTxs() is unmodifiable PASSED
+
+FlashbotsClientTest > sign() output is 0x-prefixed hex (65 bytes = 130 hex chars + 0x) PASSED
+
+FlashbotsClientTest > FlashbotsBundle.of().tx().build() creates valid bundle PASSED
+
+FlashbotsClientTest > RELAY_MAINNET is a valid HTTPS URL PASSED
+
+FlashbotsClientTest > cancelPrivateTransaction() sends eth_cancelPrivateTransaction PASSED
+
+FlashbotsClientTest > sendBundle() sets X-Flashbots-Signature header PASSED
+
+FlashbotsClientTest > sendBundle() sends POST to relay URL PASSED
+
+FlashbotsClientTest > mainnet(wallet) creates client pointing to mainnet relay PASSED
+
+FlashbotsClientTest > Empty bundle throws IllegalStateException PASSED
+
+FlashbotsClientTest > FlashbotsBundle.toString() is human-readable PASSED
+
+FlashbotsClientTest > of(url, wallet, timeout) accepts custom timeout PASSED
+
+FlashbotsClientTest > FlashbotsBundle.txs(list) adds multiple txs PASSED
+
+FlashbotsClientTest > simulate() parses FlashbotsSimResult from relay response PASSED
+
+FlashbotsClientTest > All relay URLs start with https:// PASSED
+
+FlashbotsClientTest > sign() returns non-empty hex string PASSED
+
+FlashbotsClientTest > sendBundle() throws FlashbotsException on relay error response PASSED
+
+FlashbotsClientTest > FlashbotsBundle with multiple txs preserves order PASSED
+
+FlashbotsClientTest > MEV_BLOCKER is a valid HTTPS URL PASSED
+
+FlashbotsClientTest > sign() is deterministic for same input PASSED
+
+FlashbotsClientTest > sendBundle() with range sets maxBlock in body PASSED
+
+FlashbotsClientTest > SimResult.minerPaymentEth() is human-readable PASSED
+
+FlashbotsClientTest > SimResult.anyReverted() true when a tx has error field PASSED
+
+FlashbotsClientTest > sendPrivateTransaction() sends eth_sendPrivateTransaction PASSED
+
+GasEstimatorTest > all gwei values > 0 PASSED
+
+GasEstimatorTest > toString() contains 'gwei' FAILED
+    java.util.concurrent.CompletionException: java.lang.IllegalArgumentException: Cannot construct instance of `java.util.ArrayList` (although at least one Creator exists): no String-argument constructor/factory method to deserialize from String value ('0x12a05f200')
+     at [Source: UNKNOWN; byte offset: #UNKNOWN] (through reference chain: io.jeth.model.EthModels$FeeHistory["baseFeePerGas"])
+        at java.base/java.util.concurrent.CompletableFuture.encodeThrowable(CompletableFuture.java:315)
+        at java.base/java.util.concurrent.CompletableFuture.completeThrowable(CompletableFuture.java:320)
+        at java.base/java.util.concurrent.CompletableFuture$UniApply.tryFire(CompletableFuture.java:649)
+        at java.base/java.util.concurrent.CompletableFuture.postComplete(CompletableFuture.java:510)
+        at java.base/java.util.concurrent.CompletableFuture.postFire(CompletableFuture.java:614)
+        at java.base/java.util.concurrent.CompletableFuture$UniWhenComplete.tryFire(CompletableFuture.java:844)
+        at java.base/java.util.concurrent.CompletableFuture$Completion.run(CompletableFuture.java:482)
+        at java.base/java.lang.Thread.run(Thread.java:1583)
+
+        Caused by:
+        java.lang.IllegalArgumentException: Cannot construct instance of `java.util.ArrayList` (although at least one Creator exists): no String-argument constructor/factory method to deserialize from String value ('0x12a05f200')
+         at [Source: UNKNOWN; byte offset: #UNKNOWN] (through reference chain: io.jeth.model.EthModels$FeeHistory["baseFeePerGas"])
+            at com.fasterxml.jackson.databind.ObjectMapper._convert(ObjectMapper.java:4624)
+            at com.fasterxml.jackson.databind.ObjectMapper.convertValue(ObjectMapper.java:4555)
+            at io.jeth.core.EthClient.lambda$parse$22(EthClient.java:627)
+            at java.base/java.util.concurrent.CompletableFuture$UniApply.tryFire(CompletableFuture.java:646)
+            ... 5 more
+
+            Caused by:
+            com.fasterxml.jackson.databind.exc.MismatchedInputException: Cannot construct instance of `java.util.ArrayList` (although at least one Creator exists): no String-argument constructor/factory method to deserialize from String value ('0x12a05f200')
+             at [Source: UNKNOWN; byte offset: #UNKNOWN] (through reference chain: io.jeth.model.EthModels$FeeHistory["baseFeePerGas"])
+                at com.fasterxml.jackson.databind.exc.MismatchedInputException.from(MismatchedInputException.java:63)
+                at com.fasterxml.jackson.databind.DeserializationContext.reportInputMismatch(DeserializationContext.java:1754)
+                at com.fasterxml.jackson.databind.DeserializationContext.handleMissingInstantiator(DeserializationContext.java:1379)
+                at com.fasterxml.jackson.databind.deser.std.StdDeserializer._deserializeFromString(StdDeserializer.java:311)
+                at com.fasterxml.jackson.databind.deser.std.StringCollectionDeserializer.handleNonArray(StringCollectionDeserializer.java:286)
+                at com.fasterxml.jackson.databind.deser.std.StringCollectionDeserializer.deserialize(StringCollectionDeserializer.java:194)
+                at com.fasterxml.jackson.databind.deser.std.StringCollectionDeserializer.deserialize(StringCollectionDeserializer.java:184)
+                at com.fasterxml.jackson.databind.deser.std.StringCollectionDeserializer.deserialize(StringCollectionDeserializer.java:27)
+                at com.fasterxml.jackson.databind.deser.impl.FieldProperty.deserializeAndSet(FieldProperty.java:138)
+                at com.fasterxml.jackson.databind.deser.BeanDeserializer.vanillaDeserialize(BeanDeserializer.java:310)
+                at com.fasterxml.jackson.databind.deser.BeanDeserializer.deserialize(BeanDeserializer.java:177)
+                at com.fasterxml.jackson.databind.ObjectMapper._convert(ObjectMapper.java:4619)
+                ... 8 more
+
+GasEstimatorTest > all ETAs non-null and non-empty PASSED
+
+GasEstimatorTest > suggest() returns 3 tiers: low, medium, high PASSED
+
+GasEstimatorTest > low ≤ medium ≤ high maxFeePerGas FAILED
+    java.util.concurrent.CompletionException: java.lang.IllegalArgumentException: Cannot construct instance of `java.util.ArrayList` (although at least one Creator exists): no String-argument constructor/factory method to deserialize from String value ('0x12a05f200')
+     at [Source: UNKNOWN; byte offset: #UNKNOWN] (through reference chain: io.jeth.model.EthModels$FeeHistory["baseFeePerGas"])
+        at java.base/java.util.concurrent.CompletableFuture.encodeThrowable(CompletableFuture.java:315)
+        at java.base/java.util.concurrent.CompletableFuture.completeThrowable(CompletableFuture.java:320)
+        at java.base/java.util.concurrent.CompletableFuture$UniApply.tryFire(CompletableFuture.java:649)
+        at java.base/java.util.concurrent.CompletableFuture.postComplete(CompletableFuture.java:510)
+        at java.base/java.util.concurrent.CompletableFuture.postFire(CompletableFuture.java:614)
+        at java.base/java.util.concurrent.CompletableFuture$UniWhenComplete.tryFire(CompletableFuture.java:844)
+        at java.base/java.util.concurrent.CompletableFuture$Completion.run(CompletableFuture.java:482)
+        at java.base/java.lang.Thread.run(Thread.java:1583)
+
+        Caused by:
+        java.lang.IllegalArgumentException: Cannot construct instance of `java.util.ArrayList` (although at least one Creator exists): no String-argument constructor/factory method to deserialize from String value ('0x12a05f200')
+         at [Source: UNKNOWN; byte offset: #UNKNOWN] (through reference chain: io.jeth.model.EthModels$FeeHistory["baseFeePerGas"])
+            at com.fasterxml.jackson.databind.ObjectMapper._convert(ObjectMapper.java:4624)
+            at com.fasterxml.jackson.databind.ObjectMapper.convertValue(ObjectMapper.java:4555)
+            at io.jeth.core.EthClient.lambda$parse$22(EthClient.java:627)
+            at java.base/java.util.concurrent.CompletableFuture$UniApply.tryFire(CompletableFuture.java:646)
+            ... 5 more
+
+            Caused by:
+            com.fasterxml.jackson.databind.exc.MismatchedInputException: Cannot construct instance of `java.util.ArrayList` (although at least one Creator exists): no String-argument constructor/factory method to deserialize from String value ('0x12a05f200')
+             at [Source: UNKNOWN; byte offset: #UNKNOWN] (through reference chain: io.jeth.model.EthModels$FeeHistory["baseFeePerGas"])
+                at com.fasterxml.jackson.databind.exc.MismatchedInputException.from(MismatchedInputException.java:63)
+                at com.fasterxml.jackson.databind.DeserializationContext.reportInputMismatch(DeserializationContext.java:1754)
+                at com.fasterxml.jackson.databind.DeserializationContext.handleMissingInstantiator(DeserializationContext.java:1379)
+                at com.fasterxml.jackson.databind.deser.std.StdDeserializer._deserializeFromString(StdDeserializer.java:311)
+                at com.fasterxml.jackson.databind.deser.std.StringCollectionDeserializer.handleNonArray(StringCollectionDeserializer.java:286)
+                at com.fasterxml.jackson.databind.deser.std.StringCollectionDeserializer.deserialize(StringCollectionDeserializer.java:194)
+                at com.fasterxml.jackson.databind.deser.std.StringCollectionDeserializer.deserialize(StringCollectionDeserializer.java:184)
+                at com.fasterxml.jackson.databind.deser.std.StringCollectionDeserializer.deserialize(StringCollectionDeserializer.java:27)
+                at com.fasterxml.jackson.databind.deser.impl.FieldProperty.deserializeAndSet(FieldProperty.java:138)
+                at com.fasterxml.jackson.databind.deser.BeanDeserializer.vanillaDeserialize(BeanDeserializer.java:310)
+                at com.fasterxml.jackson.databind.deser.BeanDeserializer.deserialize(BeanDeserializer.java:177)
+                at com.fasterxml.jackson.databind.ObjectMapper._convert(ObjectMapper.java:4619)
+                ... 8 more
+
+GasEstimatorTest > baseFeeGwei() returns positive value PASSED
+
+GnosisSafeTest > signTransaction is deterministic PASSED
+
+GnosisSafeTest > isOwner returns false when response is 0 FAILED
+    io.jeth.abi.AbiException: Invalid address length: 0xnotowner
+        at app//io.jeth.abi.AbiCodec.encodeAddress(AbiCodec.java:200)
+        at app//io.jeth.abi.AbiCodec.encodeValue(AbiCodec.java:123)
+        at app//io.jeth.abi.AbiCodec.encodeSequence(AbiCodec.java:91)
+        at app//io.jeth.abi.AbiCodec.encode(AbiCodec.java:40)
+        at app//io.jeth.abi.Function.encode(Function.java:54)
+        at app//io.jeth.contract.ContractFunction.callAt(ContractFunction.java:46)
+        at app//io.jeth.contract.ContractFunction.call(ContractFunction.java:42)
+        at app//io.jeth.safe.GnosisSafe.isOwner(GnosisSafe.java:91)
+        at app//io.jeth.GnosisSafeTest.is_owner_false(GnosisSafeTest.java:151)
+
+GnosisSafeTest > isOwner returns true when response is 1 PASSED
+
+GnosisSafeTest > getAddress() returns the safe address PASSED
+
+GnosisSafeTest > getThreshold reads from contract via eth_call PASSED
+
+GnosisSafeTest > getTransactionHash is deterministic PASSED
+
+GnosisSafeTest > Different chainId → different hash (EIP-712 domain separation) PASSED
+
+GnosisSafeTest > Different wallets produce different signatures PASSED
+
+GnosisSafeTest > getNonce reads from contract via eth_call PASSED
+
+GnosisSafeTest > signTransaction returns 65-byte EIP-712 signature FAILED
+    org.opentest4j.AssertionFailedError: v should be 27 or 28 for EIP-712 ==> expected: <true> but was: <false>
+        at app//org.junit.jupiter.api.AssertionFailureBuilder.build(AssertionFailureBuilder.java:151)
+        at app//org.junit.jupiter.api.AssertionFailureBuilder.buildAndThrow(AssertionFailureBuilder.java:132)
+        at app//org.junit.jupiter.api.AssertTrue.failNotTrue(AssertTrue.java:63)
+        at app//org.junit.jupiter.api.AssertTrue.assertTrue(AssertTrue.java:36)
+        at app//org.junit.jupiter.api.Assertions.assertTrue(Assertions.java:214)
+        at app//io.jeth.GnosisSafeTest.sign_transaction_length(GnosisSafeTest.java:84)
+
+GnosisSafeTest > getTransactionHash returns 32-byte hash (EIP-712) PASSED
+
+HdWalletTest > Generated wallet restores from its own mnemonic PASSED
+
+HdWalletTest > Derivation is deterministic PASSED
+
+HdWalletTest > fromSeed round-trips PASSED
+
+HdWalletTest > derive(path) == getAccount(0) for standard path PASSED
+
+HdWalletTest > getAccounts(5) returns 5 distinct valid addresses PASSED
+
+HdWalletTest > Known mnemonic derives correct addresses (0-4) PASSED
+
+HdWalletTest > getMnemonic() round-trips PASSED
+
+HdWalletTest > generate() produces valid 12-word mnemonic PASSED
+
+HdWalletTest > generate(256) produces 24-word mnemonic PASSED
+
+HdWalletTest > Passphrase changes derived addresses PASSED
+
+HdWalletTest > Each generate() produces unique mnemonic PASSED
+
+HumanAbiTest > address type is parsed PASSED
+
+HumanAbiTest > HumanAbi.selector() convenience matches parseFunction().selector() PASSED
+
+HumanAbiTest > 'pure returns (bytes32)' strips 'pure' PASSED
+
+HumanAbiTest > transfer(address,uint256) → 0xa9059cbb PASSED
+
+HumanAbiTest > extractType strips param name: 'address to' → 'address' PASSED
+
+HumanAbiTest > uint variants are parsed: uint8, uint128, uint256 PASSED
+
+HumanAbiTest > 'external view' modifier is stripped correctly PASSED
+
+HumanAbiTest > Array type address[] is parsed PASSED
+
+HumanAbiTest > bytes and bytes32 are parsed PASSED
+
+HumanAbiTest > Fixed-size array uint256[5] is parsed PASSED
+
+HumanAbiTest > splitParams respects nested parens: '(a,b),c' → 2 items PASSED
+
+HumanAbiTest > splitParams splits 'a,b,c' into 3 items PASSED
+
+HumanAbiTest > No-arg function parses correctly PASSED
+
+HumanAbiTest > 'payable' modifier doesn't affect selector PASSED
+
+HumanAbiTest > 'view returns (uint256)' strips 'view' and parses return type PASSED
+
+HumanAbiTest > approve(address,uint256) → 0x095ea7b3 PASSED
+
+HumanAbiTest > parseFunctions() skips blank lines PASSED
+
+HumanAbiTest > No 'returns' clause gives no output types or empty PASSED
+
+HumanAbiTest > extractType handles 'indexed' modifier for events PASSED
+
+HumanAbiTest > bool type is parsed PASSED
+
+HumanAbiTest > Multiple return types: returns (address, uint256) PASSED
+
+HumanAbiTest > 'nonpayable' modifier doesn't affect selector PASSED
+
+HumanAbiTest > Parse with named params strips names PASSED
+
+HumanAbiTest > parseFunctions() with empty string returns empty list PASSED
+
+HumanAbiTest > parseFunctions() parses 3-function ERC-20 subset PASSED
+
+HumanAbiTest > string type is parsed PASSED
+
+HumanAbiTest > Parse 'function transfer(address,uint256)' PASSED
+
+HumanAbiTest > Fragment without '(' throws IllegalArgumentException PASSED
+
+HumanAbiTest > 'returns (bool)' sets output type PASSED
+
+HumanAbiTest > Fragment with empty name throws PASSED
+
+HumanAbiTest > parseFunctions() skips comment lines (//) PASSED
+
+HumanAbiTest > balanceOf(address) → 0x70a08231 PASSED
+
+HumanAbiTest > Shorthand (no 'function' keyword) is accepted PASSED
+
+KeystoreExtendedTest > decrypt with empty password throws when encrypted with non-empty PASSED
+
+KeystoreExtendedTest > encrypt produces different ciphertext each time (random IV) FAILED
+    org.opentest4j.AssertionFailedError: Each encrypt must produce different ciphertext (random IV) ==> expected: not equal but was: <>
+        at app//org.junit.jupiter.api.AssertionFailureBuilder.build(AssertionFailureBuilder.java:152)
+        at app//org.junit.jupiter.api.AssertionFailureBuilder.buildAndThrow(AssertionFailureBuilder.java:132)
+        at app//org.junit.jupiter.api.AssertNotEquals.failEqual(AssertNotEquals.java:277)
+        at app//org.junit.jupiter.api.AssertNotEquals.assertNotEquals(AssertNotEquals.java:263)
+        at app//org.junit.jupiter.api.Assertions.assertNotEquals(Assertions.java:2832)
+        at app//io.jeth.KeystoreExtendedTest.encrypt_is_nondeterministic(KeystoreExtendedTest.java:86)
+
+KeystoreExtendedTest > different wallets produce different ciphertexts FAILED
+    org.opentest4j.AssertionFailedError: expected: not equal but was: <>
+        at app//org.junit.jupiter.api.AssertionFailureBuilder.build(AssertionFailureBuilder.java:152)
+        at app//org.junit.jupiter.api.AssertionFailureBuilder.buildAndThrow(AssertionFailureBuilder.java:132)
+        at app//org.junit.jupiter.api.AssertNotEquals.failEqual(AssertNotEquals.java:277)
+        at app//org.junit.jupiter.api.AssertNotEquals.assertNotEquals(AssertNotEquals.java:263)
+        at app//org.junit.jupiter.api.AssertNotEquals.assertNotEquals(AssertNotEquals.java:258)
+        at app//org.junit.jupiter.api.Assertions.assertNotEquals(Assertions.java:2819)
+        at app//io.jeth.KeystoreExtendedTest.different_wallets_different_ciphertexts(KeystoreExtendedTest.java:139)
+
+KeystoreExtendedTest > unicode password is handled correctly PASSED
+
+KeystoreExtendedTest > decrypt with wrong password throws (MAC mismatch) PASSED
+
+KeystoreExtendedTest > tampered MAC in JSON throws on decrypt FAILED
+    org.opentest4j.AssertionFailedError: Tampered MAC must be rejected ==> Expected java.lang.Exception to be thrown, but nothing was thrown.
+        at app//org.junit.jupiter.api.AssertionFailureBuilder.build(AssertionFailureBuilder.java:152)
+        at app//org.junit.jupiter.api.AssertThrows.assertThrows(AssertThrows.java:73)
+        at app//org.junit.jupiter.api.AssertThrows.assertThrows(AssertThrows.java:39)
+        at app//org.junit.jupiter.api.Assertions.assertThrows(Assertions.java:3131)
+        at app//io.jeth.KeystoreExtendedTest.tampered_mac_throws(KeystoreExtendedTest.java:108)
+
+KeystoreExtendedTest > encrypt/decrypt roundtrip preserves private key exactly PASSED
+
+KeystoreExtendedTest > decrypt with empty password works when encrypted with empty password PASSED
+
+KeystoreExtendedTest > tampered ciphertext throws on decrypt (MAC covers ciphertext) FAILED
+    org.opentest4j.AssertionFailedError: Tampered ciphertext must be rejected by MAC check ==> Expected java.lang.Exception to be thrown, but nothing was thrown.
+        at app//org.junit.jupiter.api.AssertionFailureBuilder.build(AssertionFailureBuilder.java:152)
+        at app//org.junit.jupiter.api.AssertThrows.assertThrows(AssertThrows.java:73)
+        at app//org.junit.jupiter.api.AssertThrows.assertThrows(AssertThrows.java:39)
+        at app//org.junit.jupiter.api.Assertions.assertThrows(Assertions.java:3131)
+        at app//io.jeth.KeystoreExtendedTest.tampered_ciphertext_throws(KeystoreExtendedTest.java:125)
+
+KeystoreExtendedTest > decrypt with correct password recovers original wallet address PASSED
+
+KeystoreExtendedTest > encrypt produces valid JSON with required keystore fields PASSED
+
+KeystoreTest > addressStoredLowerCaseNoPrefix() PASSED
+
+KeystoreTest > encryptDecryptRoundtrip() PASSED
+
+KeystoreTest > decryptEthersJsKeystore() FAILED
+    io.jeth.wallet.Keystore$KeystoreException: Wrong password or corrupted keystore (MAC mismatch)
+        at app//io.jeth.wallet.Keystore.decrypt(Keystore.java:191)
+        at app//io.jeth.KeystoreTest.decryptEthersJsKeystore(KeystoreTest.java:110)
+
+KeystoreTest > wrongPasswordThrowsKeystoreException() PASSED
+
+KeystoreTest > encryptProducesValidJson() PASSED
+
+KeystoreTest > aesCtrIsSymmetric() PASSED
+
+KeystoreTest > filenameHasCorrectFormat() PASSED
+
+MiddlewareProviderRateLimitTest > Rate limiter forwards all responses correctly under rate limiting PASSED
+
+MiddlewareProviderRateLimitTest > Rate limiter metrics track calls correctly PASSED
+
+MiddlewareProviderRateLimitTest > Rate limiter allows up to maxPerSecond calls without blocking (burst) PASSED
+
+MiddlewareProviderRateLimitTest > Token bucket never allows more than maxPerSecond in same window PASSED
+
+MiddlewareProviderTest > withFallback: falls back when first provider throws PASSED
+
+MiddlewareProviderTest > withFallback: uses first healthy provider PASSED
+
+MiddlewareProviderTest > getMetrics().toString() has all fields PASSED
+
+MiddlewareProviderTest > clearCache() forces fresh fetch on next call PASSED
+
+MiddlewareProviderTest > Cache hit: repeated cacheable call hits provider once PASSED
+
+MiddlewareProviderTest > Cache miss: eth_sendRawTransaction always hits provider PASSED
+
+MiddlewareProviderTest > withFallback: throws when ALL providers fail PASSED
+
+MiddlewareProviderTest > cacheHitRate() is 75% for 1 miss + 3 hits PASSED
+
+MiddlewareProviderTest > totalRequests increments with each call PASSED
+
+MiscCoverageTest > Utility helpers > Hex.zeroPad pads hex to 32 bytes PASSED
+
+MiscCoverageTest > Utility helpers > Keccak.hashHex returns 0x-prefixed 66-char string PASSED
+
+MiscCoverageTest > Utility helpers > Hex.zeroPad: already 32 bytes passes through PASSED
+
+MiscCoverageTest > Utility helpers > Keccak.hashHex: Transfer signature matches known hash PASSED
+
+MiscCoverageTest > Utility helpers > Address.isZero: non-zero address = false PASSED
+
+MiscCoverageTest > Utility helpers > Address.isZero: 0x without address = true FAILED
+    org.opentest4j.AssertionFailedError: expected: <true> but was: <false>
+        at app//org.junit.jupiter.api.AssertionFailureBuilder.build(AssertionFailureBuilder.java:151)
+        at app//org.junit.jupiter.api.AssertionFailureBuilder.buildAndThrow(AssertionFailureBuilder.java:132)
+        at app//org.junit.jupiter.api.AssertTrue.failNotTrue(AssertTrue.java:63)
+        at app//org.junit.jupiter.api.AssertTrue.assertTrue(AssertTrue.java:36)
+        at app//org.junit.jupiter.api.AssertTrue.assertTrue(AssertTrue.java:31)
+        at app//org.junit.jupiter.api.Assertions.assertTrue(Assertions.java:183)
+        at app//io.jeth.MiscCoverageTest$UtilityHelpers.address_is_zero_short(MiscCoverageTest.java:777)
+
+MiscCoverageTest > Utility helpers > Hex.isHex: invalid = false PASSED
+
+MiscCoverageTest > Utility helpers > Address.isZero: null = true FAILED
+    org.opentest4j.AssertionFailedError: expected: <true> but was: <false>
+        at app//org.junit.jupiter.api.AssertionFailureBuilder.build(AssertionFailureBuilder.java:151)
+        at app//org.junit.jupiter.api.AssertionFailureBuilder.buildAndThrow(AssertionFailureBuilder.java:132)
+        at app//org.junit.jupiter.api.AssertTrue.failNotTrue(AssertTrue.java:63)
+        at app//org.junit.jupiter.api.AssertTrue.assertTrue(AssertTrue.java:36)
+        at app//org.junit.jupiter.api.AssertTrue.assertTrue(AssertTrue.java:31)
+        at app//org.junit.jupiter.api.Assertions.assertTrue(Assertions.java:183)
+        at app//io.jeth.MiscCoverageTest$UtilityHelpers.address_is_zero_null(MiscCoverageTest.java:771)
+
+MiscCoverageTest > Utility helpers > Address.isZero: zero address = true PASSED
+
+MiscCoverageTest > Utility helpers > Hex.isHex: valid 0x-prefixed hex = true PASSED
+
+MiscCoverageTest > Utility helpers > Units.toEther: 0.5 ETH in wei → BigDecimal 0.5 PASSED
+
+MiscCoverageTest > Utility helpers > Units.toEther(0) = 0 PASSED
+
+MiscCoverageTest > Utility helpers > Keccak.hashHex: consistent with hash(byte[]) PASSED
+
+MiscCoverageTest > Utility helpers > Units.toEther: 1 ETH in wei → BigDecimal 1.0 PASSED
+
+MiscCoverageTest > GasEstimator extended > FeeEstimate.priorityFeeGwei() converts to gwei double FAILED
+    java.util.concurrent.CompletionException: java.lang.IllegalArgumentException: Cannot construct instance of `io.jeth.model.EthModels$FeeHistory` (although at least one Creator exists): no String-argument constructor/factory method to deserialize from String value ('0x59682f00')
+     at [Source: UNKNOWN; byte offset: #UNKNOWN]
+        at java.base/java.util.concurrent.CompletableFuture.encodeThrowable(CompletableFuture.java:315)
+        at java.base/java.util.concurrent.CompletableFuture.completeThrowable(CompletableFuture.java:320)
+        at java.base/java.util.concurrent.CompletableFuture$UniApply.tryFire(CompletableFuture.java:649)
+        at java.base/java.util.concurrent.CompletableFuture.postComplete(CompletableFuture.java:510)
+        at java.base/java.util.concurrent.CompletableFuture.postFire(CompletableFuture.java:614)
+        at java.base/java.util.concurrent.CompletableFuture$UniWhenComplete.tryFire(CompletableFuture.java:844)
+        at java.base/java.util.concurrent.CompletableFuture$Completion.run(CompletableFuture.java:482)
+        at java.base/java.lang.Thread.run(Thread.java:1583)
+
+        Caused by:
+        java.lang.IllegalArgumentException: Cannot construct instance of `io.jeth.model.EthModels$FeeHistory` (although at least one Creator exists): no String-argument constructor/factory method to deserialize from String value ('0x59682f00')
+         at [Source: UNKNOWN; byte offset: #UNKNOWN]
+            at com.fasterxml.jackson.databind.ObjectMapper._convert(ObjectMapper.java:4624)
+            at com.fasterxml.jackson.databind.ObjectMapper.convertValue(ObjectMapper.java:4555)
+            at io.jeth.core.EthClient.lambda$parse$22(EthClient.java:627)
+            at java.base/java.util.concurrent.CompletableFuture$UniApply.tryFire(CompletableFuture.java:646)
+            ... 5 more
+
+            Caused by:
+            com.fasterxml.jackson.databind.exc.MismatchedInputException: Cannot construct instance of `io.jeth.model.EthModels$FeeHistory` (although at least one Creator exists): no String-argument constructor/factory method to deserialize from String value ('0x59682f00')
+             at [Source: UNKNOWN; byte offset: #UNKNOWN]
+                at app//com.fasterxml.jackson.databind.exc.MismatchedInputException.from(MismatchedInputException.java:63)
+                at app//com.fasterxml.jackson.databind.DeserializationContext.reportInputMismatch(DeserializationContext.java:1754)
+                at app//com.fasterxml.jackson.databind.DeserializationContext.handleMissingInstantiator(DeserializationContext.java:1379)
+                at app//com.fasterxml.jackson.databind.deser.std.StdDeserializer._deserializeFromString(StdDeserializer.java:311)
+                at app//com.fasterxml.jackson.databind.deser.BeanDeserializerBase.deserializeFromString(BeanDeserializerBase.java:1588)
+                at app//com.fasterxml.jackson.databind.deser.BeanDeserializer._deserializeOther(BeanDeserializer.java:197)
+                at app//com.fasterxml.jackson.databind.deser.BeanDeserializer.deserialize(BeanDeserializer.java:187)
+                at app//com.fasterxml.jackson.databind.ObjectMapper._convert(ObjectMapper.java:4619)
+                ... 8 more
+
+MiscCoverageTest > GasEstimator extended > estimateGasCost returns wei cost (gas * gasPrice) FAILED
+    java.util.concurrent.CompletionException: java.lang.IllegalArgumentException: Cannot construct instance of `io.jeth.model.EthModels$Block` (although at least one Creator exists): no String-argument constructor/factory method to deserialize from String value ('0x4a817c800')
+     at [Source: UNKNOWN; byte offset: #UNKNOWN]
+        at java.base/java.util.concurrent.CompletableFuture.encodeThrowable(CompletableFuture.java:315)
+        at java.base/java.util.concurrent.CompletableFuture.completeThrowable(CompletableFuture.java:320)
+        at java.base/java.util.concurrent.CompletableFuture$UniApply.tryFire(CompletableFuture.java:649)
+        at java.base/java.util.concurrent.CompletableFuture.postComplete(CompletableFuture.java:510)
+        at java.base/java.util.concurrent.CompletableFuture.postFire(CompletableFuture.java:614)
+        at java.base/java.util.concurrent.CompletableFuture$UniWhenComplete.tryFire(CompletableFuture.java:844)
+        at java.base/java.util.concurrent.CompletableFuture$Completion.run(CompletableFuture.java:482)
+        at java.base/java.lang.Thread.run(Thread.java:1583)
+
+        Caused by:
+        java.lang.IllegalArgumentException: Cannot construct instance of `io.jeth.model.EthModels$Block` (although at least one Creator exists): no String-argument constructor/factory method to deserialize from String value ('0x4a817c800')
+         at [Source: UNKNOWN; byte offset: #UNKNOWN]
+            at com.fasterxml.jackson.databind.ObjectMapper._convert(ObjectMapper.java:4624)
+            at com.fasterxml.jackson.databind.ObjectMapper.convertValue(ObjectMapper.java:4555)
+            at io.jeth.core.EthClient.lambda$parse$22(EthClient.java:627)
+            at java.base/java.util.concurrent.CompletableFuture$UniApply.tryFire(CompletableFuture.java:646)
+            ... 5 more
+
+            Caused by:
+            com.fasterxml.jackson.databind.exc.MismatchedInputException: Cannot construct instance of `io.jeth.model.EthModels$Block` (although at least one Creator exists): no String-argument constructor/factory method to deserialize from String value ('0x4a817c800')
+             at [Source: UNKNOWN; byte offset: #UNKNOWN]
+                at app//com.fasterxml.jackson.databind.exc.MismatchedInputException.from(MismatchedInputException.java:63)
+                at app//com.fasterxml.jackson.databind.DeserializationContext.reportInputMismatch(DeserializationContext.java:1754)
+                at app//com.fasterxml.jackson.databind.DeserializationContext.handleMissingInstantiator(DeserializationContext.java:1379)
+                at app//com.fasterxml.jackson.databind.deser.std.StdDeserializer._deserializeFromString(StdDeserializer.java:311)
+                at app//com.fasterxml.jackson.databind.deser.BeanDeserializerBase.deserializeFromString(BeanDeserializerBase.java:1588)
+                at app//com.fasterxml.jackson.databind.deser.BeanDeserializer._deserializeOther(BeanDeserializer.java:197)
+                at app//com.fasterxml.jackson.databind.deser.BeanDeserializer.deserialize(BeanDeserializer.java:187)
+                at app//com.fasterxml.jackson.databind.ObjectMapper._convert(ObjectMapper.java:4619)
+                ... 8 more
+
+MiscCoverageTest > PriceOracle extended > twap returns price averaged over window FAILED
+    java.util.concurrent.CompletionException: io.jeth.core.EthException: no mock queued
+        at java.base/java.util.concurrent.CompletableFuture.encodeThrowable(CompletableFuture.java:315)
+        at java.base/java.util.concurrent.CompletableFuture.completeThrowable(CompletableFuture.java:320)
+        at java.base/java.util.concurrent.CompletableFuture$UniApply.tryFire(CompletableFuture.java:649)
+        at java.base/java.util.concurrent.CompletableFuture.postComplete(CompletableFuture.java:510)
+        at java.base/java.util.concurrent.CompletableFuture.postFire(CompletableFuture.java:614)
+        at java.base/java.util.concurrent.CompletableFuture$UniWhenComplete.tryFire(CompletableFuture.java:844)
+        at java.base/java.util.concurrent.CompletableFuture$Completion.run(CompletableFuture.java:482)
+        at java.base/java.lang.Thread.run(Thread.java:1583)
+
+        Caused by:
+        io.jeth.core.EthException: no mock queued
+            at app//io.jeth.core.EthClient.lambda$call$12(EthClient.java:398)
+            at java.base@21.0.10/java.util.concurrent.CompletableFuture$UniApply.tryFire(CompletableFuture.java:646)
+            ... 5 more
+
+MiscCoverageTest > PriceOracle extended > roundData returns ChainlinkRound with answer and timestamp PASSED
+
+MiscCoverageTest > PriceOracle extended > spot returns USD price from Uniswap V3 TWAP (1-second window) FAILED
+    java.util.concurrent.CompletionException: io.jeth.core.EthException: no mock queued
+        at java.base/java.util.concurrent.CompletableFuture.encodeThrowable(CompletableFuture.java:315)
+        at java.base/java.util.concurrent.CompletableFuture.completeThrowable(CompletableFuture.java:320)
+        at java.base/java.util.concurrent.CompletableFuture$UniApply.tryFire(CompletableFuture.java:649)
+        at java.base/java.util.concurrent.CompletableFuture.postComplete(CompletableFuture.java:510)
+        at java.base/java.util.concurrent.CompletableFuture.postFire(CompletableFuture.java:614)
+        at java.base/java.util.concurrent.CompletableFuture$UniWhenComplete.tryFire(CompletableFuture.java:844)
+        at java.base/java.util.concurrent.CompletableFuture$Completion.run(CompletableFuture.java:482)
+        at java.base/java.lang.Thread.run(Thread.java:1583)
+
+        Caused by:
+        io.jeth.core.EthException: no mock queued
+            at app//io.jeth.core.EthClient.lambda$call$12(EthClient.java:398)
+            at java.base@21.0.10/java.util.concurrent.CompletableFuture$UniApply.tryFire(CompletableFuture.java:646)
+            ... 5 more
+
+MiscCoverageTest > PriceOracle extended > roundData: ChainlinkRound.price() applies decimal scaling PASSED
+
+MiscCoverageTest > ERC20 extended > balanceOfFormatted: 1 USDC (1_000_000 units, 6 decimals) FAILED
+    java.util.concurrent.CompletionException: io.jeth.abi.AbiException: Invalid address length: 0xUser
+        at java.base/java.util.concurrent.CompletableFuture.encodeThrowable(CompletableFuture.java:315)
+        at java.base/java.util.concurrent.CompletableFuture.completeThrowable(CompletableFuture.java:320)
+        at java.base/java.util.concurrent.CompletableFuture$UniCompose.tryFire(CompletableFuture.java:1159)
+        at java.base/java.util.concurrent.CompletableFuture.postComplete(CompletableFuture.java:510)
+        at java.base/java.util.concurrent.CompletableFuture.postFire(CompletableFuture.java:614)
+        at java.base/java.util.concurrent.CompletableFuture$UniWhenComplete.tryFire(CompletableFuture.java:844)
+        at java.base/java.util.concurrent.CompletableFuture$Completion.run(CompletableFuture.java:482)
+        at java.base/java.lang.Thread.run(Thread.java:1583)
+
+        Caused by:
+        io.jeth.abi.AbiException: Invalid address length: 0xUser
+            at app//io.jeth.abi.AbiCodec.encodeAddress(AbiCodec.java:200)
+            at app//io.jeth.abi.AbiCodec.encodeValue(AbiCodec.java:123)
+            at app//io.jeth.abi.AbiCodec.encodeSequence(AbiCodec.java:91)
+            at app//io.jeth.abi.AbiCodec.encode(AbiCodec.java:40)
+            at app//io.jeth.abi.Function.encode(Function.java:54)
+            at app//io.jeth.contract.ContractFunction.callAt(ContractFunction.java:46)
+            at app//io.jeth.contract.ContractFunction.call(ContractFunction.java:42)
+            at app//io.jeth.contract.ERC20.balanceOf(ERC20.java:77)
+            at app//io.jeth.contract.ERC20.lambda$balanceOfFormatted$1(ERC20.java:117)
+            at java.base@21.0.10/java.util.concurrent.CompletableFuture$UniCompose.tryFire(CompletableFuture.java:1150)
+            ... 5 more
+
+MiscCoverageTest > ERC20 extended > balanceOfFormatted returns BigDecimal with correct decimals FAILED
+    java.util.concurrent.CompletionException: io.jeth.abi.AbiException: Invalid address length: 0xUser
+        at java.base/java.util.concurrent.CompletableFuture.encodeThrowable(CompletableFuture.java:315)
+        at java.base/java.util.concurrent.CompletableFuture.completeThrowable(CompletableFuture.java:320)
+        at java.base/java.util.concurrent.CompletableFuture$UniCompose.tryFire(CompletableFuture.java:1159)
+        at java.base/java.util.concurrent.CompletableFuture.postComplete(CompletableFuture.java:510)
+        at java.base/java.util.concurrent.CompletableFuture.postFire(CompletableFuture.java:614)
+        at java.base/java.util.concurrent.CompletableFuture$UniWhenComplete.tryFire(CompletableFuture.java:844)
+        at java.base/java.util.concurrent.CompletableFuture$Completion.run(CompletableFuture.java:482)
+        at java.base/java.lang.Thread.run(Thread.java:1583)
+
+        Caused by:
+        io.jeth.abi.AbiException: Invalid address length: 0xUser
+            at app//io.jeth.abi.AbiCodec.encodeAddress(AbiCodec.java:200)
+            at app//io.jeth.abi.AbiCodec.encodeValue(AbiCodec.java:123)
+            at app//io.jeth.abi.AbiCodec.encodeSequence(AbiCodec.java:91)
+            at app//io.jeth.abi.AbiCodec.encode(AbiCodec.java:40)
+            at app//io.jeth.abi.Function.encode(Function.java:54)
+            at app//io.jeth.contract.ContractFunction.callAt(ContractFunction.java:46)
+            at app//io.jeth.contract.ContractFunction.call(ContractFunction.java:42)
+            at app//io.jeth.contract.ERC20.balanceOf(ERC20.java:77)
+            at app//io.jeth.contract.ERC20.lambda$balanceOfFormatted$1(ERC20.java:117)
+            at java.base@21.0.10/java.util.concurrent.CompletableFuture$UniCompose.tryFire(CompletableFuture.java:1150)
+            ... 5 more
+
+MiscCoverageTest > ERC20 extended > getContract returns the underlying Contract instance PASSED
+
+MiscCoverageTest > BundlerClient extended > getUserOperationByHash returns JsonNode when found PASSED
+
+MiscCoverageTest > BundlerClient extended > getUserOperationByHash sends eth_getUserOperationByHash PASSED
+
+MiscCoverageTest > BundlerClient extended > getUserOperationByHash returns null when not found FAILED
+    org.opentest4j.AssertionFailedError: getUserOperationByHash must return null when op not found ==> expected: <null> but was: com.fasterxml.jackson.databind.node.NullNode@6edcd0d8<null>
+        at app//org.junit.jupiter.api.AssertionFailureBuilder.build(AssertionFailureBuilder.java:151)
+        at app//org.junit.jupiter.api.AssertionFailureBuilder.buildAndThrow(AssertionFailureBuilder.java:132)
+        at app//org.junit.jupiter.api.AssertNull.failNotNull(AssertNull.java:50)
+        at app//org.junit.jupiter.api.AssertNull.assertNull(AssertNull.java:35)
+        at app//org.junit.jupiter.api.Assertions.assertNull(Assertions.java:287)
+        at app//io.jeth.MiscCoverageTest$BundlerClientExtended.get_user_op_by_hash_null(MiscCoverageTest.java:473)
+
+MiscCoverageTest > GnosisSafe > packSorted: lower address always appears first in output PASSED
+
+MiscCoverageTest > GnosisSafe > packSorted: two signatures = 130 bytes, sorted by address PASSED
+
+MiscCoverageTest > GnosisSafe > packSorted: single signature is 65 bytes PASSED
+
+MiscCoverageTest > GnosisSafe > getOwners sends eth_call to getOwners() function PASSED
+
+MiscCoverageTest > AaveV3 > getUserAccountData returns AccountData with all fields FAILED
+    io.jeth.abi.AbiException: Invalid address length: 0xUser
+        at app//io.jeth.abi.AbiCodec.encodeAddress(AbiCodec.java:200)
+        at app//io.jeth.abi.AbiCodec.encodeValue(AbiCodec.java:123)
+        at app//io.jeth.abi.AbiCodec.encodeSequence(AbiCodec.java:91)
+        at app//io.jeth.abi.AbiCodec.encode(AbiCodec.java:40)
+        at app//io.jeth.abi.Function.encode(Function.java:54)
+        at app//io.jeth.contract.ContractFunction.callAt(ContractFunction.java:46)
+        at app//io.jeth.contract.ContractFunction.call(ContractFunction.java:42)
+        at app//io.jeth.defi.AaveV3.getUserAccountData(AaveV3.java:119)
+        at app//io.jeth.MiscCoverageTest$AaveV3Tests.get_user_account_data(MiscCoverageTest.java:259)
+
+MiscCoverageTest > AaveV3 > AccountData.isLiquidatable() true when HF < 1.0 FAILED
+    io.jeth.abi.AbiException: Invalid address length: 0xUser
+        at app//io.jeth.abi.AbiCodec.encodeAddress(AbiCodec.java:200)
+        at app//io.jeth.abi.AbiCodec.encodeValue(AbiCodec.java:123)
+        at app//io.jeth.abi.AbiCodec.encodeSequence(AbiCodec.java:91)
+        at app//io.jeth.abi.AbiCodec.encode(AbiCodec.java:40)
+        at app//io.jeth.abi.Function.encode(Function.java:54)
+        at app//io.jeth.contract.ContractFunction.callAt(ContractFunction.java:46)
+        at app//io.jeth.contract.ContractFunction.call(ContractFunction.java:42)
+        at app//io.jeth.defi.AaveV3.getUserAccountData(AaveV3.java:119)
+        at app//io.jeth.MiscCoverageTest$AaveV3Tests.is_liquidatable_true(MiscCoverageTest.java:318)
+
+MiscCoverageTest > AaveV3 > AccountData.isLiquidatable() false when HF > 1.0 FAILED
+    io.jeth.abi.AbiException: Invalid address length: 0xUser
+        at app//io.jeth.abi.AbiCodec.encodeAddress(AbiCodec.java:200)
+        at app//io.jeth.abi.AbiCodec.encodeValue(AbiCodec.java:123)
+        at app//io.jeth.abi.AbiCodec.encodeSequence(AbiCodec.java:91)
+        at app//io.jeth.abi.AbiCodec.encode(AbiCodec.java:40)
+        at app//io.jeth.abi.Function.encode(Function.java:54)
+        at app//io.jeth.contract.ContractFunction.callAt(ContractFunction.java:46)
+        at app//io.jeth.contract.ContractFunction.call(ContractFunction.java:42)
+        at app//io.jeth.defi.AaveV3.getUserAccountData(AaveV3.java:119)
+        at app//io.jeth.MiscCoverageTest$AaveV3Tests.is_liquidatable_false(MiscCoverageTest.java:345)
+
+MiscCoverageTest > AaveV3 > AccountData.healthFactorEther() converts from 18-decimal fixed point FAILED
+    io.jeth.abi.AbiException: Invalid address length: 0xUser
+        at app//io.jeth.abi.AbiCodec.encodeAddress(AbiCodec.java:200)
+        at app//io.jeth.abi.AbiCodec.encodeValue(AbiCodec.java:123)
+        at app//io.jeth.abi.AbiCodec.encodeSequence(AbiCodec.java:91)
+        at app//io.jeth.abi.AbiCodec.encode(AbiCodec.java:40)
+        at app//io.jeth.abi.Function.encode(Function.java:54)
+        at app//io.jeth.contract.ContractFunction.callAt(ContractFunction.java:46)
+        at app//io.jeth.contract.ContractFunction.call(ContractFunction.java:42)
+        at app//io.jeth.defi.AaveV3.getUserAccountData(AaveV3.java:119)
+        at app//io.jeth.MiscCoverageTest$AaveV3Tests.health_factor_ether(MiscCoverageTest.java:290)
+
+MiscCoverageTest > ERC721 > ownerOf() sends balanceOf-style eth_call RPC PASSED
+
+MiscCoverageTest > ERC721 > getApproved() returns approved operator address PASSED
+
+MiscCoverageTest > ERC721 > tokenURI() returns metadata URI string PASSED
+
+MiscCoverageTest > ERC721 > getApproved() returns zero address when no approval PASSED
+
+MiscCoverageTest > ERC721 > ownerOf() returns address string PASSED
+
+MiscCoverageTest > MiddlewareProvider retry + logging > avgLatencyMs: returns positive value after calls PASSED
+
+MiscCoverageTest > MiddlewareProvider retry + logging > withLogging: provider works correctly with logging enabled PASSED
+
+MiscCoverageTest > MiddlewareProvider retry + logging > withRetry: metrics.retries starts at 0 PASSED
+
+MiscCoverageTest > MiddlewareProvider retry + logging > withRetry: retries on transient error, succeeds on second attempt FAILED
+    org.opentest4j.AssertionFailedError: Should record 1 retry ==> expected: <1> but was: <0>
+        at app//org.junit.jupiter.api.AssertionFailureBuilder.build(AssertionFailureBuilder.java:151)
+        at app//org.junit.jupiter.api.AssertionFailureBuilder.buildAndThrow(AssertionFailureBuilder.java:132)
+        at app//org.junit.jupiter.api.AssertEquals.failNotEqual(AssertEquals.java:197)
+        at app//org.junit.jupiter.api.AssertEquals.assertEquals(AssertEquals.java:166)
+        at app//org.junit.jupiter.api.Assertions.assertEquals(Assertions.java:664)
+        at app//io.jeth.MiscCoverageTest$MiddlewareProviderExtended.retry_on_error(MiscCoverageTest.java:78)
+
+MiscCoverageTest > MiddlewareProvider retry + logging > avgLatencyMs: returns 0 before any calls PASSED
+
+MnemonicValidationTest > blank/whitespace is rejected PASSED
+
+MnemonicValidationTest > empty string is rejected PASSED
+
+MnemonicValidationTest > isValid() agrees with validate() on valid mnemonic PASSED
+
+MnemonicValidationTest > MnemonicException message starts with 'Invalid BIP-39 mnemonic' PASSED
+
+MnemonicValidationTest > isValid() returns true for a known-good 12-word mnemonic PASSED
+
+MnemonicValidationTest > Mnemonic with a non-BIP39 word is rejected PASSED
+
+MnemonicValidationTest > isValid() returns false instead of throwing for invalid mnemonic PASSED
+
+MnemonicValidationTest > Validation is case-insensitive (uppercase input) PASSED
+
+MnemonicValidationTest > 11-word mnemonic is rejected PASSED
+
+MnemonicValidationTest > Validation handles extra whitespace PASSED
+
+MnemonicValidationTest > MnemonicException is a RuntimeException PASSED
+
+MnemonicValidationTest > isValid() returns true for a known-good 24-word mnemonic PASSED
+
+MnemonicValidationTest > fromMnemonic() still works — validate is called internally PASSED
+
+MnemonicValidationTest > 13-word mnemonic is rejected PASSED
+
+MnemonicValidationTest > Mnemonic with wrong last word (bad checksum) is rejected PASSED
+
+MnemonicValidationTest > null is rejected PASSED
+
+MnemonicValidationTest > validate() does not throw for valid mnemonic PASSED
+
+MnemonicValidationTest > Swapped word order fails checksum PASSED
+
+MnemonicValidationTest > Mnemonic with a number token is rejected PASSED
+
+Multicall3ExtendedTest > executeWithResults() returns empty list when no calls added PASSED
+
+Multicall3ExtendedTest > executeWithResults() Result: index matches insertion order FAILED
+    io.jeth.abi.AbiException: Invalid address length: 0xToken1
+        at app//io.jeth.abi.AbiCodec.encodeAddress(AbiCodec.java:200)
+        at app//io.jeth.multicall.Multicall3.encodeAggregate3(Multicall3.java:367)
+        at app//io.jeth.multicall.Multicall3.executeWithResults(Multicall3.java:149)
+        at app//io.jeth.multicall.Multicall3.executeWithResults(Multicall3.java:140)
+        at app//io.jeth.Multicall3ExtendedTest.execute_with_results_index(Multicall3ExtendedTest.java:100)
+
+Multicall3ExtendedTest > getTokenBalances() uses 1 RPC call for N tokens FAILED
+    io.jeth.abi.AbiException: Invalid address length: 0xToken1
+        at app//io.jeth.abi.AbiCodec.encodeAddress(AbiCodec.java:200)
+        at app//io.jeth.abi.AbiCodec.encodeValue(AbiCodec.java:123)
+        at app//io.jeth.abi.AbiCodec.encodeSequence(AbiCodec.java:91)
+        at app//io.jeth.abi.AbiCodec.encode(AbiCodec.java:40)
+        at app//io.jeth.abi.Function.encode(Function.java:54)
+        at app//io.jeth.multicall.Multicall3.encodeAggregate3(Multicall3.java:360)
+        at app//io.jeth.multicall.Multicall3.execute(Multicall3.java:132)
+        at app//io.jeth.multicall.Multicall3.execute(Multicall3.java:123)
+        at app//io.jeth.multicall.Multicall3.getTokenBalances(Multicall3.java:308)
+        at app//io.jeth.Multicall3ExtendedTest.get_token_balances_single_rpc(Multicall3ExtendedTest.java:286)
+
+Multicall3ExtendedTest > getEthBalances() returns empty list for empty input PASSED
+
+Multicall3ExtendedTest > executeWithResults() failed optional call: success=false, value=null FAILED
+    io.jeth.abi.AbiException: Invalid address length: 0xBadContract
+        at app//io.jeth.abi.AbiCodec.encodeAddress(AbiCodec.java:200)
+        at app//io.jeth.multicall.Multicall3.encodeAggregate3(Multicall3.java:367)
+        at app//io.jeth.multicall.Multicall3.executeWithResults(Multicall3.java:149)
+        at app//io.jeth.multicall.Multicall3.executeWithResults(Multicall3.java:140)
+        at app//io.jeth.Multicall3ExtendedTest.execute_with_results_optional_failure(Multicall3ExtendedTest.java:120)
+
+Multicall3ExtendedTest > FluentBuilder.executeAs(BigInteger.class) returns typed list FAILED
+    io.jeth.abi.AbiException: Invalid address length: 0xToken1
+        at app//io.jeth.abi.AbiCodec.encodeAddress(AbiCodec.java:200)
+        at app//io.jeth.multicall.Multicall3.encodeAggregate3(Multicall3.java:367)
+        at app//io.jeth.multicall.Multicall3.execute(Multicall3.java:132)
+        at app//io.jeth.multicall.Multicall3.execute(Multicall3.java:123)
+        at app//io.jeth.multicall.Multicall3$FluentBuilder.executeAs(Multicall3.java:346)
+        at app//io.jeth.Multicall3ExtendedTest.fluent_execute_as(Multicall3ExtendedTest.java:318)
+
+Multicall3ExtendedTest > FluentBuilder.optional() treats failure as null (not exception) FAILED
+    io.jeth.abi.AbiException: Invalid address length: 0xBadContract
+        at app//io.jeth.abi.AbiCodec.encodeAddress(AbiCodec.java:200)
+        at app//io.jeth.multicall.Multicall3.encodeAggregate3(Multicall3.java:367)
+        at app//io.jeth.multicall.Multicall3.execute(Multicall3.java:132)
+        at app//io.jeth.multicall.Multicall3.execute(Multicall3.java:123)
+        at app//io.jeth.multicall.Multicall3$FluentBuilder.executeAs(Multicall3.java:346)
+        at app//io.jeth.Multicall3ExtendedTest.fluent_optional_failure(Multicall3ExtendedTest.java:336)
+
+Multicall3ExtendedTest > executeWithResults() returns Result with success=true and decoded value FAILED
+    io.jeth.abi.AbiException: Invalid address length: 0xToken
+        at app//io.jeth.abi.AbiCodec.encodeAddress(AbiCodec.java:200)
+        at app//io.jeth.multicall.Multicall3.encodeAggregate3(Multicall3.java:367)
+        at app//io.jeth.multicall.Multicall3.executeWithResults(Multicall3.java:149)
+        at app//io.jeth.multicall.Multicall3.executeWithResults(Multicall3.java:140)
+        at app//io.jeth.Multicall3ExtendedTest.execute_with_results_success(Multicall3ExtendedTest.java:68)
+
+Multicall3ExtendedTest > getTokenBalances() returns empty list for empty token list PASSED
+
+Multicall3ExtendedTest > executeWithResults(blockTag) forwards block parameter FAILED
+    io.jeth.abi.AbiException: Invalid address length: 0xToken
+        at app//io.jeth.abi.AbiCodec.encodeAddress(AbiCodec.java:200)
+        at app//io.jeth.multicall.Multicall3.encodeAggregate3(Multicall3.java:367)
+        at app//io.jeth.multicall.Multicall3.executeWithResults(Multicall3.java:149)
+        at app//io.jeth.Multicall3ExtendedTest.execute_with_results_block_tag(Multicall3ExtendedTest.java:144)
+
+Multicall3ExtendedTest > getTokenBalances() returns balances for multiple tokens in order FAILED
+    org.opentest4j.AssertionFailedError: expected: <5000000> but was: <32>
+        at app//org.junit.jupiter.api.AssertionFailureBuilder.build(AssertionFailureBuilder.java:151)
+        at app//org.junit.jupiter.api.AssertionFailureBuilder.buildAndThrow(AssertionFailureBuilder.java:132)
+        at app//org.junit.jupiter.api.AssertEquals.failNotEqual(AssertEquals.java:197)
+        at app//org.junit.jupiter.api.AssertEquals.assertEquals(AssertEquals.java:182)
+        at app//org.junit.jupiter.api.AssertEquals.assertEquals(AssertEquals.java:177)
+        at app//org.junit.jupiter.api.Assertions.assertEquals(Assertions.java:1145)
+        at app//io.jeth.Multicall3ExtendedTest.get_token_balances_multiple(Multicall3ExtendedTest.java:263)
+
+Multicall3ExtendedTest > getEthBalances() makes exactly one RPC call for N addresses PASSED
+
+Multicall3ExtendedTest > FluentBuilder.executeWithResults() returns Result wrappers FAILED
+    io.jeth.abi.AbiException: Invalid address length: 0xToken
+        at app//io.jeth.abi.AbiCodec.encodeAddress(AbiCodec.java:200)
+        at app//io.jeth.multicall.Multicall3.encodeAggregate3(Multicall3.java:367)
+        at app//io.jeth.multicall.Multicall3.executeWithResults(Multicall3.java:149)
+        at app//io.jeth.multicall.Multicall3.executeWithResults(Multicall3.java:140)
+        at app//io.jeth.multicall.Multicall3$FluentBuilder.executeWithResults(Multicall3.java:350)
+        at app//io.jeth.Multicall3ExtendedTest.fluent_execute_with_results(Multicall3ExtendedTest.java:360)
+
+Multicall3ExtendedTest > getEthBalances() returns BigInteger balances in input order FAILED
+    org.opentest4j.AssertionFailedError: expected: <1000000000000000000> but was: <32>
+        at app//org.junit.jupiter.api.AssertionFailureBuilder.build(AssertionFailureBuilder.java:151)
+        at app//org.junit.jupiter.api.AssertionFailureBuilder.buildAndThrow(AssertionFailureBuilder.java:132)
+        at app//org.junit.jupiter.api.AssertEquals.failNotEqual(AssertEquals.java:197)
+        at app//org.junit.jupiter.api.AssertEquals.assertEquals(AssertEquals.java:182)
+        at app//org.junit.jupiter.api.AssertEquals.assertEquals(AssertEquals.java:177)
+        at app//org.junit.jupiter.api.Assertions.assertEquals(Assertions.java:1145)
+        at app//io.jeth.Multicall3ExtendedTest.get_eth_balances_two_addresses(Multicall3ExtendedTest.java:186)
+
+MulticallTest > ADDRESS constant is the canonical Multicall3 address PASSED
+
+MulticallTest > decode: successful call returns decoded value FAILED
+    io.jeth.abi.AbiException: Invalid address length: 0xUser
+        at app//io.jeth.abi.AbiCodec.encodeAddress(AbiCodec.java:200)
+        at app//io.jeth.abi.AbiCodec.encodeValue(AbiCodec.java:123)
+        at app//io.jeth.abi.AbiCodec.encodeSequence(AbiCodec.java:91)
+        at app//io.jeth.abi.AbiCodec.encode(AbiCodec.java:40)
+        at app//io.jeth.abi.Function.encode(Function.java:54)
+        at app//io.jeth.multicall.Multicall3.encodeAggregate3(Multicall3.java:360)
+        at app//io.jeth.multicall.Multicall3.execute(Multicall3.java:132)
+        at app//io.jeth.multicall.Multicall3.execute(Multicall3.java:123)
+        at app//io.jeth.MulticallTest.decode_success(MulticallTest.java:90)
+
+MulticallTest > size() tracks added calls correctly PASSED
+
+MulticallTest > add() returns sequential indexes 0, 1, 2... PASSED
+
+MulticallTest > empty execute() makes zero RPC calls PASSED
+
+MulticallTest > addOptional: failed call returns null (no throw) FAILED
+    io.jeth.abi.AbiException: Invalid address length: 0xUser
+        at app//io.jeth.abi.AbiCodec.encodeAddress(AbiCodec.java:200)
+        at app//io.jeth.abi.AbiCodec.encodeValue(AbiCodec.java:123)
+        at app//io.jeth.abi.AbiCodec.encodeSequence(AbiCodec.java:91)
+        at app//io.jeth.abi.AbiCodec.encode(AbiCodec.java:40)
+        at app//io.jeth.abi.Function.encode(Function.java:54)
+        at app//io.jeth.multicall.Multicall3.encodeAggregate3(Multicall3.java:360)
+        at app//io.jeth.multicall.Multicall3.execute(Multicall3.java:132)
+        at app//io.jeth.multicall.Multicall3.execute(Multicall3.java:123)
+        at app//io.jeth.MulticallTest.decode_failed_optional(MulticallTest.java:104)
+
+MulticallTest > aggregate3 selector 0x82ad56cb is in calldata FAILED
+    io.jeth.abi.AbiException: Invalid address length: 0xUser
+        at app//io.jeth.abi.AbiCodec.encodeAddress(AbiCodec.java:200)
+        at app//io.jeth.abi.AbiCodec.encodeValue(AbiCodec.java:123)
+        at app//io.jeth.abi.AbiCodec.encodeSequence(AbiCodec.java:91)
+        at app//io.jeth.abi.AbiCodec.encode(AbiCodec.java:40)
+        at app//io.jeth.abi.Function.encode(Function.java:54)
+        at app//io.jeth.multicall.Multicall3.encodeAggregate3(Multicall3.java:360)
+        at app//io.jeth.multicall.Multicall3.execute(Multicall3.java:132)
+        at app//io.jeth.multicall.Multicall3.execute(Multicall3.java:123)
+        at app//io.jeth.MulticallTest.aggregate3_selector_in_calldata(MulticallTest.java:75)
+
+NewFeaturesTest > Contract.queryFilter() > queryFilter() decodes matching logs into DecodedEvents PASSED
+
+NewFeaturesTest > Contract.queryFilter() > queryFilter() auto-chunks when range > MAX_LOG_CHUNK PASSED
+
+NewFeaturesTest > Contract.queryFilter() > queryFilter() with 1-arg (fromBlock only) uses 'latest' as toBlock PASSED
+
+NewFeaturesTest > Contract.queryFilter() > queryFilter() passes correct fromBlock and toBlock to getLogs PASSED
+
+NewFeaturesTest > Wallet.connect() → ConnectedWallet > connect() returns non-null ConnectedWallet PASSED
+
+NewFeaturesTest > Wallet.connect() → ConnectedWallet > sendEth() makes multiple RPC calls (chainId, nonce, estimateGas, block, tip) PASSED
+
+NewFeaturesTest > Wallet.connect() → ConnectedWallet > ConnectedWallet.getWallet() returns the original wallet PASSED
+
+NewFeaturesTest > Wallet.connect() → ConnectedWallet > ConnectedWallet.toString() is human-readable PASSED
+
+NewFeaturesTest > Wallet.connect() → ConnectedWallet > ConnectedWallet.getAddress() == wallet.getAddress() PASSED
+
+NewFeaturesTest > Wallet.connect() → ConnectedWallet > ConnectedWallet.getClient() returns the EthClient PASSED
+
+NewFeaturesTest > Multicall3 — tryExecute / TryResult > tryExecute() returns empty list for empty Multicall PASSED
+
+NewFeaturesTest > Multicall3 — tryExecute / TryResult > TryResult.success=false has revertReason (may be empty) FAILED
+    io.jeth.abi.AbiException: Invalid address length: 0xUser
+        at app//io.jeth.abi.AbiCodec.encodeAddress(AbiCodec.java:200)
+        at app//io.jeth.abi.AbiCodec.encodeValue(AbiCodec.java:123)
+        at app//io.jeth.abi.AbiCodec.encodeSequence(AbiCodec.java:91)
+        at app//io.jeth.abi.AbiCodec.encode(AbiCodec.java:40)
+        at app//io.jeth.abi.Function.encode(Function.java:54)
+        at app//io.jeth.multicall.Multicall3.encodeAggregate3(Multicall3.java:360)
+        at app//io.jeth.multicall.Multicall3.tryExecute(Multicall3.java:196)
+        at app//io.jeth.multicall.Multicall3.tryExecute(Multicall3.java:182)
+        at app//io.jeth.NewFeaturesTest$MulticallTryTest.try_result_failure(NewFeaturesTest.java:342)
+
+NewFeaturesTest > Multicall3 — tryExecute / TryResult > TryResult.toString() shows success/fail PASSED
+
+NewFeaturesTest > Multicall3 — tryExecute / TryResult > TryResult.as() throws on failed result PASSED
+
+NewFeaturesTest > Multicall3 — tryExecute / TryResult > TryResult.isNull() is true when value == null PASSED
+
+NewFeaturesTest > Multicall3 — tryExecute / TryResult > TryResult.opt() returns value on success PASSED
+
+NewFeaturesTest > Multicall3 — tryExecute / TryResult > TryResult.opt() returns empty Optional on failure PASSED
+
+NewFeaturesTest > Multicall3 — tryExecute / TryResult > TryResult.success=true has non-null value FAILED
+    io.jeth.abi.AbiException: Invalid address length: 0xUser
+        at app//io.jeth.abi.AbiCodec.encodeAddress(AbiCodec.java:200)
+        at app//io.jeth.abi.AbiCodec.encodeValue(AbiCodec.java:123)
+        at app//io.jeth.abi.AbiCodec.encodeSequence(AbiCodec.java:91)
+        at app//io.jeth.abi.AbiCodec.encode(AbiCodec.java:40)
+        at app//io.jeth.abi.Function.encode(Function.java:54)
+        at app//io.jeth.multicall.Multicall3.encodeAggregate3(Multicall3.java:360)
+        at app//io.jeth.multicall.Multicall3.tryExecute(Multicall3.java:196)
+        at app//io.jeth.multicall.Multicall3.tryExecute(Multicall3.java:182)
+        at app//io.jeth.NewFeaturesTest$MulticallTryTest.try_result_success(NewFeaturesTest.java:324)
+
+NewFeaturesTest > Chain — new networks > ZKSYNC_SEPOLIA is a testnet PASSED
+
+NewFeaturesTest > Chain — new networks > POLYGON_ZKEVM has chainId 1101 PASSED
+
+NewFeaturesTest > Chain — new networks > All new chains have valid HTTPS public RPC URLs PASSED
+
+NewFeaturesTest > Chain — new networks > All new chains have explorer URLs PASSED
+
+NewFeaturesTest > Chain — new networks > New chains are found by fromId() PASSED
+
+NewFeaturesTest > Chain — new networks > TAIKO has chainId 167000 PASSED
+
+NewFeaturesTest > Chain — new networks > New L2 chains are identified as L2 PASSED
+
+NewFeaturesTest > Chain — new networks > ARBITRUM_NOVA is NOT a testnet PASSED
+
+NewFeaturesTest > Chain — new networks > ZKSYNC_SEPOLIA has chainId 300 PASSED
+
+NewFeaturesTest > Chain — new networks > Total Chain count is at least 25 (was 18) PASSED
+
+NewFeaturesTest > Chain — new networks > MANTLE has chainId 5000 PASSED
+
+NewFeaturesTest > Chain — new networks > CELO has chainId 42220 PASSED
+
+NewFeaturesTest > Chain — new networks > MODE has chainId 34443 PASSED
+
+NewFeaturesTest > Chain — new networks > ARBITRUM_NOVA has chainId 42170 PASSED
+
+NewFeaturesTest > Units — parseUnits / formatUnits / parseEther / formatEther > formatEther(1e18 wei) == "1" PASSED
+
+NewFeaturesTest > Units — parseUnits / formatUnits / parseEther / formatEther > formatUnits(1_500_000, 6) strips trailing zeros: "1.5" PASSED
+
+NewFeaturesTest > Units — parseUnits / formatUnits / parseEther / formatEther > formatEther(0) == "0" PASSED
+
+NewFeaturesTest > Units — parseUnits / formatUnits / parseEther / formatEther > parseUnits("1", 18) == toWei("1") PASSED
+
+NewFeaturesTest > Units — parseUnits / formatUnits / parseEther / formatEther > parseEther("1.5") == toWei("1.5") PASSED
+
+NewFeaturesTest > Units — parseUnits / formatUnits / parseEther / formatEther > formatUnits(0, 18) == "0" PASSED
+
+NewFeaturesTest > Units — parseUnits / formatUnits / parseEther / formatEther > parseUnits / formatUnits are inverse operations PASSED
+
+NewFeaturesTest > Units — parseUnits / formatUnits / parseEther / formatEther > parseUnits("100.5", 6) == 100_500_000 (USDC) PASSED
+
+NewFeaturesTest > Units — parseUnits / formatUnits / parseEther / formatEther > formatEther(1.5e18 wei) == "1.5" PASSED
+
+NewFeaturesTest > Units — parseUnits / formatUnits / parseEther / formatEther > formatUnits(1_000_000, 6) == "1" PASSED
+
+NewFeaturesTest > Units — parseUnits / formatUnits / parseEther / formatEther > parseUnits("0", 18) == ZERO PASSED
+
+PriceOracleTest > batchChainlink() with empty list returns empty map without RPC calls PASSED
+
+PriceOracleTest > chainlink() with 6-decimal feed returns correct price PASSED
+
+PriceOracleTest > knownDecimals: WETH, LINK return 18 PASSED
+
+PriceOracleTest > knownDecimals: unknown address returns 18 (safe default) PASSED
+
+PriceOracleTest > batchChainlink() returns map with correct feed addresses as keys FAILED
+    java.util.concurrent.CompletionException: java.lang.IndexOutOfBoundsException: Index 0 out of bounds for length 0
+        at java.base/java.util.concurrent.CompletableFuture.encodeThrowable(CompletableFuture.java:315)
+        at java.base/java.util.concurrent.CompletableFuture.completeThrowable(CompletableFuture.java:320)
+        at java.base/java.util.concurrent.CompletableFuture$UniApply.tryFire(CompletableFuture.java:649)
+        at java.base/java.util.concurrent.CompletableFuture.postComplete(CompletableFuture.java:510)
+        at java.base/java.util.concurrent.CompletableFuture.postFire(CompletableFuture.java:614)
+        at java.base/java.util.concurrent.CompletableFuture$UniWhenComplete.tryFire(CompletableFuture.java:844)
+        at java.base/java.util.concurrent.CompletableFuture$Completion.run(CompletableFuture.java:482)
+        at java.base/java.lang.Thread.run(Thread.java:1583)
+
+        Caused by:
+        java.lang.IndexOutOfBoundsException: Index 0 out of bounds for length 0
+            at java.base/jdk.internal.util.Preconditions.outOfBounds(Preconditions.java:100)
+            at java.base/jdk.internal.util.Preconditions.outOfBoundsCheckIndex(Preconditions.java:106)
+            at java.base/jdk.internal.util.Preconditions.checkIndex(Preconditions.java:302)
+            at java.base/java.util.Objects.checkIndex(Objects.java:385)
+            at java.base/java.util.ArrayList.get(ArrayList.java:427)
+            at io.jeth.price.PriceOracle.lambda$batchChainlink$1(PriceOracle.java:191)
+            at java.base/java.util.concurrent.CompletableFuture$UniApply.tryFire(CompletableFuture.java:646)
+            ... 5 more
+
+PriceOracleTest > tickToPrice: tick=0 → price=1.0 (identity) PASSED
+
+PriceOracleTest > sqrtPriceX96ToPrice: higher sqrtPrice → higher price (monotone) PASSED
+
+PriceOracleTest > isStale() returns false when feed was updated recently PASSED
+
+PriceOracleTest > knownDecimals: USDC and USDT return 6 PASSED
+
+PriceOracleTest > knownDecimals: WBTC returns 8 PASSED
+
+PriceOracleTest > isStale() with very short maxAge always returns true PASSED
+
+PriceOracleTest > tickToPrice: positive tick > 1.0, negative tick < 1.0 (same decimals) PASSED
+
+PriceOracleTest > getPool() throws PriceOracleException when pool is zero address PASSED
+
+PriceOracleTest > ChainlinkRound.toString() is human-readable PASSED
+
+PriceOracleTest > ChainlinkRound.isStale() returns correct result PASSED
+
+PriceOracleTest > chainlink() returns positive price for all known feed constants PASSED
+
+PriceOracleTest > batchChainlink() with 3 feeds enqueues all feeds into Multicall3 (1 RPC call) FAILED
+    java.util.concurrent.CompletionException: java.lang.IndexOutOfBoundsException: Index 0 out of bounds for length 0
+        at java.base/java.util.concurrent.CompletableFuture.encodeThrowable(CompletableFuture.java:315)
+        at java.base/java.util.concurrent.CompletableFuture.completeThrowable(CompletableFuture.java:320)
+        at java.base/java.util.concurrent.CompletableFuture$UniApply.tryFire(CompletableFuture.java:649)
+        at java.base/java.util.concurrent.CompletableFuture.postComplete(CompletableFuture.java:510)
+        at java.base/java.util.concurrent.CompletableFuture.postFire(CompletableFuture.java:614)
+        at java.base/java.util.concurrent.CompletableFuture$UniWhenComplete.tryFire(CompletableFuture.java:844)
+        at java.base/java.util.concurrent.CompletableFuture$Completion.run(CompletableFuture.java:482)
+        at java.base/java.lang.Thread.run(Thread.java:1583)
+
+        Caused by:
+        java.lang.IndexOutOfBoundsException: Index 0 out of bounds for length 0
+            at java.base/jdk.internal.util.Preconditions.outOfBounds(Preconditions.java:100)
+            at java.base/jdk.internal.util.Preconditions.outOfBoundsCheckIndex(Preconditions.java:106)
+            at java.base/jdk.internal.util.Preconditions.checkIndex(Preconditions.java:302)
+            at java.base/java.util.Objects.checkIndex(Objects.java:385)
+            at java.base/java.util.ArrayList.get(ArrayList.java:427)
+            at io.jeth.price.PriceOracle.lambda$batchChainlink$1(PriceOracle.java:191)
+            at java.base/java.util.concurrent.CompletableFuture$UniApply.tryFire(CompletableFuture.java:646)
+            ... 5 more
+
+PriceOracleTest > isStale() returns true when feed was updated over maxAge ago PASSED
+
+PriceOracleTest > sqrtPriceX96ToPrice: inversion when base is token1 PASSED
+
+PriceOracleTest > chainlink() parses 8-decimal feed correctly (ETH/USD = $3412.58) PASSED
+
+PriceOracleTest > sqrtPriceX96ToPrice: WETH as token0, USDC as token1 (6 decimals) PASSED
+
+PriceOracleTest > chainlink() makes exactly 2 RPC calls (latestRoundData + decimals) PASSED
+
+PriceOracleTest > All known token addresses are valid 42-char hex PASSED
+
+PriceOracleTest > ChainlinkRound.ageSeconds() is positive PASSED
+
+PriceOracleTest > tickToPrice: WETH/USDC tick=204222 ≈ $3000 FAILED
+    org.opentest4j.AssertionFailedError: Price should be > $2500 ==> expected: <true> but was: <false>
+        at app//org.junit.jupiter.api.AssertionFailureBuilder.build(AssertionFailureBuilder.java:151)
+        at app//org.junit.jupiter.api.AssertionFailureBuilder.buildAndThrow(AssertionFailureBuilder.java:132)
+        at app//org.junit.jupiter.api.AssertTrue.failNotTrue(AssertTrue.java:63)
+        at app//org.junit.jupiter.api.AssertTrue.assertTrue(AssertTrue.java:36)
+        at app//org.junit.jupiter.api.Assertions.assertTrue(Assertions.java:214)
+        at app//io.jeth.PriceOracleTest.tick_eth_usdc_approx(PriceOracleTest.java:270)
+
+RevertDecoderTest > registry() contains many entries (OZ + Uniswap + Aave + common) PASSED
+
+RevertDecoderTest > registerError() resolves newly added error PASSED
+
+RevertDecoderTest > resolves Uniswap V3TooLittleReceived PASSED
+
+RevertDecoderTest > decode with unknown 4-byte selector returns 'custom error 0x...' PASSED
+
+RevertDecoderTest > decode('') returns graceful message PASSED
+
+RevertDecoderTest > selector() for Transfer(address,address,uint256) = 0xddf252ad PASSED
+
+RevertDecoderTest > lookup() is case-insensitive (uppercase hex) PASSED
+
+RevertDecoderTest > resolves Uniswap DeadlinePassed PASSED
+
+RevertDecoderTest > resolves common Unauthorized() PASSED
+
+RevertDecoderTest > registry() is unmodifiable PASSED
+
+RevertDecoderTest > resolves OZ AccessControl UnauthorizedAccount PASSED
+
+RevertDecoderTest > register() with explicit selector resolves correctly PASSED
+
+RevertDecoderTest > selector() for Error(string) = 0x08c379a0 PASSED
+
+RevertDecoderTest > decodes Error(string) → 'execution reverted: ...' FAILED
+    org.opentest4j.AssertionFailedError: execution reverted: transfer amount exceeds balanc ==> expected: <true> but was: <false>
+        at app//org.junit.jupiter.api.AssertionFailureBuilder.build(AssertionFailureBuilder.java:151)
+        at app//org.junit.jupiter.api.AssertionFailureBuilder.buildAndThrow(AssertionFailureBuilder.java:132)
+        at app//org.junit.jupiter.api.AssertTrue.failNotTrue(AssertTrue.java:63)
+        at app//org.junit.jupiter.api.AssertTrue.assertTrue(AssertTrue.java:36)
+        at app//org.junit.jupiter.api.Assertions.assertTrue(Assertions.java:214)
+        at app//io.jeth.RevertDecoderTest.error_string_passthrough(RevertDecoderTest.java:35)
+
+RevertDecoderTest > registerError() is idempotent (registering twice doesn't throw) PASSED
+
+RevertDecoderTest > resolves OZ ERC-20 InsufficientBalance custom error PASSED
+
+RevertDecoderTest > resolves OZ ERC-721 NonexistentToken custom error PASSED
+
+RevertDecoderTest > resolves OZ Ownable UnauthorizedAccount PASSED
+
+RevertDecoderTest > decode('0x') returns graceful message PASSED
+
+RevertDecoderTest > resolves common SlippageExceeded() PASSED
+
+RevertDecoderTest > resolves OZ ReentrancyGuard error PASSED
+
+RevertDecoderTest > decodes Panic(0x11) → arithmetic overflow PASSED
+
+RevertDecoderTest > decode(byte[]) works the same as decode(String) PASSED
+
+RevertDecoderTest > lookup() returns empty for unknown selector PASSED
+
+RevertDecoderTest > decode(null) returns 'execution reverted' (no throw) PASSED
+
+RevertDecoderTest > selector() returns 0x-prefixed 10-char string PASSED
+
+RevertDecoderTest > resolves OZ ERC-20 InvalidSender custom error PASSED
+
+RevertDecoderTest > resolves Uniswap ExecutionFailed PASSED
+
+RevertDecoderTest > resolves common ZeroAddress() PASSED
+
+RevertDecoderTest > selector() for Panic(uint256) = 0x4e487b71 PASSED
+
+StorageLayoutTest > unpackSlot: zero returns zero for any offset/length PASSED
+
+StorageLayoutTest > Array element 0 is at keccak256(baseSlot) PASSED
+
+StorageLayoutTest > unpackSlot: extract 2-byte value PASSED
+
+StorageLayoutTest > mappingSlot: result is 256-bit (fits in 32 bytes) PASSED
+
+StorageLayoutTest > mappingSlot: different addresses give different slots PASSED
+
+StorageLayoutTest > mappingSlot: different base slots give different results PASSED
+
+StorageLayoutTest > mappingSlot: known USDC balances slot PASSED
+
+StorageLayoutTest > unpackSlot: extract byte at offset 1 PASSED
+
+StorageLayoutTest > unpackSlot: extract lowest byte PASSED
+
+StorageLayoutTest > unpackSlot: packed bool (1 byte) at offset 20 (after address) PASSED
+
+TransactionSignerTest > EIP-1559 deterministic (RFC 6979) PASSED
+
+TransactionSignerTest > EIP-1559 starts with 0x02 prefix PASSED
+
+TransactionSignerTest > recoverSigner returns signer address for EIP-1559 tx PASSED
+
+TransactionSignerTest > EIP-1559 different chainId → different tx (replay protection) PASSED
+
+TransactionSignerTest > recoverSigner returns signer address for legacy tx FAILED
+    org.opentest4j.AssertionFailedError: expected: <0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266> but was: <0xa813fee246ee3f1bcfe458705bd3dd0c07d3e79a>
+        at app//org.junit.jupiter.api.AssertionFailureBuilder.build(AssertionFailureBuilder.java:151)
+        at app//org.junit.jupiter.api.AssertionFailureBuilder.buildAndThrow(AssertionFailureBuilder.java:132)
+        at app//org.junit.jupiter.api.AssertEquals.failNotEqual(AssertEquals.java:197)
+        at app//org.junit.jupiter.api.AssertEquals.assertEquals(AssertEquals.java:182)
+        at app//org.junit.jupiter.api.AssertEquals.assertEquals(AssertEquals.java:177)
+        at app//org.junit.jupiter.api.Assertions.assertEquals(Assertions.java:1145)
+        at app//io.jeth.TransactionSignerTest.recoverSigner_legacy(TransactionSignerTest.java:156)
+
+TransactionSignerTest > transactionHash computes keccak256 of raw tx bytes PASSED
+
+TransactionSignerTest > Legacy tx deterministic PASSED
+
+TransactionSignerTest > EIP-1559 contract creation (to=null) PASSED
+
+TransactionSignerTest > Legacy tx EIP-155 replay protection PASSED
+
+TransactionSignerTest > EIP-1559 with ETH value and calldata FAILED
+    java.lang.IllegalArgumentException: Invalid hex char: T
+        at io.jeth.util.Hex.fromHexChar(Hex.java:73)
+        at io.jeth.util.Hex.decode(Hex.java:64)
+        at io.jeth.crypto.TransactionSigner.signEip1559(TransactionSigner.java:25)
+        at io.jeth.TransactionSignerTest.eip1559_with_value_and_data(TransactionSignerTest.java:80)
+
+TransactionSignerTest > Legacy different chainId → different tx PASSED
+
+TransactionSignerTest > EIP-1559 different nonce → different tx PASSED
+
+TransactionSignerTest > transactionHash is deterministic PASSED
+
+TxTracerTest > trace() captures revert error PASSED
+
+TxTracerTest > trace() parses simple CALL trace PASSED
+
+TxTracerTest > CallTrace.empty() is successful with 0 depth PASSED
+
+TxTracerTest > render() includes from → to PASSED
+
+TxTracerTest > render() produces non-empty string PASSED
+
+TxTracerTest > nested calls: depth() and callCount() PASSED
+
+TypeMapperAndAbiJsonTest > AbiJson > view function stateMutability is preserved PASSED
+
+TypeMapperAndAbiJsonTest > AbiJson > parse() identifies constructor entry PASSED
+
+TypeMapperAndAbiJsonTest > AbiJson > nonpayable function stateMutability is preserved PASSED
+
+TypeMapperAndAbiJsonTest > AbiJson > parse() empty ABI returns empty list PASSED
+
+TypeMapperAndAbiJsonTest > AbiJson > parse() identifies function entries PASSED
+
+TypeMapperAndAbiJsonTest > AbiJson > parse() returns correct entry count PASSED
+
+TypeMapperAndAbiJsonTest > AbiJson > Transfer event has 3 inputs PASSED
+
+TypeMapperAndAbiJsonTest > AbiJson > transfer has two inputs: address and uint256 PASSED
+
+TypeMapperAndAbiJsonTest > AbiJson > balanceOf has one address input PASSED
+
+TypeMapperAndAbiJsonTest > AbiJson > parse() identifies event entries PASSED
+
+TypeMapperAndAbiJsonTest > TypeMapper > castFrom: address casts to String PASSED
+
+TypeMapperAndAbiJsonTest > TypeMapper > importsFor: address needs no extra imports PASSED
+
+TypeMapperAndAbiJsonTest > TypeMapper > uint256 → BigInteger FAILED
+    org.opentest4j.AssertionFailedError: expected: <BigInteger> but was: <java.math.BigInteger>
+        at app//org.junit.jupiter.api.AssertionFailureBuilder.build(AssertionFailureBuilder.java:151)
+        at app//org.junit.jupiter.api.AssertionFailureBuilder.buildAndThrow(AssertionFailureBuilder.java:132)
+        at app//org.junit.jupiter.api.AssertEquals.failNotEqual(AssertEquals.java:197)
+        at app//org.junit.jupiter.api.AssertEquals.assertEquals(AssertEquals.java:182)
+        at app//org.junit.jupiter.api.AssertEquals.assertEquals(AssertEquals.java:177)
+        at app//org.junit.jupiter.api.Assertions.assertEquals(Assertions.java:1145)
+        at app//io.jeth.TypeMapperAndAbiJsonTest$TypeMapperTests.uint256_to_biginteger(TypeMapperAndAbiJsonTest.java:29)
+
+TypeMapperAndAbiJsonTest > TypeMapper > castFrom: uint256 casts to BigInteger PASSED
+
+TypeMapperAndAbiJsonTest > TypeMapper > importsFor: uint256 needs BigInteger import PASSED
+
+TypeMapperAndAbiJsonTest > TypeMapper > bool → boolean PASSED
+
+TypeMapperAndAbiJsonTest > TypeMapper > toJavaTypeBoxed: bool → Boolean (boxed) PASSED
+
+TypeMapperAndAbiJsonTest > TypeMapper > toAbiTypeExpr: address → AbiType.ADDRESS PASSED
+
+TypeMapperAndAbiJsonTest > TypeMapper > uint8 → int PASSED
+
+TypeMapperAndAbiJsonTest > TypeMapper > string → String PASSED
+
+TypeMapperAndAbiJsonTest > TypeMapper > toAbiTypeExpr: uint256 → AbiType.UINT256 PASSED
+
+TypeMapperAndAbiJsonTest > TypeMapper > address → String PASSED
+
+TypeMapperAndAbiJsonTest > TypeMapper > toJavaTypeBoxed: uint256 → BigInteger (already boxed) FAILED
+    org.opentest4j.AssertionFailedError: expected: <BigInteger> but was: <java.math.BigInteger>
+        at app//org.junit.jupiter.api.AssertionFailureBuilder.build(AssertionFailureBuilder.java:151)
+        at app//org.junit.jupiter.api.AssertionFailureBuilder.buildAndThrow(AssertionFailureBuilder.java:132)
+        at app//org.junit.jupiter.api.AssertEquals.failNotEqual(AssertEquals.java:197)
+        at app//org.junit.jupiter.api.AssertEquals.assertEquals(AssertEquals.java:182)
+        at app//org.junit.jupiter.api.AssertEquals.assertEquals(AssertEquals.java:177)
+        at app//org.junit.jupiter.api.Assertions.assertEquals(Assertions.java:1145)
+        at app//io.jeth.TypeMapperAndAbiJsonTest$TypeMapperTests.uint256_boxed(TypeMapperAndAbiJsonTest.java:84)
+
+TypeMapperAndAbiJsonTest > TypeMapper > bytes → byte[] PASSED
+
+TypeMapperAndAbiJsonTest > TypeMapper > bytes32 → byte[] PASSED
+
+TypedDataExtendedTest > hashTypedData() changes when domain changes PASSED
+
+TypedDataExtendedTest > hashTypedData() is deterministic PASSED
+
+TypedDataExtendedTest > separator() is deterministic PASSED
+
+TypedDataExtendedTest > separator() differs when name changes PASSED
+
+TypedDataExtendedTest > hashTypedData() starts with 0x1901 prefix (EIP-712 magic bytes) PASSED
+
+TypedDataExtendedTest > hashStruct() changes when type definition changes PASSED
+
+TypedDataExtendedTest > hashTypedData() matches: hash = keccak(separator || structHash) PASSED
+
+TypedDataExtendedTest > hashStruct() changes when message field changes PASSED
+
+TypedDataExtendedTest > encodeData() changes when a field value changes PASSED
+
+TypedDataExtendedTest > hashStruct() is deterministic PASSED
+
+TypedDataExtendedTest > separator() differs when verifyingContract changes FAILED
+    io.jeth.abi.AbiException: Invalid address length: 0xDDdDddDdDdddDDddDDddDDDDdDdDDdDDdDDDDDd
+        at app//io.jeth.abi.AbiCodec.encodeAddress(AbiCodec.java:200)
+        at app//io.jeth.abi.AbiCodec.encodeValue(AbiCodec.java:123)
+        at app//io.jeth.abi.AbiCodec.encodeSequence(AbiCodec.java:91)
+        at app//io.jeth.abi.AbiCodec.encode(AbiCodec.java:40)
+        at app//io.jeth.eip712.TypedData$Domain.separator(TypedData.java:387)
+        at app//io.jeth.TypedDataExtendedTest.separator_contract_unique(TypedDataExtendedTest.java:113)
+
+TypedDataExtendedTest > separator() differs when chainId changes PASSED
+
+TypedDataExtendedTest > separator() differs when version changes PASSED
+
+TypedDataExtendedTest > struct with uint256 field: hashStruct consistent with sign() PASSED
+
+TypedDataExtendedTest > hashTypedData() changes when message changes PASSED
+
+TypedDataExtendedTest > hashTypedData() returns 32 bytes PASSED
+
+TypedDataExtendedTest > encodeData() length = 32 * (1 + numFields) for static struct FAILED
+    org.opentest4j.AssertionFailedError: encodeData for 3-field struct must be 4 * 32 = 128 bytes ==> expected: <128> but was: <96>
+        at app//org.junit.jupiter.api.AssertionFailureBuilder.build(AssertionFailureBuilder.java:151)
+        at app//org.junit.jupiter.api.AssertionFailureBuilder.buildAndThrow(AssertionFailureBuilder.java:132)
+        at app//org.junit.jupiter.api.AssertEquals.failNotEqual(AssertEquals.java:197)
+        at app//org.junit.jupiter.api.AssertEquals.assertEquals(AssertEquals.java:150)
+        at app//org.junit.jupiter.api.Assertions.assertEquals(Assertions.java:563)
+        at app//io.jeth.TypedDataExtendedTest.encode_data_length(TypedDataExtendedTest.java:254)
+
+TypedDataExtendedTest > encodeData() is deterministic PASSED
+
+TypedDataExtendedTest > encodeData() first 32 bytes = typeHash FAILED
+    org.opentest4j.AssertionFailedError: First 32 bytes of encodeData must be typeHash ==> array contents differ at index [0], expected: <83> but was: <0>
+        at app//org.junit.jupiter.api.AssertionFailureBuilder.build(AssertionFailureBuilder.java:151)
+        at app//org.junit.jupiter.api.AssertionFailureBuilder.buildAndThrow(AssertionFailureBuilder.java:132)
+        at app//org.junit.jupiter.api.AssertArrayEquals.failArraysNotEqual(AssertArrayEquals.java:440)
+        at app//org.junit.jupiter.api.AssertArrayEquals.assertArrayEquals(AssertArrayEquals.java:209)
+        at app//org.junit.jupiter.api.AssertArrayEquals.assertArrayEquals(AssertArrayEquals.java:63)
+        at app//org.junit.jupiter.api.Assertions.assertArrayEquals(Assertions.java:1238)
+        at app//io.jeth.TypedDataExtendedTest.encode_data_starts_with_typehash(TypedDataExtendedTest.java:271)
+
+TypedDataExtendedTest > separator() returns 32 bytes PASSED
+
+TypedDataExtendedTest > hashStruct() returns 32 bytes PASSED
+
+TypedDataExtendedTest > sign() signs exactly hashTypedData() output PASSED
+
+TypedDataTest > different messages → different signatures PASSED
+
+TypedDataTest > sign produces 65-byte signature PASSED
+
+TypedDataTest > signPermit returns valid 65-byte signature PASSED
+
+TypedDataTest > signHex returns 132-char 0x hex string PASSED
+
+TypedDataTest > typeHash is keccak256(encodeType) PASSED
+
+TypedDataTest > signPermit is deterministic FAILED
+    io.jeth.abi.AbiException: Invalid address length: 0xToken
+        at app//io.jeth.abi.AbiCodec.encodeAddress(AbiCodec.java:200)
+        at app//io.jeth.abi.AbiCodec.encodeValue(AbiCodec.java:123)
+        at app//io.jeth.abi.AbiCodec.encodeSequence(AbiCodec.java:91)
+        at app//io.jeth.abi.AbiCodec.encode(AbiCodec.java:40)
+        at app//io.jeth.eip712.TypedData$Domain.separator(TypedData.java:387)
+        at app//io.jeth.eip712.TypedData.hashTypedData(TypedData.java:93)
+        at app//io.jeth.eip712.TypedData.sign(TypedData.java:66)
+        at app//io.jeth.eip712.TypedData.signPermit(TypedData.java:270)
+        at app//io.jeth.eip712.TypedData.signPermit(TypedData.java:306)
+        at app//io.jeth.TypedDataTest.sign_permit_deterministic(TypedDataTest.java:170)
+
+TypedDataTest > encode uint256 value in struct PASSED
+
+TypedDataTest > sign is deterministic (RFC 6979) PASSED
+
+TypedDataTest > different chainId → different signatures PASSED
+
+TypedDataTest > EIP712Domain typehash matches spec PASSED
+
+TypedDataTest > encodeType produces canonical signature string PASSED
+
+UniswapV3AndERC1155Test > ERC1155 > safeTransferFrom sends a transaction and returns tx hash FAILED
+    java.util.concurrent.CompletionException: java.lang.NumberFormatException: For input string: "{"b" under radix 16
+        at java.base/java.util.concurrent.CompletableFuture.encodeThrowable(CompletableFuture.java:315)
+        at java.base/java.util.concurrent.CompletableFuture.completeThrowable(CompletableFuture.java:320)
+        at java.base/java.util.concurrent.CompletableFuture$UniApply.tryFire(CompletableFuture.java:649)
+        at java.base/java.util.concurrent.CompletableFuture.postComplete(CompletableFuture.java:510)
+        at java.base/java.util.concurrent.CompletableFuture.postFire(CompletableFuture.java:614)
+        at java.base/java.util.concurrent.CompletableFuture$UniWhenComplete.tryFire(CompletableFuture.java:844)
+        at java.base/java.util.concurrent.CompletableFuture$Completion.run(CompletableFuture.java:482)
+        at java.base/java.lang.Thread.run(Thread.java:1583)
+
+        Caused by:
+        java.lang.NumberFormatException: For input string: "{"b" under radix 16
+            at java.base/java.lang.NumberFormatException.forInputString(NumberFormatException.java:67)
+            at java.base/java.lang.Integer.parseInt(Integer.java:662)
+            at java.base/java.math.BigInteger.<init>(BigInteger.java:547)
+            at io.jeth.util.Hex.toBigInteger(Hex.java:86)
+            at io.jeth.core.EthClient.lambda$hexBig$21(EthClient.java:617)
+            at java.base/java.util.concurrent.CompletableFuture$UniApply.tryFire(CompletableFuture.java:646)
+            ... 5 more
+
+UniswapV3AndERC1155Test > ERC1155 > balanceOf returns zero correctly PASSED
+
+UniswapV3AndERC1155Test > ERC1155 > getAddress returns the contract address PASSED
+
+UniswapV3AndERC1155Test > ERC1155 > isApprovedForAll returns false FAILED
+    io.jeth.abi.AbiException: Invalid address length: 0xOperator
+        at app//io.jeth.abi.AbiCodec.encodeAddress(AbiCodec.java:200)
+        at app//io.jeth.abi.AbiCodec.encodeValue(AbiCodec.java:123)
+        at app//io.jeth.abi.AbiCodec.encodeSequence(AbiCodec.java:91)
+        at app//io.jeth.abi.AbiCodec.encode(AbiCodec.java:40)
+        at app//io.jeth.abi.Function.encode(Function.java:54)
+        at app//io.jeth.contract.ContractFunction.callAt(ContractFunction.java:46)
+        at app//io.jeth.contract.ContractFunction.call(ContractFunction.java:42)
+        at app//io.jeth.token.ERC1155.isApprovedForAll(ERC1155.java:54)
+        at app//io.jeth.UniswapV3AndERC1155Test$ERC1155Tests.is_approved_false(UniswapV3AndERC1155Test.java:222)
+
+UniswapV3AndERC1155Test > ERC1155 > uri returns token metadata URI string PASSED
+
+UniswapV3AndERC1155Test > ERC1155 > isApprovedForAll returns true FAILED
+    io.jeth.abi.AbiException: Invalid address length: 0xOperator
+        at app//io.jeth.abi.AbiCodec.encodeAddress(AbiCodec.java:200)
+        at app//io.jeth.abi.AbiCodec.encodeValue(AbiCodec.java:123)
+        at app//io.jeth.abi.AbiCodec.encodeSequence(AbiCodec.java:91)
+        at app//io.jeth.abi.AbiCodec.encode(AbiCodec.java:40)
+        at app//io.jeth.abi.Function.encode(Function.java:54)
+        at app//io.jeth.contract.ContractFunction.callAt(ContractFunction.java:46)
+        at app//io.jeth.contract.ContractFunction.call(ContractFunction.java:42)
+        at app//io.jeth.token.ERC1155.isApprovedForAll(ERC1155.java:54)
+        at app//io.jeth.UniswapV3AndERC1155Test$ERC1155Tests.is_approved_true(UniswapV3AndERC1155Test.java:212)
+
+UniswapV3AndERC1155Test > ERC1155 > balanceOf returns BigInteger from eth_call PASSED
+
+UniswapV3AndERC1155Test > UniswapV3 > quoteExactInputSingle returns BigInteger quote PASSED
+
+UniswapV3AndERC1155Test > UniswapV3 > batchQuote returns list with same size as input PASSED
+
+UniswapV3AndERC1155Test > UniswapV3 > getPoolState throws when pool is zero address PASSED
+
+UniswapV3AndERC1155Test > UniswapV3 > getPoolAddress returns 0x-prefixed address from contract call PASSED
+
+UniswapV3AndERC1155Test > UniswapV3 > quoteExactInputSingle result is positive PASSED
+
+UnitsExtendedTest > toWei / formatEther inverse for small decimals FAILED
+    org.opentest4j.AssertionFailedError: Failed for: 1.0 ==> expected: <1.0> but was: <1>
+        at app//org.junit.jupiter.api.AssertionFailureBuilder.build(AssertionFailureBuilder.java:151)
+        at app//org.junit.jupiter.api.AssertionFailureBuilder.buildAndThrow(AssertionFailureBuilder.java:132)
+        at app//org.junit.jupiter.api.AssertEquals.failNotEqual(AssertEquals.java:197)
+        at app//org.junit.jupiter.api.AssertEquals.assertEquals(AssertEquals.java:182)
+        at app//org.junit.jupiter.api.Assertions.assertEquals(Assertions.java:1156)
+        at app//io.jeth.UnitsExtendedTest.to_wei_format_inverse(UnitsExtendedTest.java:79)
+
+UnitsExtendedTest > parseToken with 18 decimals PASSED
+
+UnitsExtendedTest > toWei(double) round-trips for common values PASSED
+
+UnitsExtendedTest > parseToken with 6 decimals (USDC) PASSED
+
+UnitsExtendedTest > MAX_UINT256 is 2^256 - 1 PASSED
+
+UnitsExtendedTest > formatGasCostEth returns non-empty string PASSED
+
+UnitsExtendedTest > formatEther with max decimals=2 FAILED
+    org.opentest4j.AssertionFailedError: expected: <1.0> but was: <1>
+        at app//org.junit.jupiter.api.AssertionFailureBuilder.build(AssertionFailureBuilder.java:151)
+        at app//org.junit.jupiter.api.AssertionFailureBuilder.buildAndThrow(AssertionFailureBuilder.java:132)
+        at app//org.junit.jupiter.api.AssertEquals.failNotEqual(AssertEquals.java:197)
+        at app//org.junit.jupiter.api.AssertEquals.assertEquals(AssertEquals.java:182)
+        at app//org.junit.jupiter.api.AssertEquals.assertEquals(AssertEquals.java:177)
+        at app//org.junit.jupiter.api.Assertions.assertEquals(Assertions.java:1145)
+        at app//io.jeth.UnitsExtendedTest.format_ether_trimmed(UnitsExtendedTest.java:29)
+
+UnitsExtendedTest > formatToken with 6 decimals FAILED
+    org.opentest4j.AssertionFailedError: expected: <1.0> but was: <1>
+        at app//org.junit.jupiter.api.AssertionFailureBuilder.build(AssertionFailureBuilder.java:151)
+        at app//org.junit.jupiter.api.AssertionFailureBuilder.buildAndThrow(AssertionFailureBuilder.java:132)
+        at app//org.junit.jupiter.api.AssertEquals.failNotEqual(AssertEquals.java:197)
+        at app//org.junit.jupiter.api.AssertEquals.assertEquals(AssertEquals.java:182)
+        at app//org.junit.jupiter.api.AssertEquals.assertEquals(AssertEquals.java:177)
+        at app//org.junit.jupiter.api.Assertions.assertEquals(Assertions.java:1145)
+        at app//io.jeth.UnitsExtendedTest.format_token_6(UnitsExtendedTest.java:51)
+
+UnitsExtendedTest > formatGwei converts wei to gwei string FAILED
+    org.opentest4j.AssertionFailedError: expected: <30.0> but was: <30 gwei>
+        at app//org.junit.jupiter.api.AssertionFailureBuilder.build(AssertionFailureBuilder.java:151)
+        at app//org.junit.jupiter.api.AssertionFailureBuilder.buildAndThrow(AssertionFailureBuilder.java:132)
+        at app//org.junit.jupiter.api.AssertEquals.failNotEqual(AssertEquals.java:197)
+        at app//org.junit.jupiter.api.AssertEquals.assertEquals(AssertEquals.java:182)
+        at app//org.junit.jupiter.api.AssertEquals.assertEquals(AssertEquals.java:177)
+        at app//org.junit.jupiter.api.Assertions.assertEquals(Assertions.java:1145)
+        at app//io.jeth.UnitsExtendedTest.format_gwei(UnitsExtendedTest.java:57)
+
+UserOperationTest > sign() v byte is 27 or 28 (Ethereum convention) PASSED
+
+UserOperationTest > sign() populates signature field PASSED
+
+UserOperationTest > getUserOpHash changes with different chainId PASSED
+
+UserOperationTest > getUserOpHash is deterministic PASSED
+
+UserOperationTest > toMap() contains all required ERC-4337 fields PASSED
+
+UserOperationTest > getUserOpHash changes with different entryPoint PASSED
+
+UserOperationTest > sign() produces 65-byte signature PASSED
+
+UserOperationTest > sign() original op unchanged (immutable return) PASSED
+
+UserOperationTest > toMap() empty initCode defaults to 0x PASSED
+
+UserOperationTest > getUserOpHash returns 0x-prefixed 32-byte hash PASSED
+
+UserOperationTest > getUserOpHash encodes initCode, callData, paymasterAndData as keccak256 PASSED
+
+UserOperationTest > sign() is deterministic for same key and op PASSED
+
+UserOperationTest > getUserOpHash changes with different sender PASSED
+
+UserOperationTest > toMap() nonce is 0x-prefixed hex PASSED
+
+UtilTest > testAddressValidation() PASSED
+
+UtilTest > testHexDecodeWithoutPrefix() PASSED
+
+UtilTest > testHexToBigInteger() PASSED
+
+UtilTest > testAddressNormalize() PASSED
+
+UtilTest > testUnitsFromWei() PASSED
+
+UtilTest > testHexPad32() FAILED
+    org.opentest4j.AssertionFailedError: expected: <64> but was: <66>
+        at app//org.junit.jupiter.api.AssertionFailureBuilder.build(AssertionFailureBuilder.java:151)
+        at app//org.junit.jupiter.api.AssertionFailureBuilder.buildAndThrow(AssertionFailureBuilder.java:132)
+        at app//org.junit.jupiter.api.AssertEquals.failNotEqual(AssertEquals.java:197)
+        at app//org.junit.jupiter.api.AssertEquals.assertEquals(AssertEquals.java:150)
+        at app//org.junit.jupiter.api.AssertEquals.assertEquals(AssertEquals.java:145)
+        at app//org.junit.jupiter.api.Assertions.assertEquals(Assertions.java:531)
+        at app//io.jeth.UtilTest.testHexPad32(UtilTest.java:100)
+
+UtilTest > testFunctionSelectorKeccak() PASSED
+
+UtilTest > testHexEncodeDecode() PASSED
+
+UtilTest > testUnitsEtherConversion() PASSED
+
+UtilTest > testUnitsGweiConversion() PASSED
+
+UtilTest > testAddressChecksum() PASSED
+
+UtilTest > testKeccak256KnownValues() PASSED
+
+WalletExtendedTest > recoverAddress: wrong hash → wrong signer PASSED
+
+WalletExtendedTest > personal_sign: different wallets produce different sigs PASSED
+
+WalletExtendedTest > personal_sign: recoverPersonalMessage returns signer PASSED
+
+WalletExtendedTest > recoverAddress from hash + sig returns original signer PASSED
+
+WalletExtendedTest > signMessage: v is 27 or 28 (personal_sign form) FAILED
+    org.opentest4j.AssertionFailedError: personal_sign v should be 27/28, got 0 ==> expected: <true> but was: <false>
+        at app//org.junit.jupiter.api.AssertionFailureBuilder.build(AssertionFailureBuilder.java:151)
+        at app//org.junit.jupiter.api.AssertionFailureBuilder.buildAndThrow(AssertionFailureBuilder.java:132)
+        at app//org.junit.jupiter.api.AssertTrue.failNotTrue(AssertTrue.java:63)
+        at app//org.junit.jupiter.api.AssertTrue.assertTrue(AssertTrue.java:36)
+        at app//org.junit.jupiter.api.Assertions.assertTrue(Assertions.java:214)
+        at app//io.jeth.WalletExtendedTest.personal_sign_v(WalletExtendedTest.java:128)
+
+WalletExtendedTest > Signature.toBytes() = 65 bytes [r(32) + s(32) + v(1)] PASSED
+
+WalletExtendedTest > Sign: v is 0 or 1 (pre-EIP-155 form) PASSED
+
+WalletExtendedTest > All 10 Hardhat dev accounts derive correctly FAILED
+    org.opentest4j.AssertionFailedError: Account 4 ==> expected: <0x15d34AAf54267DB7D7c367839AAf71A00a2C6A65> but was: <0x1164697bb17EaB2DA95266b380d691A853a9ac08>
+        at app//org.junit.jupiter.api.AssertionFailureBuilder.build(AssertionFailureBuilder.java:151)
+        at app//org.junit.jupiter.api.AssertionFailureBuilder.buildAndThrow(AssertionFailureBuilder.java:132)
+        at app//org.junit.jupiter.api.AssertEquals.failNotEqual(AssertEquals.java:197)
+        at app//org.junit.jupiter.api.AssertEquals.assertEquals(AssertEquals.java:182)
+        at app//org.junit.jupiter.api.Assertions.assertEquals(Assertions.java:1156)
+        at app//io.jeth.WalletExtendedTest.hardhat_accounts(WalletExtendedTest.java:151)
+
+WalletExtendedTest > All sigs have low-S (EIP-2 canonical form) PASSED
+
+WalletExtendedTest > hashPersonalMessage adds Ethereum prefix PASSED
+
+WalletExtendedTest > Signature.toHex() is 132-char hex string (0x + 130 chars) PASSED
+
+Bls12381Test > msmConsistentWithIndividualMuls() PASSED
+
+Bls12381Test > compressInfinityFlag() PASSED
+
+Bls12381Test > compressDecompressRoundTrip() PASSED
+
+Bls12381Test > generatorIsOnCurve() PASSED
+
+Bls12381Test > generatorTimesOrderIsInfinity() PASSED
+
+Bls12381Test > scalarMulCommutativity() PASSED
+
+Bls12381Test > doublingMatchesSelfAdd() PASSED
+
+Bls12381Test > addThenNegateIsInfinity() PASSED
+
+KzgTest > blobEncoderRoundTrip() PASSED
+
+KzgTest > blobToFieldElementsAllZero() PASSED
+
+KzgTest > challengeUsesUint64DegreeEncoding() PASSED
+
+KzgTest > blobToFieldElementsRejectsOutOfField() PASSED
+
+KzgTest > challengeMatchesKnownVector() PASSED
+
+KzgTest > rootOfUnity4096IsCorrect() PASSED
+
+KzgTest > constantPolynomialEvaluatesCorrectly() PASSED
+
+KzgTest > quotientSumIsZero() PASSED
+
+KzgTest > quotientOutOfDomainIsConsistent() PASSED
+
+KzgTest > rootOfUnity2isPrimitiveSquareRoot() PASSED
+
+KzgTest > polynomialEvaluatesAtDomainPoint() PASSED
+
+KzgTest > blobEncoderAllChunksAreValidFieldElements() PASSED
+
+KzgTest > blobToFieldElementsFirstElement() PASSED
+
+KzgTest > rootOfUnityOrder() PASSED
+
+KzgTest > quotientInDomainMatchesKnownVector() PASSED
+
+KzgTest > blobEncoderMultiBlob() PASSED
+
+869 tests completed, 78 failed
+
+> Task :test FAILED
+
+[Incubating] Problems report is available at: file:///workspaces/jeth/build/reports/problems/problems-report.html
+
+FAILURE: Build failed with an exception.
+
+* What went wrong:
+Execution failed for task ':test'.
+> There were failing tests. See the report at: file:///workspaces/jeth/build/reports/tests/test/index.html
+
+* Try:
+> Run with --scan to get full insights from a Build Scan (powered by Develocity).
+
+Deprecated Gradle features were used in this build, making it incompatible with Gradle 10.
+
+You can use '--warning-mode all' to show the individual deprecation warnings and determine if they come from your own scripts or plugins.
+
+For more on this, please refer to https://docs.gradle.org/9.4.0/userguide/command_line_interface.html#sec:command_line_warnings in the Gradle documentation.
+
+BUILD FAILED in 1m 20s
+5 actionable tasks: 5 executed

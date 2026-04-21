@@ -68,7 +68,7 @@ class TransactionSignerTest {
         var t =
                 EthModels.TransactionRequest.builder()
                         .from(W.getAddress())
-                        .to("0xToken")
+                        .to("0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266")
                         .value(BigInteger.valueOf(1_000_000_000_000_000_000L))
                         .gas(BigInteger.valueOf(65000))
                         .maxFeePerGas(BigInteger.valueOf(30_000_000_000L))

@@ -241,7 +241,7 @@ class PriceOracleTest {
     @Test
     @DisplayName("tickToPrice: tick=0 → price=1.0 (identity)")
     void tick_zero_is_one() {
-        String token = "0xToken";
+        String token = "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266";
         BigDecimal price = PriceOracle.tickToPrice(0.0, token, token, token.toLowerCase());
         assertEquals(0, price.compareTo(new BigDecimal("1.000000")));
     }
@@ -249,7 +249,7 @@ class PriceOracleTest {
     @Test
     @DisplayName("tickToPrice: positive tick > 1.0, negative tick < 1.0 (same decimals)")
     void tick_direction() {
-        String t = "0xToken";
+        String t = "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266";
         BigDecimal pos = PriceOracle.tickToPrice(10000.0, t, t, t.toLowerCase());
         BigDecimal neg = PriceOracle.tickToPrice(-10000.0, t, t, t.toLowerCase());
         assertTrue(pos.compareTo(new BigDecimal("1")) > 0, "Positive tick should be > 1");

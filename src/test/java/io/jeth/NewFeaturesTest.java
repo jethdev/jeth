@@ -320,7 +320,7 @@ class NewFeaturesTest {
                 var mc = new Multicall3(rpc.client());
                 Function fn =
                         Function.of("balanceOf", AbiType.ADDRESS).withReturns(AbiType.UINT256);
-                mc.add("0xToken", fn, "0xUser");
+                mc.add("0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266", fn, "0x70997970C51812e339D9B73b0245ad59FA2A9A2d");
                 var results = mc.tryExecute().join();
                 assertEquals(1, results.size());
                 assertTrue(results.get(0).success());
@@ -338,7 +338,7 @@ class NewFeaturesTest {
                 var mc = new Multicall3(rpc.client());
                 Function fn =
                         Function.of("balanceOf", AbiType.ADDRESS).withReturns(AbiType.UINT256);
-                mc.add("0xBad", fn, "0xUser");
+                mc.add("0x90F79bf6EB2c4f870365E785982E1f101E93b906", fn, "0x70997970C51812e339D9B73b0245ad59FA2A9A2d");
                 var results = mc.tryExecute().join();
                 assertEquals(1, results.size());
                 assertFalse(results.get(0).success());

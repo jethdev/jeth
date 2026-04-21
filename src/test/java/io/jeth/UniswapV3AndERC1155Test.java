@@ -209,7 +209,7 @@ class UniswapV3AndERC1155Test {
             try (var rpc = new RpcMock()) {
                 rpc.enqueue(encodeBool(true));
                 var token = new ERC1155(CONTRACT, rpc.client());
-                assertTrue(token.isApprovedForAll(ACCOUNT, "0xOperator").join());
+                assertTrue(token.isApprovedForAll(ACCOUNT, "0x1CBd3b2770909D4e10f157aAaC2D64001A7aCD17").join());
             }
         }
 
@@ -219,7 +219,7 @@ class UniswapV3AndERC1155Test {
             try (var rpc = new RpcMock()) {
                 rpc.enqueue(encodeBool(false));
                 var token = new ERC1155(CONTRACT, rpc.client());
-                assertFalse(token.isApprovedForAll(ACCOUNT, "0xOperator").join());
+                assertFalse(token.isApprovedForAll(ACCOUNT, "0x1CBd3b2770909D4e10f157aAaC2D64001A7aCD17").join());
             }
         }
 

@@ -68,7 +68,7 @@ src/main/resources/io/jeth/
 
 ## Code conventions
 
-**Java version:** 17. No preview features. No records-only constructs that break 17.
+**Java version:** 21. No preview features. No records-only constructs that break 17.
 
 **Async:** All public methods that do I/O return `CompletableFuture<T>`. Chain with `.thenApply` / `.thenCompose`. Never block with `.get()` in library code.
 

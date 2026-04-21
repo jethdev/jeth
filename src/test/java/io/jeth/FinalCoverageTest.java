@@ -255,7 +255,7 @@ class FinalCoverageTest {
         void contract_function_selector() throws Exception {
             try (var rpc = new RpcMock()) {
                 rpc.enqueue(encodeUint(BigInteger.ONE)); // mock response
-                var contract = new io.jeth.contract.Contract("0xToken", rpc.client());
+                var contract = new io.jeth.contract.Contract("0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266", rpc.client());
                 ContractFunction cf = contract.fn("balanceOf(address)").returns("uint256");
                 byte[] sel = cf.getSelector();
                 assertEquals(4, sel.length);
@@ -271,7 +271,7 @@ class FinalCoverageTest {
         @DisplayName("ContractFunction.getInputTypes for transfer")
         void contract_function_input_types() throws Exception {
             try (var rpc = new RpcMock()) {
-                var contract = new io.jeth.contract.Contract("0xToken", rpc.client());
+                var contract = new io.jeth.contract.Contract("0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266", rpc.client());
                 ContractFunction cf = contract.fn("transfer(address,uint256)").returns("bool");
                 AbiType[] types = cf.getInputTypes();
                 assertEquals(2, types.length);
@@ -286,7 +286,7 @@ class FinalCoverageTest {
             String user = "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266";
             try (var rpc = new RpcMock()) {
                 rpc.enqueue(encodeUint(BigInteger.valueOf(500)));
-                var contract = new io.jeth.contract.Contract("0xToken", rpc.client());
+                var contract = new io.jeth.contract.Contract("0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266", rpc.client());
                 BigInteger result =
                         contract.fn("balanceOf(address)")
                                 .returns("uint256")
@@ -303,7 +303,7 @@ class FinalCoverageTest {
         @DisplayName("ContractFunction.getFunction returns underlying Function")
         void contract_function_get_function() throws Exception {
             try (var rpc = new RpcMock()) {
-                var contract = new io.jeth.contract.Contract("0xToken", rpc.client());
+                var contract = new io.jeth.contract.Contract("0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266", rpc.client());
                 ContractFunction cf = contract.fn("balanceOf(address)").returns("uint256");
                 Function fn = cf.getFunction();
                 assertNotNull(fn);

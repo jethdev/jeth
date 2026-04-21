@@ -148,7 +148,7 @@ class GnosisSafeTest {
         try (var rpc = new RpcMock()) {
             rpc.enqueue("\"0x0000000000000000000000000000000000000000000000000000000000000000\"");
             var safe = new GnosisSafe(SAFE_ADDR, rpc.client());
-            assertFalse(safe.isOwner("0xnotowner").join());
+            assertFalse(safe.isOwner("0xFFcf8FDEE72ac11b5c542428B7a3A3aB5B15d529").join());
         }
     }
 }
